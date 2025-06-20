@@ -3,6 +3,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import LogoutButton from "@/components/logout-button";
 
 export default async function HomePage() {
@@ -26,7 +27,15 @@ export default async function HomePage() {
                 User ID: {session.user.id}
               </p>
             </div>
-            <LogoutButton />
+            <div className="flex space-x-3">
+              <Link
+                href="/settings"
+                className="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+              >
+                Settings
+              </Link>
+              <LogoutButton />
+            </div>
           </div>
 
           <div className="bg-blue-50 border border-blue-200 rounded-md p-4">

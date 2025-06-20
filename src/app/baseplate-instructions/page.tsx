@@ -10,7 +10,8 @@ export default function BaseplateInstructions() {
       <p>
         This is a reusable baseplate for setting up authentication using
         NextAuth (v4 syntax), connected to MongoDB with Mongoose. The basic flow
-        for registering and logging in is already set up.
+        for registering and logging in is already set up. Password updating and
+        account deletion is also in place.
       </p>
 
       <ul className="list-disc list-inside space-y-1">
