@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -14,7 +15,8 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, Users, Settings } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { LayoutDashboard, Users, Settings, Mail } from "lucide-react";
 
 const navigation = [
   {
@@ -28,6 +30,11 @@ const navigation = [
     icon: Users,
   },
   {
+    name: "Invites",
+    href: "/invites",
+    icon: Mail,
+  },
+  {
     name: "Settings",
     href: "/settings",
     icon: Settings,
@@ -36,6 +43,35 @@ const navigation = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const [pendingInvitesCount, setPendingInvitesCount] = useState(0);
+
+  const fetchPendingInvitesCount = async () => {
+    try {
+      const response = await fetch("/api/teams/invites/pending");
+      if (response.ok) {
+        const data = await response.json();
+        setPendingInvitesCount(data.invites.length);
+      }
+    } catch (error) {
+      console.error("Error fetching pending invites:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchPendingInvitesCount();
+
+    // Listen for invite updates
+    const handleInvitesUpdated = () => {
+      fetchPendingInvitesCount();
+    };
+
+    window.addEventListener("invitesUpdated", handleInvitesUpdated);
+
+    // Cleanup listener
+    return () => {
+      window.removeEventListener("invitesUpdated", handleInvitesUpdated);
+    };
+  }, []);
 
   return (
     <Sidebar>
@@ -51,12 +87,18 @@ export function AppSidebar() {
             <SidebarMenu>
               {navigation.map((item) => {
                 const isActive = pathname === item.href;
+                const isInvites = item.name === "Invites";
                 return (
                   <SidebarMenuItem key={item.name}>
                     <SidebarMenuButton asChild isActive={isActive}>
                       <Link href={item.href}>
                         <item.icon />
                         <span>{item.name}</span>
+                        {isInvites && pendingInvitesCount > 0 && (
+                          <Badge variant="destructive" className="ml-auto">
+                            {pendingInvitesCount}
+                          </Badge>
+                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

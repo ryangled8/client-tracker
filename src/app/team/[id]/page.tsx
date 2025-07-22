@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TeamActions } from "@/components/team-detail/team-actions";
@@ -43,6 +44,7 @@ interface Team {
 
 export default function TeamPage() {
   const params = useParams();
+  const { data: session } = useSession();
   const [team, setTeam] = useState<Team | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -147,6 +149,7 @@ export default function TeamPage() {
         plans={team.plans}
         clients={team.clients}
         ownerId={team.owner._id}
+        currentUserId={session?.user?.id || ""}
         teamId={team._id}
         onDataUpdated={() => fetchTeam(team._id)}
       />

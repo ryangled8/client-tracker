@@ -5,6 +5,7 @@ import { useState } from "react";
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
+import LogoutButton from "@/components/logout-button";
 
 export default function SettingsPage() {
   const { user, isLoading } = useAuth();
@@ -138,6 +139,10 @@ export default function SettingsPage() {
             </h2>
             <p className="text-gray-600">Name: {user.name}</p>
             <p className="text-gray-600">Email: {user.email}</p>
+
+            <div className="mt-4">
+              <LogoutButton />
+            </div>
           </div>
 
           {/* Update Password Section */}

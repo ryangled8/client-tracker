@@ -43,7 +43,7 @@ export function CoachInvite({ teamId, onInviteSent }: CoachInviteProps) {
 
     setInviting(true);
     try {
-      const response = await fetch("/api/teams/invite-coach", {
+      const response = await fetch("/api/teams/invites/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

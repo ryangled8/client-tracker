@@ -26,7 +26,10 @@ export const authOptions: NextAuthOptions = {
 
         await connectMongoDB()
 
-        const user = await User.findOne({ email: credentials.email.toLowerCase() })
+        // IMPORTANT: Use .select("+password") to include the password field
+        const user = await User.findOne({ 
+          email: credentials.email.toLowerCase() 
+        }).select("+password")
 
         if (!user || !user.password) {
           throw new Error("Invalid credentials")
@@ -38,10 +41,16 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Invalid credentials")
         }
 
+        // Update last login
+        await User.findByIdAndUpdate(user._id, { 
+          lastLoginAt: new Date() 
+        })
+
         return {
           id: user._id.toString(),
           email: user.email,
           name: user.name,
+          role: user.role,
         }
       },
     }),
@@ -50,12 +59,14 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
+        token.role = (user as any).role
       }
       return token
     },
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id as string
+        session.user.role = token.role as string
       }
       return session
     },
@@ -67,16 +78,18 @@ declare module "next-auth" {
   interface Session {
     user: {
       id: string
+      role: string
     } & DefaultSession["user"]
   }
-
   interface User {
     id: string
+    role: string
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
     id: string
+    role: string
   }
 }
