@@ -1,33 +1,72 @@
-import mongoose, { Schema, type Document } from "mongoose"
+import mongoose, { Schema, type Document, type ObjectId } from "mongoose"
 
 export interface IUser extends Document {
   name: string
   email: string
   password?: string
+  role: "coach" | "admin"
+  profileImage?: string
+
+  // Team relationships
+  createdTeams: ObjectId[] // Teams this user created
+  memberTeams: ObjectId[] // Teams this user is a member of
+
+  // Metadata
+  lastLoginAt?: Date
   createdAt: Date
   updatedAt: Date
 }
 
-const userSchema = new Schema<IUser>({
-  name: {
-    type: String,
-    required: true,
+const userSchema = new Schema<IUser>(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+    password: {
+      type: String,
+      select: false, // Don't include password in queries by default
+    },
+    role: {
+      type: String,
+      enum: ["coach", "admin"],
+      default: "coach",
+    },
+    profileImage: String,
+
+    // Team relationships
+    createdTeams: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Team",
+      },
+    ],
+    memberTeams: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Team",
+      },
+    ],
+
+    // Metadata
+    lastLoginAt: Date,
   },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
+  {
+    timestamps: true,
   },
-  password: String,
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
-  },
-})
+)
+
+// Indexes for performance
+userSchema.index({ email: 1 })
+userSchema.index({ createdTeams: 1 })
+userSchema.index({ memberTeams: 1 })
 
 export default mongoose.models.User || mongoose.model<IUser>("User", userSchema)
-
