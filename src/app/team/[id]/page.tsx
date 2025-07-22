@@ -6,11 +6,12 @@ import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TeamActions } from "@/components/team-detail/team-actions";
-import { TeamClientsList } from "@/components/team-detail/team-clients-list";
 import { toast } from "sonner";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { TeamSettingsModal } from "@/components/team-detail/team-settings-modal";
+import { AddClientModal } from "@/components/team-detail/add-client-modal";
+import { ClientsTable } from "@/components/team-detail/clients-table";
 import type { TeamSettings } from "@/types";
 
 interface Team {
@@ -39,7 +40,25 @@ interface Team {
     _id: string;
     name: string;
     email: string;
-    status: string;
+    phone?: string;
+    age?: number;
+    gender?: string;
+    assignedCoach: {
+      _id: string;
+      name: string;
+      email: string;
+    };
+    selectedPlan: string;
+    startDate: string;
+    currentWeight?: number;
+    targetWeight?: number;
+    height?: number;
+    status: "active" | "inactive" | "paused" | "completed";
+    membershipType?: string;
+    notes?: string;
+    customRenewalCallDate?: string;
+    customProgressCallDate?: string;
+    customPlanUpdateDate?: string;
   }>;
   createdAt: string;
   settings: TeamSettings;
@@ -99,11 +118,6 @@ export default function TeamPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleAddClient = () => {
-    // TODO: Open add client modal
-    toast.info("Add client functionality coming soon!");
   };
 
   if (loading) {
@@ -167,10 +181,13 @@ export default function TeamPage() {
               onSettingsUpdated={() => fetchTeam(team._id)}
             />
           )}
-          <Button onClick={handleAddClient}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Client
-          </Button>
+          <AddClientModal
+            teamId={team._id}
+            coaches={team.coaches}
+            plans={team.plans}
+            settings={team.settings}
+            onClientAdded={() => fetchTeam(team._id)}
+          />
         </div>
       </div>
 
@@ -185,8 +202,18 @@ export default function TeamPage() {
         onDataUpdated={() => fetchTeam(team._id)}
       />
 
-      {/* Team Clients List */}
-      <TeamClientsList clients={team.clients} onAddClient={handleAddClient} />
+      {/* Team Clients Table */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-bold">Team Clients</h2>
+        <ClientsTable
+          clients={team.clients}
+          coaches={team.coaches}
+          plans={team.plans}
+          settings={team.settings}
+          onClientUpdated={() => fetchTeam(team._id)}
+          onClientDeleted={() => fetchTeam(team._id)}
+        />
+      </div>
     </div>
   );
 }

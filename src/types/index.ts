@@ -2,7 +2,7 @@
 export type { IUser } from "../models/User"
 export type { ITeam } from "../models/Team"
 export type { ITeamInvite } from "../models/TeamInvite"
-export type { IClient } from "../models/Clients"
+export type { IClient } from "../models/Client"
 
 // Status types
 export type ClientStatus = "active" | "inactive" | "paused" | "completed"
