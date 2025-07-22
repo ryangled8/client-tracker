@@ -65,7 +65,6 @@ const userSchema = new Schema<IUser>(
 )
 
 // Indexes for performance
-userSchema.index({ email: 1 })
 userSchema.index({ createdTeams: 1 })
 userSchema.index({ memberTeams: 1 })
 
