@@ -27,6 +27,8 @@ import {
   Edit,
   Archive,
   ArchiveRestore,
+  Check,
+  Trash2,
 } from "lucide-react";
 
 interface Plan {
@@ -35,6 +37,7 @@ interface Plan {
   planProgressCall: number;
   planRenewalCall: number;
   planUpdateWeek: number;
+  planColor: string;
   isActive: boolean;
   createdAt: string;
 }
@@ -45,6 +48,7 @@ interface PlanFormData {
   planProgressCall: string;
   planRenewalCall: string;
   planUpdateWeek: string;
+  planColor: string;
 }
 
 interface TrainingPlansProps {
@@ -52,6 +56,22 @@ interface TrainingPlansProps {
   teamId: string;
   onPlansUpdated: () => void;
 }
+
+// Color palette with 12 complementing colors
+const COLOR_PALETTE = [
+  { name: "Blue", value: "#3b82f6" },
+  { name: "Green", value: "#10b981" },
+  { name: "Purple", value: "#8b5cf6" },
+  { name: "Pink", value: "#ec4899" },
+  { name: "Orange", value: "#f97316" },
+  { name: "Red", value: "#ef4444" },
+  { name: "Teal", value: "#14b8a6" },
+  { name: "Indigo", value: "#6366f1" },
+  { name: "Yellow", value: "#eab308" },
+  { name: "Emerald", value: "#059669" },
+  { name: "Rose", value: "#f43f5e" },
+  { name: "Violet", value: "#7c3aed" },
+];
 
 export function TrainingPlans({
   plans,
@@ -69,6 +89,7 @@ export function TrainingPlans({
     planProgressCall: "",
     planRenewalCall: "",
     planUpdateWeek: "",
+    planColor: "#3b82f6",
   });
 
   const resetPlanForm = () => {
@@ -78,6 +99,7 @@ export function TrainingPlans({
       planProgressCall: "",
       planRenewalCall: "",
       planUpdateWeek: "",
+      planColor: "#3b82f6",
     });
   };
 
@@ -137,6 +159,7 @@ export function TrainingPlans({
       planProgressCall,
       planRenewalCall,
       planUpdateWeek,
+      planColor,
     } = planForm;
     const duration = Number.parseInt(planDuration);
     const progressCall = Number.parseInt(planProgressCall);
@@ -163,6 +186,7 @@ export function TrainingPlans({
         planProgressCall: progressCall,
         planRenewalCall: renewalCall,
         planUpdateWeek: updateWeek,
+        planColor: planColor,
         isActive: true,
         createdAt: new Date().toISOString(),
       };
@@ -203,6 +227,7 @@ export function TrainingPlans({
       planProgressCall: plan.planProgressCall.toString(),
       planRenewalCall: plan.planRenewalCall.toString(),
       planUpdateWeek: plan.planUpdateWeek.toString(),
+      planColor: plan.planColor || "#3b82f6",
     });
     setEditingPlanIndex(planIndex);
     setEditPlanDialogOpen(true);
@@ -217,6 +242,7 @@ export function TrainingPlans({
       planProgressCall,
       planRenewalCall,
       planUpdateWeek,
+      planColor,
     } = planForm;
     const duration = Number.parseInt(planDuration);
     const progressCall = Number.parseInt(planProgressCall);
@@ -248,6 +274,7 @@ export function TrainingPlans({
         planProgressCall: progressCall,
         planRenewalCall: renewalCall,
         planUpdateWeek: updateWeek,
+        planColor: planColor,
       };
 
       const response = await fetch("/api/teams/update-team", {
@@ -313,81 +340,76 @@ export function TrainingPlans({
     }
   };
 
-  const handlePlanFormChange = (field: keyof PlanFormData, value: string) => {
-    setPlanForm((prev) => ({ ...prev, [field]: value }));
+  const deletePlan = async (planIndex: number) => {
+    const planToDelete = plans[planIndex];
+
+    if (
+      !confirm(
+        `Are you sure you want to permanently delete the plan "${planToDelete.planName}"? This action cannot be undone.`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const updatedPlans = plans.filter((_, index) => index !== planIndex);
+
+      const response = await fetch("/api/teams/update-team", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          teamId,
+          plans: updatedPlans,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        onPlansUpdated();
+        toast.success(`Plan "${planToDelete.planName}" deleted successfully`);
+      } else {
+        toast.error(data.error || "Failed to delete plan");
+      }
+    } catch (error) {
+      console.error("Error deleting plan:", error);
+      toast.error("Failed to delete plan");
+    }
   };
 
-  const PlanFormFields = () => (
-    <>
-      <div>
-        <Label htmlFor="planName">Plan Name *</Label>
-        <Input
-          id="planName"
-          value={planForm.planName}
-          onChange={(e) => handlePlanFormChange("planName", e.target.value)}
-          placeholder="e.g., 12 Week Transformation"
-        />
+  const ColorPicker = ({
+    selectedColor,
+    onColorChange,
+  }: {
+    selectedColor: string;
+    onColorChange: (color: string) => void;
+  }) => (
+    <div>
+      <Label>Plan Color</Label>
+      <div className="grid grid-cols-6 gap-2 mt-2">
+        {COLOR_PALETTE.map((color) => (
+          <button
+            key={color.value}
+            type="button"
+            className={`w-8 h-8 rounded-full border-2 transition-all hover:scale-110 ${
+              selectedColor === color.value
+                ? "border-gray-900 ring-2 ring-gray-300"
+                : "border-gray-300"
+            }`}
+            style={{ backgroundColor: color.value }}
+            onClick={() => onColorChange(color.value)}
+            title={color.name}
+          >
+            {selectedColor === color.value && (
+              <Check className="w-4 h-4 text-white mx-auto" />
+            )}
+          </button>
+        ))}
       </div>
-      <div>
-        <Label htmlFor="planDuration">Plan Duration (weeks) *</Label>
-        <Input
-          id="planDuration"
-          type="number"
-          min="1"
-          value={planForm.planDuration}
-          onChange={(e) => handlePlanFormChange("planDuration", e.target.value)}
-          placeholder="e.g., 12"
-        />
-      </div>
-      <div>
-        <Label htmlFor="planProgressCall">Progress Call Week *</Label>
-        <Input
-          id="planProgressCall"
-          type="number"
-          min="1"
-          value={planForm.planProgressCall}
-          onChange={(e) =>
-            handlePlanFormChange("planProgressCall", e.target.value)
-          }
-          placeholder="e.g., 4"
-        />
-        <p className="text-xs text-gray-500 mt-1">
-          Which week should the progress call be scheduled?
-        </p>
-      </div>
-      <div>
-        <Label htmlFor="planRenewalCall">Renewal Call Week *</Label>
-        <Input
-          id="planRenewalCall"
-          type="number"
-          min="1"
-          value={planForm.planRenewalCall}
-          onChange={(e) =>
-            handlePlanFormChange("planRenewalCall", e.target.value)
-          }
-          placeholder="e.g., 10"
-        />
-        <p className="text-xs text-gray-500 mt-1">
-          Which week should the renewal call be scheduled?
-        </p>
-      </div>
-      <div>
-        <Label htmlFor="planUpdateWeek">Plan Update Week *</Label>
-        <Input
-          id="planUpdateWeek"
-          type="number"
-          min="1"
-          value={planForm.planUpdateWeek}
-          onChange={(e) =>
-            handlePlanFormChange("planUpdateWeek", e.target.value)
-          }
-          placeholder="e.g., 6"
-        />
-        <p className="text-xs text-gray-500 mt-1">
-          Which week should the plan be updated?
-        </p>
-      </div>
-    </>
+      <p className="text-xs text-gray-500 mt-2">
+        Choose a color to identify this plan
+      </p>
+    </div>
   );
 
   return (
@@ -410,7 +432,105 @@ export function TrainingPlans({
                 <DialogTitle>Add Training Plan</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 pt-4">
-                <PlanFormFields />
+                <div>
+                  <Label htmlFor="add-planName">Plan Name *</Label>
+                  <Input
+                    id="add-planName"
+                    value={planForm.planName}
+                    onChange={(e) =>
+                      setPlanForm((prev) => ({
+                        ...prev,
+                        planName: e.target.value,
+                      }))
+                    }
+                    placeholder="e.g., 12 Week Transformation"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="add-planDuration">
+                    Plan Duration (weeks) *
+                  </Label>
+                  <Input
+                    id="add-planDuration"
+                    type="number"
+                    min="1"
+                    value={planForm.planDuration}
+                    onChange={(e) =>
+                      setPlanForm((prev) => ({
+                        ...prev,
+                        planDuration: e.target.value,
+                      }))
+                    }
+                    placeholder="e.g., 12"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="add-planProgressCall">
+                    Progress Call Week *
+                  </Label>
+                  <Input
+                    id="add-planProgressCall"
+                    type="number"
+                    min="1"
+                    value={planForm.planProgressCall}
+                    onChange={(e) =>
+                      setPlanForm((prev) => ({
+                        ...prev,
+                        planProgressCall: e.target.value,
+                      }))
+                    }
+                    placeholder="e.g., 4"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Which week should the progress call be scheduled?
+                  </p>
+                </div>
+                <div>
+                  <Label htmlFor="add-planRenewalCall">
+                    Renewal Call Week *
+                  </Label>
+                  <Input
+                    id="add-planRenewalCall"
+                    type="number"
+                    min="1"
+                    value={planForm.planRenewalCall}
+                    onChange={(e) =>
+                      setPlanForm((prev) => ({
+                        ...prev,
+                        planRenewalCall: e.target.value,
+                      }))
+                    }
+                    placeholder="e.g., 10"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Which week should the renewal call be scheduled?
+                  </p>
+                </div>
+                <div>
+                  <Label htmlFor="add-planUpdateWeek">Plan Update Week *</Label>
+                  <Input
+                    id="add-planUpdateWeek"
+                    type="number"
+                    min="1"
+                    value={planForm.planUpdateWeek}
+                    onChange={(e) =>
+                      setPlanForm((prev) => ({
+                        ...prev,
+                        planUpdateWeek: e.target.value,
+                      }))
+                    }
+                    placeholder="e.g., 6"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Which week should the plan be updated?
+                  </p>
+                </div>
+                <ColorPicker
+                  selectedColor={planForm.planColor}
+                  onColorChange={(color) =>
+                    setPlanForm((prev) => ({ ...prev, planColor: color }))
+                  }
+                />
                 <div className="flex justify-end space-x-2 pt-4">
                   <Button
                     variant="outline"
@@ -434,13 +554,21 @@ export function TrainingPlans({
           ) : (
             plans.map((plan, index) => (
               <div
-                key={`${plan.planName}-${index}`}
+                key={`plan-${plan.planName}-${index}`}
                 className="text-sm border rounded p-2"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">{plan.planName}</span>
+                      <Badge
+                        style={{
+                          backgroundColor: plan.planColor || "#3b82f6",
+                          color: "white",
+                          border: "none",
+                        }}
+                      >
+                        {plan.planName}
+                      </Badge>
                       <Badge variant={plan.isActive ? "default" : "secondary"}>
                         {plan.isActive ? "Active" : "Inactive"}
                       </Badge>
@@ -475,6 +603,13 @@ export function TrainingPlans({
                           </>
                         )}
                       </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => deletePlan(index)}
+                        className="text-red-600 focus:text-red-600"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete Plan
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -491,7 +626,98 @@ export function TrainingPlans({
             <DialogTitle>Edit Training Plan</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
-            <PlanFormFields />
+            <div>
+              <Label htmlFor="edit-planName">Plan Name *</Label>
+              <Input
+                id="edit-planName"
+                value={planForm.planName}
+                onChange={(e) =>
+                  setPlanForm((prev) => ({ ...prev, planName: e.target.value }))
+                }
+                placeholder="e.g., 12 Week Transformation"
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-planDuration">Plan Duration (weeks) *</Label>
+              <Input
+                id="edit-planDuration"
+                type="number"
+                min="1"
+                value={planForm.planDuration}
+                onChange={(e) =>
+                  setPlanForm((prev) => ({
+                    ...prev,
+                    planDuration: e.target.value,
+                  }))
+                }
+                placeholder="e.g., 12"
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-planProgressCall">
+                Progress Call Week *
+              </Label>
+              <Input
+                id="edit-planProgressCall"
+                type="number"
+                min="1"
+                value={planForm.planProgressCall}
+                onChange={(e) =>
+                  setPlanForm((prev) => ({
+                    ...prev,
+                    planProgressCall: e.target.value,
+                  }))
+                }
+                placeholder="e.g., 4"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Which week should the progress call be scheduled?
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="edit-planRenewalCall">Renewal Call Week *</Label>
+              <Input
+                id="edit-planRenewalCall"
+                type="number"
+                min="1"
+                value={planForm.planRenewalCall}
+                onChange={(e) =>
+                  setPlanForm((prev) => ({
+                    ...prev,
+                    planRenewalCall: e.target.value,
+                  }))
+                }
+                placeholder="e.g., 10"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Which week should the renewal call be scheduled?
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="edit-planUpdateWeek">Plan Update Week *</Label>
+              <Input
+                id="edit-planUpdateWeek"
+                type="number"
+                min="1"
+                value={planForm.planUpdateWeek}
+                onChange={(e) =>
+                  setPlanForm((prev) => ({
+                    ...prev,
+                    planUpdateWeek: e.target.value,
+                  }))
+                }
+                placeholder="e.g., 6"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Which week should the plan be updated?
+              </p>
+            </div>
+            <ColorPicker
+              selectedColor={planForm.planColor}
+              onColorChange={(color) =>
+                setPlanForm((prev) => ({ ...prev, planColor: color }))
+              }
+            />
             <div className="flex justify-end space-x-2 pt-4">
               <Button
                 variant="outline"

@@ -78,6 +78,7 @@ interface Plan {
   planProgressCall: number;
   planRenewalCall: number;
   planUpdateWeek: number;
+  planColor?: string;
   isActive: boolean;
 }
 
@@ -374,6 +375,9 @@ export function ClientsTable({
             ) : (
               filteredClients.map((client) => {
                 const dates = calculateDates(client);
+                const plan = plans.find(
+                  (p) => p.planName === client.selectedPlan
+                );
 
                 return (
                   <TableRow key={client._id}>
@@ -391,7 +395,17 @@ export function ClientsTable({
                       )}
                     </TableCell>
                     <TableCell>{client.assignedCoach.name}</TableCell>
-                    <TableCell>{client.selectedPlan}</TableCell>
+                    <TableCell>
+                      <Badge
+                        style={{
+                          backgroundColor: plan?.planColor || "#3b82f6",
+                          color: "white",
+                          border: "none",
+                        }}
+                      >
+                        {client.selectedPlan}
+                      </Badge>
+                    </TableCell>
                     <TableCell>
                       {formatDateDisplay(new Date(client.startDate))}
                     </TableCell>

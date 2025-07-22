@@ -94,6 +94,14 @@ const teamSchema = new Schema<ITeam>(
           required: true,
           min: 1,
         },
+        planColor: {
+          type: String,
+          default: "#3b82f6",
+          validate: {
+            validator: (v: string) => /^#[0-9A-Fa-f]{6}$/.test(v),
+            message: "Plan color must be a valid hex color code",
+          },
+        },
         isActive: {
           type: Boolean,
           default: true,
