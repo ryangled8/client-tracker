@@ -13,8 +13,9 @@ export interface IClient extends Document {
   assignedCoach: ObjectId
 
   // Training Information
-  selectedPlan: string // planName from team's plans array //**RG This may need to be optional if we upload via a CSV that doesn't have this data.
+  selectedPlan: string // planName from team's plans array
   startDate: Date
+  membershipType?: string // Added membership type field
 
   // Physical Measurements
   currentWeight?: number
@@ -103,6 +104,10 @@ const clientSchema = new Schema<IClient>(
       type: Date,
       required: true,
       default: Date.now,
+    },
+    membershipType: {
+      type: String,
+      trim: true,
     },
 
     // Physical Measurements

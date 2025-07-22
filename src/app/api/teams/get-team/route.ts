@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import Team from "@/models/Team"
 import User from "@/models/User"
-import Clients from "@/models/Clients"
+import Client from "@/models/Client"
 import connectMongoDB from "@/lib/mongodb"
 
 export async function GET(req: Request) {
@@ -26,7 +26,7 @@ export async function GET(req: Request) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const _userModel = User
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _clientModel = Clients
+    const _clientModel = Client
 
     const team = await Team.findById(teamId)
       .populate("owner", "name email")
