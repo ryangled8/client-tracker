@@ -44,6 +44,7 @@ export function CoachList({
               {coach._id === ownerId && (
                 <Badge variant="secondary">Owner</Badge>
               )}
+              {coach._id !== ownerId && <Badge variant="outline">Coach</Badge>}
             </div>
           ))}
         </div>
