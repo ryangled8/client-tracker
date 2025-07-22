@@ -19,9 +19,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { Settings } from "lucide-react";
+import { Settings, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface TeamSettings {
   clientFormFields: {
@@ -90,8 +102,11 @@ export function TeamSettingsModal({
   team,
   onSettingsUpdated,
 }: TeamSettingsModalProps) {
+  const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [teamName, setTeamName] = useState(team.name);
   const [settings, setSettings] = useState<TeamSettings>(team.settings);
 
@@ -159,9 +174,37 @@ export function TeamSettingsModal({
     setSaving(false);
   };
 
+  const deleteTeam = async () => {
+    if (deleteConfirmation !== team.name) {
+      toast.error("Team name confirmation doesn't match");
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      const response = await fetch(`/api/teams/delete-team?id=${team._id}`, {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Team deleted successfully");
+        router.push("/teams");
+      } else {
+        toast.error(data.error || "Failed to delete team");
+      }
+    } catch (error) {
+      console.error("Error deleting team:", error);
+      toast.error("Failed to delete team");
+    }
+    setDeleting(false);
+  };
+
   const resetForm = () => {
     setTeamName(team.name);
     setSettings(team.settings);
+    setDeleteConfirmation("");
   };
 
   return (
@@ -294,6 +337,90 @@ export function TeamSettingsModal({
                     <SelectItem value="mm/dd/yyyy">MM/DD/YYYY</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Danger Zone */}
+          <div>
+            <h3 className="text-lg font-medium mb-2 text-red-600">
+              Danger Zone
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Permanently delete this team and all associated data. This action
+              cannot be undone.
+            </p>
+            <div className="border border-red-200 rounded-lg p-4 bg-red-50">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium text-red-900">Delete Team</h4>
+                  <p className="text-sm text-red-700">
+                    This will permanently delete the team, all clients, and
+                    associated data.
+                  </p>
+                </div>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Team
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Are you absolutely sure?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription className="space-y-2">
+                        <span>
+                          This action cannot be undone. This will permanently
+                          delete the team <strong>{team.name}</strong> and
+                          remove all associated data including:
+                        </span>
+                        <ul className="list-disc list-inside text-sm space-y-1 mt-2">
+                          <li>All team clients and their progress data</li>
+                          <li>All training plans</li>
+                          <li>All team invitations</li>
+                          <li>All team settings</li>
+                        </ul>
+                        <div className="mt-4">
+                          <Label
+                            htmlFor="deleteConfirmation"
+                            className="text-sm font-medium"
+                          >
+                            Type the team name<strong>{team.name}</strong>to
+                            confirm:
+                          </Label>
+                          <Input
+                            id="deleteConfirmation"
+                            value={deleteConfirmation}
+                            onChange={(e) =>
+                              setDeleteConfirmation(e.target.value)
+                            }
+                            placeholder={team.name}
+                            className="mt-2"
+                          />
+                        </div>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel
+                        onClick={() => setDeleteConfirmation("")}
+                      >
+                        Cancel
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={deleteTeam}
+                        disabled={deleteConfirmation !== team.name || deleting}
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        {deleting ? "Deleting..." : "Delete Team"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
           </div>
