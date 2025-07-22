@@ -14,11 +14,15 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex justify-between items-center mb-6">
             <div>
+              <pre className="bg-green-100 border border-green-700 text-green-700 rounded-sm px-2.5 text-sm py-1.5 mb-4">
+                Protected route - <b>app.domain.com</b>
+              </pre>
+
               <h1 className="text-2xl font-bold text-gray-900">
                 Welcome, {session.user.name}!
               </h1>
@@ -49,6 +53,6 @@ export default async function HomePage() {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
