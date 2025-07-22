@@ -46,6 +46,34 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 })
     }
 
+    // If the team doesn't have settings yet, add default settings
+    if (!team.settings) {
+      team.settings = {
+        clientFormFields: {
+          name: true,
+          email: true,
+          phone: true,
+          age: false,
+          gender: false,
+          assignedCoach: true,
+          trainingPlan: true,
+          renewalCallDate: true,
+          progressCallDate: true,
+          planUpdateDate: true,
+          currentWeight: false,
+          targetWeight: false,
+          height: false,
+          status: true,
+          membershipType: false,
+          startDate: true,
+          notes: false,
+        },
+        noticePeriodWeeks: 2,
+        dateFormat: "dd/mm/yyyy",
+      }
+      await team.save()
+    }
+
     return NextResponse.json({ team }, { status: 200 })
   } catch (error) {
     console.error("Get team error:", error)

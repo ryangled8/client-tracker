@@ -14,6 +14,29 @@ export interface ITeam extends Document {
     isActive: boolean // whether this plan is currently available for assignment
     createdAt: Date
   }[]
+  settings: {
+    clientFormFields: {
+      name: boolean // always true, can't be disabled
+      email: boolean
+      phone: boolean
+      age: boolean
+      gender: boolean
+      assignedCoach: boolean // always true, can't be disabled
+      trainingPlan: boolean // always true, can't be disabled
+      renewalCallDate: boolean
+      progressCallDate: boolean
+      planUpdateDate: boolean
+      currentWeight: boolean
+      targetWeight: boolean
+      height: boolean
+      status: boolean
+      membershipType: boolean
+      startDate: boolean
+      notes: boolean
+    }
+    noticePeriodWeeks: number // weeks to highlight upcoming dates
+    dateFormat: "dd/mm/yyyy" | "mm/dd/yyyy"
+  }
   createdAt: Date
   updatedAt: Date
 }
@@ -81,6 +104,29 @@ const teamSchema = new Schema<ITeam>(
         },
       },
     ],
+    settings: {
+      clientFormFields: {
+        name: { type: Boolean, default: true }, // always true
+        email: { type: Boolean, default: true },
+        phone: { type: Boolean, default: true },
+        age: { type: Boolean, default: false },
+        gender: { type: Boolean, default: false },
+        assignedCoach: { type: Boolean, default: true }, // always true
+        trainingPlan: { type: Boolean, default: true }, // always true
+        renewalCallDate: { type: Boolean, default: true },
+        progressCallDate: { type: Boolean, default: true },
+        planUpdateDate: { type: Boolean, default: true },
+        currentWeight: { type: Boolean, default: false },
+        targetWeight: { type: Boolean, default: false },
+        height: { type: Boolean, default: false },
+        status: { type: Boolean, default: true },
+        membershipType: { type: Boolean, default: false },
+        startDate: { type: Boolean, default: true },
+        notes: { type: Boolean, default: false },
+      },
+      noticePeriodWeeks: { type: Number, default: 2, min: 1, max: 12 },
+      dateFormat: { type: String, enum: ["dd/mm/yyyy", "mm/dd/yyyy"], default: "dd/mm/yyyy" },
+    },
   },
   {
     timestamps: true,

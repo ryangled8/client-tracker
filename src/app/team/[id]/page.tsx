@@ -8,8 +8,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { TeamActions } from "@/components/team-detail/team-actions";
 import { TeamClientsList } from "@/components/team-detail/team-clients-list";
 import { toast } from "sonner";
-import { ArrowLeft, Settings, Plus } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
 import Link from "next/link";
+import { TeamSettingsModal } from "@/components/team-detail/team-settings-modal";
+import type { TeamSettings } from "@/types";
 
 interface Team {
   _id: string;
@@ -40,6 +42,7 @@ interface Team {
     status: string;
   }>;
   createdAt: string;
+  settings: TeamSettings;
 }
 
 export default function TeamPage() {
@@ -60,6 +63,32 @@ export default function TeamPage() {
       const response = await fetch(`/api/teams/get-team?id=${teamId}`);
       const data = await response.json();
       if (response.ok) {
+        // If the team doesn't have settings yet, add default settings
+        if (!data.team.settings) {
+          data.team.settings = {
+            clientFormFields: {
+              name: true,
+              email: true,
+              phone: true,
+              age: false,
+              gender: false,
+              assignedCoach: true,
+              trainingPlan: true,
+              renewalCallDate: true,
+              progressCallDate: true,
+              planUpdateDate: true,
+              currentWeight: false,
+              targetWeight: false,
+              height: false,
+              status: true,
+              membershipType: false,
+              startDate: true,
+              notes: false,
+            },
+            noticePeriodWeeks: 2,
+            dateFormat: "dd/mm/yyyy",
+          };
+        }
         setTeam(data.team);
       } else {
         toast.error(data.error || "Failed to fetch team");
@@ -132,10 +161,12 @@ export default function TeamPage() {
           </div>
         </div>
         <div className="flex space-x-2">
-          <Button variant="outline">
-            <Settings className="h-4 w-4 mr-2" />
-            Settings
-          </Button>
+          {team.owner._id === session?.user?.id && (
+            <TeamSettingsModal
+              team={team}
+              onSettingsUpdated={() => fetchTeam(team._id)}
+            />
+          )}
           <Button onClick={handleAddClient}>
             <Plus className="h-4 w-4 mr-2" />
             Add Client

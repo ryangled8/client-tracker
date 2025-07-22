@@ -40,3 +40,28 @@ export interface InviteTeamMemberData {
   email: string
   message?: string
 }
+
+// Team settings interface
+export interface TeamSettings {
+  clientFormFields: {
+    name: boolean
+    email: boolean
+    phone: boolean
+    age: boolean
+    gender: boolean
+    assignedCoach: boolean
+    trainingPlan: boolean
+    renewalCallDate: boolean
+    progressCallDate: boolean
+    planUpdateDate: boolean
+    currentWeight: boolean
+    targetWeight: boolean
+    height: boolean
+    status: boolean
+    membershipType: boolean
+    startDate: boolean
+    notes: boolean
+  }
+  noticePeriodWeeks: number
+  dateFormat: "dd/mm/yyyy" | "mm/dd/yyyy"
+}
