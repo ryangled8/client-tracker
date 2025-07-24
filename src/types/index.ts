@@ -5,7 +5,7 @@ export type { ITeamInvite } from "../models/TeamInvite"
 export type { IClient } from "../models/Client"
 
 // Status types
-export type ClientStatus = "active" | "inactive" | "paused" | "completed"
+export type ClientStatus = "active" | "inactive" | "paused"
 export type InviteStatus = "pending" | "accepted" | "declined" | "expired"
 export type Gender = "male" | "female" | "other" | "prefer-not-to-say"
 

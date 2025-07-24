@@ -1,5 +1,7 @@
 "use client";
 
+import React from "react";
+
 import { useState, useEffect } from "react";
 import {
   Table,
@@ -34,6 +36,8 @@ import {
   Edit,
   Trash2,
   AlertCircle,
+  ChevronRight,
+  ChevronDown,
 } from "lucide-react";
 import type { TeamSettings } from "@/types";
 import {
@@ -89,7 +93,7 @@ interface Client {
   currentWeight?: number;
   targetWeight?: number;
   height?: number;
-  status: "active" | "inactive" | "paused" | "completed";
+  status: "active" | "inactive" | "paused";
   membershipType?: string;
   notes?: string;
   customRenewalCallDate?: string;
@@ -119,6 +123,7 @@ export function ClientsTable({
   const [coachFilter, setCoachFilter] = useState<string>("all");
   const [packageFilter, setPackageFilter] = useState<string>("all");
   const [filteredClients, setFilteredClients] = useState<Client[]>(clients);
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
   // Apply filters when any filter changes
   useEffect(() => {
@@ -179,6 +184,8 @@ export function ClientsTable({
       progressCallDate: dates.nextProgressCallDate,
       planUpdateDate: dates.nextPlanUpdateDate,
       packageEndDate: dates.packageEndDate,
+      allProgressCallDates: dates.allProgressCallDates,
+      allPlanUpdateDates: dates.allPlanUpdateDates,
     };
   };
 
@@ -198,9 +205,142 @@ export function ClientsTable({
   };
 
   const getDateClassName = (date: Date) => {
-    if (isDateOverdue(date)) return "text-red-600 font-medium";
-    if (isDateSoon(date)) return "text-amber-600 font-medium";
+    if (isDateOverdue(date)) return "text-red-600 font-bold";
+    if (isDateSoon(date)) return "text-amber-600 font-bold";
     return "text-gray-700";
+  };
+
+  const toggleRowExpansion = (clientId: string) => {
+    const newExpanded = new Set(expandedRows);
+    if (newExpanded.has(clientId)) {
+      newExpanded.delete(clientId);
+    } else {
+      newExpanded.add(clientId);
+    }
+    setExpandedRows(newExpanded);
+  };
+
+  const renderExpandedContent = (client: Client) => {
+    const dates = calculateDates(client);
+    const pkg = packages.find((p) => p.packageName === client.selectedPackage);
+    if (!dates || !pkg) return null;
+
+    const now = new Date();
+
+    // Separate past and future dates for progress calls
+    const pastProgressCalls = dates.allProgressCallDates.filter((date) =>
+      isBefore(date, now)
+    );
+    const futureProgressCalls = dates.allProgressCallDates.filter((date) =>
+      isAfter(date, now)
+    );
+
+    // Separate past and future dates for plan updates
+    const pastPlanUpdates = dates.allPlanUpdateDates.filter((date) =>
+      isBefore(date, now)
+    );
+    const futurePlanUpdates = dates.allPlanUpdateDates.filter((date) =>
+      isAfter(date, now)
+    );
+
+    return (
+      <div className="p-2">
+        <p className="mb-2.5 text-xs">
+          Expanded for: <span className="font-bold">{client.name}</span>
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Progress Calls */}
+          <div>
+            <h4 className="font-medium text-xs mb-0.5 text-gray-900">
+              Progress Calls
+            </h4>
+            <div className="space-y-0.5">
+              {pastProgressCalls.map((date, index) => (
+                <div
+                  key={`past-progress-${index}`}
+                  className="text-xs text-gray-500"
+                >
+                  {formatDateDisplay(date)} (completed)
+                </div>
+              ))}
+              {futureProgressCalls.map((date, index) => (
+                <div
+                  key={`future-progress-${index}`}
+                  className={`text-xs ${
+                    index === 0 ? "text-green-600 font-bold" : "text-gray-500"
+                  }`}
+                >
+                  {formatDateDisplay(date)}{" "}
+                  {index === 0 ? "(next)" : "(upcoming)"}
+                </div>
+              ))}
+              {dates.allProgressCallDates.length === 0 && (
+                <div className="text-sm text-gray-400">
+                  No progress calls scheduled
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Plan Updates */}
+          <div>
+            <h4 className="font-medium text-xs mb-0.5 text-gray-900">
+              Plan Updates
+            </h4>
+            <div className="space-y-0.5">
+              {pastPlanUpdates.map((date, index) => (
+                <div
+                  key={`past-update-${index}`}
+                  className="text-xs text-gray-500"
+                >
+                  {formatDateDisplay(date)} (completed)
+                </div>
+              ))}
+              {futurePlanUpdates.map((date, index) => (
+                <div
+                  key={`future-update-${index}`}
+                  className={`text-xs ${
+                    index === 0 ? "text-green-600 font-bold" : "text-gray-500"
+                  }`}
+                >
+                  {formatDateDisplay(date)}{" "}
+                  {index === 0 ? "(next)" : "(upcoming)"}
+                </div>
+              ))}
+              {dates.allPlanUpdateDates.length === 0 && (
+                <div className="text-sm text-gray-400">
+                  No plan updates scheduled
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Renewal Call */}
+          <div>
+            <h4 className="font-medium text-xs mb-0.5 text-gray-900 flex gap-1.5 items-center">
+              Renewal Call
+              <div className="text-gray-500 text-xs">
+                ({pkg.renewalCallWeeksBeforeEnd} weeks before package end)
+              </div>
+            </h4>
+            <div className="space-y-0.5">
+              <div
+                className={`text-xs text-gray-700 flex items-center gap-1 ${
+                  isDateOverdue(dates.renewalCallDate) &&
+                  "text-red-600 font-bold"
+                }`}
+              >
+                {formatDateDisplay(dates.renewalCallDate)}
+                {isDateOverdue(dates.renewalCallDate) && (
+                  <AlertCircle className="inline-block ml-1 h-3 w-3" />
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const handleStatusChange = async (clientId: string, newStatus: string) => {
@@ -292,7 +432,6 @@ export function ClientsTable({
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="inactive">Inactive</SelectItem>
               <SelectItem value="paused">Paused</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
             </SelectContent>
           </Select>
 
@@ -336,49 +475,74 @@ export function ClientsTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Client</TableHead>
-              <TableHead>Coach</TableHead>
+              <TableHead className="w-[40px]"></TableHead>
+              <TableHead className="border-l w-[180px]">Client</TableHead>
+              <TableHead className="border-l w-[150px]">Coach</TableHead>
               {settings.clientFormFields.startDate && (
-                <TableHead>Start Date</TableHead>
+                <TableHead className="border-l w-[200px]">Start Date</TableHead>
               )}
-              <TableHead>Training Package</TableHead>
-              <TableHead>Package End Date</TableHead>
+              <TableHead className="border-l w-[200px]">
+                Training Package
+              </TableHead>
+              <TableHead className="border-l w-[200px]">
+                Package End Date
+              </TableHead>
               {settings.clientFormFields.progressCallDate && (
-                <TableHead>Next Progress Call</TableHead>
+                <TableHead className="border-l w-[200px]">
+                  Next Progress Call
+                </TableHead>
               )}
               {settings.clientFormFields.planUpdateDate && (
-                <TableHead>Next Plan Update</TableHead>
+                <TableHead className="border-l w-[200px]">
+                  Next Plan Update
+                </TableHead>
               )}
               {settings.clientFormFields.renewalCallDate && (
-                <TableHead>Renewal Call</TableHead>
+                <TableHead className="border-l w-[200px]">
+                  Renewal Call
+                </TableHead>
               )}
               {settings.clientFormFields.status && (
-                <TableHead>Status</TableHead>
+                <TableHead className="border-l w-[100px]">Status</TableHead>
               )}
 
-              {/* Additional fields from settings (before notes) */}
-              {settings.clientFormFields.email && <TableHead>Email</TableHead>}
-              {settings.clientFormFields.phone && <TableHead>Phone</TableHead>}
-              {settings.clientFormFields.age && <TableHead>Age</TableHead>}
+              {/* Additional fields from settings */}
+              {settings.clientFormFields.email && (
+                <TableHead className="border-l w-[250px]">Email</TableHead>
+              )}
+              {settings.clientFormFields.phone && (
+                <TableHead className="border-l w-[140px]">Phone</TableHead>
+              )}
+              {settings.clientFormFields.age && (
+                <TableHead className="border-l w-[80px]">Age</TableHead>
+              )}
               {settings.clientFormFields.gender && (
-                <TableHead>Gender</TableHead>
+                <TableHead className="border-l w-[100px]">Gender</TableHead>
               )}
               {settings.clientFormFields.currentWeight && (
-                <TableHead>Current Weight</TableHead>
+                <TableHead className="border-l w-[120px]">
+                  Current Weight
+                </TableHead>
               )}
               {settings.clientFormFields.targetWeight && (
-                <TableHead>Target Weight</TableHead>
+                <TableHead className="border-l w-[120px]">
+                  Target Weight
+                </TableHead>
               )}
               {settings.clientFormFields.height && (
-                <TableHead>Height</TableHead>
+                <TableHead className="border-l w-[100px]">Height</TableHead>
               )}
               {settings.clientFormFields.membershipType && (
-                <TableHead>Membership Type</TableHead>
+                <TableHead className="border-l w-[150px]">
+                  Membership Type
+                </TableHead>
               )}
 
               {/* Notes always comes last before actions */}
-              {settings.clientFormFields.notes && <TableHead>Notes</TableHead>}
-              <TableHead className="w-[80px]">
+              {settings.clientFormFields.notes && (
+                <TableHead className="border-l w-[300px]">Notes</TableHead>
+              )}
+              <TableHead className="border-l w-[80px]">
                 <div className="flex items-center justify-between">
                   <span>Actions</span>
                   <Button
@@ -410,7 +574,7 @@ export function ClientsTable({
               <TableRow>
                 {(() => {
                   // Count all visible columns
-                  let columnCount = 4; // Client, Coach, Training Package, Package End Date (always visible)
+                  let columnCount = 5; // Expand, Client, Coach, Training Package, Package End Date (always visible)
                   if (settings.clientFormFields.startDate) columnCount++;
                   if (settings.clientFormFields.progressCallDate) columnCount++;
                   if (settings.clientFormFields.planUpdateDate) columnCount++;
@@ -438,237 +602,285 @@ export function ClientsTable({
                 })()}
               </TableRow>
             ) : (
-              filteredClients.map((client) => {
-                const dates = calculateDates(client);
-                const pkg = packages.find(
-                  (p) => p.packageName === client.selectedPackage
-                );
+              <>
+                {filteredClients.map((client, index) => {
+                  const dates = calculateDates(client);
+                  const pkg = packages.find(
+                    (p) => p.packageName === client.selectedPackage
+                  );
+                  const isExpanded = expandedRows.has(client._id);
+                  const isEvenRow = index % 2 === 0;
 
-                return (
-                  <TableRow key={client._id}>
-                    <TableCell>
-                      <div className="font-medium">{client.name}</div>
-                    </TableCell>
-
-                    <TableCell>
-                      {client.assignedCoach && client.assignedCoach.name
-                        ? client.assignedCoach.name
-                        : "Unassigned"}
-                    </TableCell>
-
-                    {settings.clientFormFields.startDate && (
-                      <TableCell>
-                        {formatDateDisplay(new Date(client.startDate))}
-                      </TableCell>
-                    )}
-
-                    <TableCell>
-                      <Badge
-                        style={{
-                          backgroundColor: pkg?.packageColor || "#3b82f6",
-                          color: "white",
-                          border: "none",
-                        }}
+                  return (
+                    <React.Fragment key={client._id}>
+                      <TableRow
+                        className={isEvenRow ? "bg-white" : "bg-gray-50"}
                       >
-                        {client.selectedPackage}
-                      </Badge>
-                    </TableCell>
-
-                    <TableCell>
-                      {dates && (
-                        <div className="text-gray-700">
-                          {formatDateDisplay(dates.packageEndDate)}
-                        </div>
-                      )}
-                    </TableCell>
-
-                    {settings.clientFormFields.progressCallDate && (
-                      <TableCell>
-                        {dates && dates.progressCallDate && (
-                          <div
-                            className={getDateClassName(dates.progressCallDate)}
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0"
+                            onClick={() => toggleRowExpansion(client._id)}
                           >
-                            {formatDateDisplay(dates.progressCallDate)}
-                            {isDateOverdue(dates.progressCallDate) && (
-                              <AlertCircle className="inline-block ml-1 h-3 w-3" />
+                            {isExpanded ? (
+                              <ChevronDown className="h-4 w-4" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4" />
                             )}
-                          </div>
-                        )}
-                        {dates && !dates.progressCallDate && (
-                          <span className="text-gray-400">
-                            No upcoming calls
-                          </span>
-                        )}
-                      </TableCell>
-                    )}
-
-                    {settings.clientFormFields.planUpdateDate && (
-                      <TableCell>
-                        {dates && dates.planUpdateDate && (
-                          <div
-                            className={getDateClassName(dates.planUpdateDate)}
-                          >
-                            {formatDateDisplay(dates.planUpdateDate)}
-                            {isDateOverdue(dates.planUpdateDate) && (
-                              <AlertCircle className="inline-block ml-1 h-3 w-3" />
-                            )}
-                          </div>
-                        )}
-                        {dates && !dates.planUpdateDate && (
-                          <span className="text-gray-400">
-                            No upcoming updates
-                          </span>
-                        )}
-                      </TableCell>
-                    )}
-
-                    {settings.clientFormFields.renewalCallDate && (
-                      <TableCell>
-                        {dates && (
-                          <div
-                            className={getDateClassName(dates.renewalCallDate)}
-                          >
-                            {formatDateDisplay(dates.renewalCallDate)}
-                            {isDateOverdue(dates.renewalCallDate) && (
-                              <AlertCircle className="inline-block ml-1 h-3 w-3" />
-                            )}
-                          </div>
-                        )}
-                      </TableCell>
-                    )}
-
-                    {settings.clientFormFields.status && (
-                      <TableCell>
-                        <Badge
-                          variant={
-                            client.status === "active"
-                              ? "default"
-                              : client.status === "paused"
-                              ? "outline"
-                              : client.status === "completed"
-                              ? "secondary"
-                              : "destructive"
-                          }
-                        >
-                          {client.status}
-                        </Badge>
-                      </TableCell>
-                    )}
-
-                    {/* Additional fields from settings */}
-                    {settings.clientFormFields.email && (
-                      <TableCell>{client.email || "-"}</TableCell>
-                    )}
-                    {settings.clientFormFields.phone && (
-                      <TableCell>{client.phone || "-"}</TableCell>
-                    )}
-                    {settings.clientFormFields.age && (
-                      <TableCell>{client.age || "-"}</TableCell>
-                    )}
-                    {settings.clientFormFields.gender && (
-                      <TableCell>{client.gender || "-"}</TableCell>
-                    )}
-                    {settings.clientFormFields.currentWeight && (
-                      <TableCell>
-                        {client.currentWeight
-                          ? `${client.currentWeight} kg`
-                          : "-"}
-                      </TableCell>
-                    )}
-                    {settings.clientFormFields.targetWeight && (
-                      <TableCell>
-                        {client.targetWeight
-                          ? `${client.targetWeight} kg`
-                          : "-"}
-                      </TableCell>
-                    )}
-                    {settings.clientFormFields.height && (
-                      <TableCell>
-                        {client.height ? `${client.height} cm` : "-"}
-                      </TableCell>
-                    )}
-                    {settings.clientFormFields.membershipType && (
-                      <TableCell>{client.membershipType || "-"}</TableCell>
-                    )}
-
-                    {/* Notes always comes last before actions */}
-                    {settings.clientFormFields.notes && (
-                      <TableCell>
-                        {client.notes ? (
-                          <div
-                            className="max-w-[200px] truncate"
-                            title={client.notes}
-                          >
-                            {client.notes}
-                          </div>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
-                      </TableCell>
-                    )}
-
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
                           </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem
-                            onClick={() => handleEditClient(client._id)}
+                        </TableCell>
+
+                        <TableCell className="border-l">
+                          <div className="font-bold">{client.name}</div>
+                        </TableCell>
+
+                        <TableCell className="border-l">
+                          {client.assignedCoach && client.assignedCoach.name
+                            ? client.assignedCoach.name
+                            : "Unassigned"}
+                        </TableCell>
+
+                        {settings.clientFormFields.startDate && (
+                          <TableCell className="border-l">
+                            {formatDateDisplay(new Date(client.startDate))}
+                          </TableCell>
+                        )}
+
+                        <TableCell className="border-l">
+                          <Badge
+                            className="rounded-full"
+                            style={{
+                              backgroundColor: pkg?.packageColor || "#3b82f6",
+                              color: "white",
+                              border: "none",
+                            }}
                           >
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit Client
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuLabel>Change Status</DropdownMenuLabel>
-                          <DropdownMenuItem
-                            onClick={() =>
-                              handleStatusChange(client._id, "active")
-                            }
-                          >
-                            Set as Active
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() =>
-                              handleStatusChange(client._id, "paused")
-                            }
-                          >
-                            Set as Paused
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() =>
-                              handleStatusChange(client._id, "completed")
-                            }
-                          >
-                            Set as Completed
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() =>
-                              handleStatusChange(client._id, "inactive")
-                            }
-                          >
-                            Set as Inactive
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() =>
-                              handleDeleteClient(client._id, client.name)
-                            }
-                            className="text-red-600 focus:text-red-600"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete Client
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
+                            {client.selectedPackage}
+                          </Badge>
+                        </TableCell>
+
+                        <TableCell className="border-l">
+                          {dates && (
+                            <div className="text-gray-700">
+                              {formatDateDisplay(dates.packageEndDate)}
+                            </div>
+                          )}
+                        </TableCell>
+
+                        {settings.clientFormFields.progressCallDate && (
+                          <TableCell className="border-l">
+                            {dates && dates.progressCallDate && (
+                              <div
+                                className={getDateClassName(
+                                  dates.progressCallDate
+                                )}
+                              >
+                                {formatDateDisplay(dates.progressCallDate)}
+                                {isDateOverdue(dates.progressCallDate) && (
+                                  <AlertCircle className="inline-block ml-1 h-3 w-3" />
+                                )}
+                              </div>
+                            )}
+                            {dates && !dates.progressCallDate && (
+                              <span className="text-gray-400">
+                                No upcoming calls
+                              </span>
+                            )}
+                          </TableCell>
+                        )}
+
+                        {settings.clientFormFields.planUpdateDate && (
+                          <TableCell className="border-l">
+                            {dates && dates.planUpdateDate && (
+                              <div
+                                className={getDateClassName(
+                                  dates.planUpdateDate
+                                )}
+                              >
+                                {formatDateDisplay(dates.planUpdateDate)}
+                                {isDateOverdue(dates.planUpdateDate) && (
+                                  <AlertCircle className="inline-block ml-1 h-3 w-3" />
+                                )}
+                              </div>
+                            )}
+                            {dates && !dates.planUpdateDate && (
+                              <span className="text-gray-400">
+                                No upcoming updates
+                              </span>
+                            )}
+                          </TableCell>
+                        )}
+
+                        {settings.clientFormFields.renewalCallDate && (
+                          <TableCell className="border-l">
+                            {dates && (
+                              <div
+                                className={getDateClassName(
+                                  dates.renewalCallDate
+                                )}
+                              >
+                                {formatDateDisplay(dates.renewalCallDate)}
+                                {isDateOverdue(dates.renewalCallDate) && (
+                                  <AlertCircle className="inline-block ml-1 h-3 w-3" />
+                                )}
+                              </div>
+                            )}
+                          </TableCell>
+                        )}
+
+                        {settings.clientFormFields.status && (
+                          <TableCell className="border-l">
+                            <Badge
+                              className="rounded-full capitalize"
+                              style={{
+                                backgroundColor:
+                                  client.status === "active"
+                                    ? "#22c55e"
+                                    : client.status === "paused"
+                                    ? "#f97316"
+                                    : "#ec4899",
+                                color: "white",
+                                border: "none",
+                              }}
+                            >
+                              {client.status}
+                            </Badge>
+                          </TableCell>
+                        )}
+
+                        {/* Additional fields from settings */}
+                        {settings.clientFormFields.email && (
+                          <TableCell className="border-l">
+                            {client.email || "-"}
+                          </TableCell>
+                        )}
+                        {settings.clientFormFields.phone && (
+                          <TableCell className="border-l">
+                            {client.phone || "-"}
+                          </TableCell>
+                        )}
+                        {settings.clientFormFields.age && (
+                          <TableCell className="border-l">
+                            {client.age || "-"}
+                          </TableCell>
+                        )}
+                        {settings.clientFormFields.gender && (
+                          <TableCell className="border-l">
+                            {client.gender || "-"}
+                          </TableCell>
+                        )}
+                        {settings.clientFormFields.currentWeight && (
+                          <TableCell className="border-l">
+                            {client.currentWeight
+                              ? `${client.currentWeight} kg`
+                              : "-"}
+                          </TableCell>
+                        )}
+                        {settings.clientFormFields.targetWeight && (
+                          <TableCell className="border-l">
+                            {client.targetWeight
+                              ? `${client.targetWeight} kg`
+                              : "-"}
+                          </TableCell>
+                        )}
+                        {settings.clientFormFields.height && (
+                          <TableCell className="border-l">
+                            {client.height ? `${client.height} cm` : "-"}
+                          </TableCell>
+                        )}
+                        {settings.clientFormFields.membershipType && (
+                          <TableCell className="border-l">
+                            {client.membershipType || "-"}
+                          </TableCell>
+                        )}
+
+                        {/* Notes always comes last before actions */}
+                        {settings.clientFormFields.notes && (
+                          <TableCell className="border-l">
+                            {client.notes ? (
+                              <div
+                                className="max-w-[280px] truncate"
+                                title={client.notes}
+                              >
+                                {client.notes}
+                              </div>
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
+                          </TableCell>
+                        )}
+
+                        <TableCell className="border-l">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0">
+                                <span className="sr-only">Open menu</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuItem
+                                onClick={() => handleEditClient(client._id)}
+                              >
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit Client
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuLabel>
+                                Change Status
+                              </DropdownMenuLabel>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleStatusChange(client._id, "active")
+                                }
+                              >
+                                Set as Active
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleStatusChange(client._id, "paused")
+                                }
+                              >
+                                Set as Paused
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleStatusChange(client._id, "inactive")
+                                }
+                              >
+                                Set as Inactive
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleDeleteClient(client._id, client.name)
+                                }
+                                className="text-red-600 focus:text-red-600"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete Client
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+
+                      {/* Expanded content */}
+                      {isExpanded && (
+                        <TableRow
+                          className={isEvenRow ? "bg-white" : "bg-gray-50"}
+                        >
+                          <TableCell colSpan={100}>
+                            {renderExpandedContent(client)}
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </>
             )}
           </TableBody>
         </Table>

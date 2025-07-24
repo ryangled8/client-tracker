@@ -120,7 +120,8 @@ export function AddClientModal({
       return false;
     }
 
-    if (settings.clientFormFields.email && formData.email) {
+    // Only validate email format if it has a value (it's optional)
+    if (formData.email && formData.email.trim()) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.email)) {
         toast.error("Please enter a valid email address");
@@ -128,7 +129,8 @@ export function AddClientModal({
       }
     }
 
-    if (settings.clientFormFields.age && formData.age) {
+    // Only validate age if it has a value (it's optional)
+    if (formData.age && formData.age.trim()) {
       const age = Number.parseInt(formData.age);
       if (isNaN(age) || age < 1 || age > 120) {
         toast.error("Age must be between 1 and 120");
@@ -144,7 +146,7 @@ export function AddClientModal({
 
     setSaving(true);
     try {
-      // Clean up the data - only include fields that have values
+      // Build client data - only include fields that have values
       const clientData: any = {
         name: formData.name.trim(),
         team: teamId,
@@ -154,7 +156,9 @@ export function AddClientModal({
         status: formData.status,
       };
 
-      // Only add optional fields if they have values
+      console.log("cd: ", clientData);
+
+      // Only add optional fields if they have values - same as other optional fields
       if (formData.email && formData.email.trim()) {
         clientData.email = formData.email.trim();
       }
@@ -234,7 +238,7 @@ export function AddClientModal({
               />
             </div>
 
-            {/* Email */}
+            {/* Email - Optional */}
             {settings.clientFormFields.email && (
               <div>
                 <Label htmlFor="email">Email</Label>
@@ -354,24 +358,24 @@ export function AddClientModal({
               </Select>
             </div>
 
-            {/* Start Date */}
-            {settings.clientFormFields.startDate && (
-              <div>
-                <Label htmlFor="startDate">Start Date</Label>
-                <Input
-                  id="startDate"
-                  type="date"
-                  value={
-                    formData.startDate instanceof Date
-                      ? formData.startDate.toISOString().split("T")[0]
-                      : formData.startDate
-                  }
-                  onChange={(e) =>
-                    handleInputChange("startDate", new Date(e.target.value))
-                  }
-                />
-              </div>
-            )}
+            {/* Start Date - Always required */}
+            <div>
+              <Label htmlFor="startDate" className="font-medium">
+                Start Date *
+              </Label>
+              <Input
+                id="startDate"
+                type="date"
+                value={
+                  formData.startDate instanceof Date
+                    ? formData.startDate.toISOString().split("T")[0]
+                    : formData.startDate
+                }
+                onChange={(e) =>
+                  handleInputChange("startDate", new Date(e.target.value))
+                }
+              />
+            </div>
 
             {/* Current Weight */}
             {settings.clientFormFields.currentWeight && (
@@ -440,7 +444,6 @@ export function AddClientModal({
                     <SelectItem value="active">Active</SelectItem>
                     <SelectItem value="inactive">Inactive</SelectItem>
                     <SelectItem value="paused">Paused</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

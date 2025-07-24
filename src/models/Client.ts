@@ -23,7 +23,7 @@ export interface IClient extends Document {
   height?: number // in cm
 
   // Status
-  status: "active" | "inactive" | "paused" | "completed"
+  status: "active" | "inactive" | "paused"
 
   // Manual override dates (optional - for custom scheduling)
   customRenewalCallDate?: Date
@@ -66,7 +66,8 @@ const clientSchema = new Schema<IClient>(
       type: String,
       lowercase: true,
       trim: true,
-      sparse: true, // Allows multiple null values but unique non-null values
+      required: false,
+      default: undefined,
     },
     phone: {
       type: String,
@@ -127,7 +128,7 @@ const clientSchema = new Schema<IClient>(
     // Status
     status: {
       type: String,
-      enum: ["active", "inactive", "paused", "completed"],
+      enum: ["active", "inactive", "paused"],
       default: "active",
     },
 
@@ -193,7 +194,7 @@ clientSchema.index({ selectedPackage: 1 })
 clientSchema.index({ team: 1, status: 1 })
 clientSchema.index({ assignedCoach: 1, status: 1 })
 
-// Compound index for unique email per team
+// Simple compound index for unique email per team - only when email exists
 clientSchema.index(
   { team: 1, email: 1 },
   {

@@ -39,13 +39,56 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Selected training package not found or inactive" }, { status: 400 })
     }
 
-    const client = new Client({
-      ...clientData,
-      createdBy: session.user.id,
+    // Build the client object with only the fields that have values
+    const clientToSave: any = {
+      name: name.trim(),
+      team: teamId,
+      assignedCoach,
+      selectedPackage,
       startDate: startDate || new Date(),
-    })
+      status: clientData.status || "active",
+      createdBy: session.user.id,
+    }
 
-    await client.save()
+    // Only add optional fields if they have actual values (not empty strings)
+    // IMPORTANT: Completely omit email field if not provided (don't set to null)
+    if (typeof clientData.email === "string" && clientData.email.trim()) {
+      clientToSave.email = clientData.email.trim()
+    } else {
+      delete clientToSave.email // <— this guarantees it's not passed as undefined/null
+    }
+
+    if (clientData.phone && clientData.phone.trim()) {
+      clientToSave.phone = clientData.phone.trim()
+    }
+    if (clientData.age && !isNaN(Number(clientData.age))) {
+      clientToSave.age = Number(clientData.age)
+    }
+    if (clientData.gender && clientData.gender.trim()) {
+      clientToSave.gender = clientData.gender
+    }
+    if (clientData.currentWeight && !isNaN(Number(clientData.currentWeight))) {
+      clientToSave.currentWeight = Number(clientData.currentWeight)
+    }
+    if (clientData.targetWeight && !isNaN(Number(clientData.targetWeight))) {
+      clientToSave.targetWeight = Number(clientData.targetWeight)
+    }
+    if (clientData.height && !isNaN(Number(clientData.height))) {
+      clientToSave.height = Number(clientData.height)
+    }
+    if (clientData.membershipType && clientData.membershipType.trim()) {
+      clientToSave.membershipType = clientData.membershipType.trim()
+    }
+    if (clientData.notes && clientData.notes.trim()) {
+      clientToSave.notes = clientData.notes.trim()
+    }
+
+    // const client = new Client(clientToSave)
+    // await client.save()
+
+    // return NextResponse.json({ client }, { status: 201 })
+
+    const client = await Client.create(clientToSave)
 
     return NextResponse.json({ client }, { status: 201 })
   } catch (error) {

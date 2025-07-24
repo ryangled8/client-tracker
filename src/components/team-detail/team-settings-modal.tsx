@@ -76,7 +76,7 @@ const fieldLabels = {
   phone: "Phone",
   age: "Age",
   gender: "Gender",
-  startDate: "Start Date",
+  startDate: "Start Date*",
   assignedCoach: "Assigned Coach*",
   trainingPackage: "Training Package*",
   renewalCallDate: "Next Renewal Call Date",
@@ -90,13 +90,31 @@ const fieldLabels = {
   notes: "Notes",
 };
 
-const fieldDescriptions = {
-  renewalCallDate: "Auto-calculated from training package",
-  progressCallDate: "Auto-calculated from training package",
-  planUpdateDate: "Auto-calculated from training package",
-};
+const requiredFields = [
+  "name",
+  "assignedCoach",
+  "trainingPackage",
+  "startDate",
+];
 
-const requiredFields = ["name", "assignedCoach", "trainingPackage"];
+const fieldDescriptions = {
+  name: "The name of the client",
+  email: "The email address of the client",
+  phone: "The phone number of the client",
+  age: "The age of the client",
+  gender: "The gender of the client",
+  assignedCoach: "The coach assigned to the client",
+  trainingPackage: "The training package selected for the client",
+  renewalCallDate: "The date for the next renewal call with the client",
+  progressCallDate: "The date for the next progress call with the client",
+  planUpdateDate: "The date for the next training plan update with the client",
+  currentWeight: "The current weight of the client",
+  targetWeight: "The target weight of the client",
+  height: "The height of the client",
+  membershipType: "The type of membership the client has",
+  status: "The status of the client",
+  notes: "Any additional notes about the client",
+};
 
 export function TeamSettingsModal({
   team,
@@ -357,8 +375,9 @@ export function TeamSettingsModal({
                 <div>
                   <h4 className="font-medium text-red-900">Delete Team</h4>
                   <p className="text-sm text-red-700">
-                    This will permanently delete the team, all clients, and
-                    associated data.
+                    This will permanently delete the team{" "}
+                    <strong>{team.name}</strong> and remove all associated data
+                    including:
                   </p>
                 </div>
                 <AlertDialog>

@@ -54,7 +54,7 @@ interface Team {
     currentWeight?: number;
     targetWeight?: number;
     height?: number;
-    status: "active" | "inactive" | "paused" | "completed";
+    status: "active" | "inactive" | "paused";
     membershipType?: string;
     notes?: string;
     customRenewalCallDate?: string;
