@@ -13,7 +13,7 @@ export interface IClient extends Document {
   assignedCoach: ObjectId
 
   // Training Information
-  selectedPlan: string // planName from team's plans array
+  selectedPackage: string // packageName from team's packages array
   startDate: Date
   membershipType?: string // Added membership type field
 
@@ -95,7 +95,7 @@ const clientSchema = new Schema<IClient>(
     },
 
     // Training Information
-    selectedPlan: {
+    selectedPackage: {
       type: String,
       required: true,
       trim: true,
@@ -189,7 +189,7 @@ clientSchema.index({ team: 1 })
 clientSchema.index({ assignedCoach: 1 })
 clientSchema.index({ status: 1 })
 clientSchema.index({ startDate: 1 })
-clientSchema.index({ selectedPlan: 1 })
+clientSchema.index({ selectedPackage: 1 })
 clientSchema.index({ team: 1, status: 1 })
 clientSchema.index({ assignedCoach: 1, status: 1 })
 

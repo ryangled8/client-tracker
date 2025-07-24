@@ -1,6 +1,6 @@
-// Frontend utility functions for workout plan date calculations
+// Frontend utility functions for date calculations
 export interface ClientDates {
-  planEndDate: Date
+  packageEndDate: Date
   progressCallDate: Date
   renewalCallDate: Date
   planUpdateDate: Date
@@ -8,8 +8,8 @@ export interface ClientDates {
 
 export function calculateClientDates(
   startDate: Date | string,
-  plan: {
-    planDuration: number
+  trainingPackage: {
+    packageDuration: number
     planProgressCall: number
     planRenewalCall: number
     planUpdateWeek: number
@@ -23,10 +23,10 @@ export function calculateClientDates(
   const start = new Date(startDate)
 
   return {
-    planEndDate: addWeeks(start, plan.planDuration),
-    progressCallDate: customDates?.customProgressCallDate || addWeeks(start, plan.planProgressCall),
-    renewalCallDate: customDates?.customRenewalCallDate || addWeeks(start, plan.planRenewalCall),
-    planUpdateDate: customDates?.customPlanUpdateDate || addWeeks(start, plan.planUpdateWeek),
+    packageEndDate: addWeeks(start, trainingPackage.packageDuration),
+    progressCallDate: customDates?.customProgressCallDate || addWeeks(start, trainingPackage.planProgressCall),
+    renewalCallDate: customDates?.customRenewalCallDate || addWeeks(start, trainingPackage.planRenewalCall),
+    planUpdateDate: customDates?.customPlanUpdateDate || addWeeks(start, trainingPackage.planUpdateWeek),
   }
 }
 

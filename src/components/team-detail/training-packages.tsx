@@ -31,30 +31,30 @@ import {
   Trash2,
 } from "lucide-react";
 
-interface Plan {
-  planName: string;
-  planDuration: number;
+interface Package {
+  packageName: string;
+  packageDuration: number;
   planProgressCall: number;
   planRenewalCall: number;
   planUpdateWeek: number;
-  planColor: string;
+  packageColor?: string;
   isActive: boolean;
   createdAt: string;
 }
 
-interface PlanFormData {
-  planName: string;
-  planDuration: string;
+interface PackageFormData {
+  packageName: string;
+  packageDuration: string;
   planProgressCall: string;
   planRenewalCall: string;
   planUpdateWeek: string;
-  planColor: string;
+  packageColor: string;
 }
 
-interface TrainingPlansProps {
-  plans: Plan[];
+interface TrainingPackagesProps {
+  packages: Package[];
   teamId: string;
-  onPlansUpdated: () => void;
+  onPackagesUpdated: () => void;
 }
 
 // Color palette with 12 complementing colors
@@ -73,52 +73,54 @@ const COLOR_PALETTE = [
   { name: "Violet", value: "#7c3aed" },
 ];
 
-export function TrainingPlans({
-  plans,
+export function TrainingPackages({
+  packages,
   teamId,
-  onPlansUpdated,
-}: TrainingPlansProps) {
-  const [planDialogOpen, setPlanDialogOpen] = useState(false);
-  const [editPlanDialogOpen, setEditPlanDialogOpen] = useState(false);
-  const [creatingPlan, setCreatingPlan] = useState(false);
-  const [updatingPlan, setUpdatingPlan] = useState(false);
-  const [editingPlanIndex, setEditingPlanIndex] = useState<number | null>(null);
-  const [planForm, setPlanForm] = useState<PlanFormData>({
-    planName: "",
-    planDuration: "",
+  onPackagesUpdated,
+}: TrainingPackagesProps) {
+  const [packageDialogOpen, setPackageDialogOpen] = useState(false);
+  const [editPackageDialogOpen, setEditPackageDialogOpen] = useState(false);
+  const [creatingPackage, setCreatingPackage] = useState(false);
+  const [updatingPackage, setUpdatingPackage] = useState(false);
+  const [editingPackageIndex, setEditingPackageIndex] = useState<number | null>(
+    null
+  );
+  const [packageForm, setPackageForm] = useState<PackageFormData>({
+    packageName: "",
+    packageDuration: "",
     planProgressCall: "",
     planRenewalCall: "",
     planUpdateWeek: "",
-    planColor: "#3b82f6",
+    packageColor: "#3b82f6",
   });
 
-  const resetPlanForm = () => {
-    setPlanForm({
-      planName: "",
-      planDuration: "",
+  const resetPackageForm = () => {
+    setPackageForm({
+      packageName: "",
+      packageDuration: "",
       planProgressCall: "",
       planRenewalCall: "",
       planUpdateWeek: "",
-      planColor: "#3b82f6",
+      packageColor: "#3b82f6",
     });
   };
 
-  const validatePlanForm = (
-    planName: string,
+  const validatePackageForm = (
+    packageName: string,
     duration: number,
     progressCall: number,
     renewalCall: number,
     updateWeek: number,
     isEdit = false,
-    originalPlanName = ""
+    originalPackageName = ""
   ) => {
-    if (!planName.trim()) {
-      toast.error("Plan name is required");
+    if (!packageName.trim()) {
+      toast.error("Package name is required");
       return false;
     }
 
     if (!duration || duration < 1) {
-      toast.error("Plan duration must be at least 1 week");
+      toast.error("Package duration must be at least 1 week");
       return false;
     }
 
@@ -133,42 +135,44 @@ export function TrainingPlans({
     }
 
     if (!updateWeek || updateWeek < 1 || updateWeek > duration) {
-      toast.error(`Plan update week must be between 1 and ${duration}`);
+      toast.error(
+        `Training plan update week must be between 1 and ${duration}`
+      );
       return false;
     }
 
-    // Check if plan name already exists (skip if editing the same plan)
-    const planExists = plans.some(
-      (plan) =>
-        plan.planName.toLowerCase() === planName.toLowerCase() &&
+    // Check if package name already exists (skip if editing the same package)
+    const packageExists = packages.some(
+      (pkg) =>
+        pkg.packageName.toLowerCase() === packageName.toLowerCase() &&
         (!isEdit ||
-          plan.planName.toLowerCase() !== originalPlanName.toLowerCase())
+          pkg.packageName.toLowerCase() !== originalPackageName.toLowerCase())
     );
-    if (planExists) {
-      toast.error("A plan with this name already exists");
+    if (packageExists) {
+      toast.error("A package with this name already exists");
       return false;
     }
 
     return true;
   };
 
-  const createPlan = async () => {
+  const createPackage = async () => {
     const {
-      planName,
-      planDuration,
+      packageName,
+      packageDuration,
       planProgressCall,
       planRenewalCall,
       planUpdateWeek,
-      planColor,
-    } = planForm;
-    const duration = Number.parseInt(planDuration);
+      packageColor,
+    } = packageForm;
+    const duration = Number.parseInt(packageDuration);
     const progressCall = Number.parseInt(planProgressCall);
     const renewalCall = Number.parseInt(planRenewalCall);
     const updateWeek = Number.parseInt(planUpdateWeek);
 
     if (
-      !validatePlanForm(
-        planName,
+      !validatePackageForm(
+        packageName,
         duration,
         progressCall,
         renewalCall,
@@ -178,103 +182,103 @@ export function TrainingPlans({
       return;
     }
 
-    setCreatingPlan(true);
+    setCreatingPackage(true);
     try {
-      const newPlan = {
-        planName: planName.trim(),
-        planDuration: duration,
+      const newPackage = {
+        packageName: packageName.trim(),
+        packageDuration: duration,
         planProgressCall: progressCall,
         planRenewalCall: renewalCall,
         planUpdateWeek: updateWeek,
-        planColor: planColor,
+        packageColor: packageColor,
         isActive: true,
         createdAt: new Date().toISOString(),
       };
 
-      const updatedPlans = [...plans, newPlan];
+      const updatedPackages = [...packages, newPackage];
 
       const response = await fetch("/api/teams/update-team", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           teamId,
-          plans: updatedPlans,
+          packages: updatedPackages,
         }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        resetPlanForm();
-        setPlanDialogOpen(false);
-        onPlansUpdated(); // This will trigger a refresh of the entire team data
-        toast.success("Training plan created successfully");
+        resetPackageForm();
+        setPackageDialogOpen(false);
+        onPackagesUpdated(); // This will trigger a refresh of the entire team data
+        toast.success("Training package created successfully");
       } else {
-        toast.error(data.error || "Failed to create training plan");
+        toast.error(data.error || "Failed to create training package");
       }
     } catch (error) {
-      console.error("Error creating plan:", error);
-      toast.error("Failed to create training plan");
+      console.error("Error creating package:", error);
+      toast.error("Failed to create training package");
     }
-    setCreatingPlan(false);
+    setCreatingPackage(false);
   };
 
-  const editPlan = (planIndex: number) => {
-    const plan = plans[planIndex];
-    setPlanForm({
-      planName: plan.planName,
-      planDuration: plan.planDuration.toString(),
-      planProgressCall: plan.planProgressCall.toString(),
-      planRenewalCall: plan.planRenewalCall.toString(),
-      planUpdateWeek: plan.planUpdateWeek.toString(),
-      planColor: plan.planColor || "#3b82f6",
+  const editPackage = (packageIndex: number) => {
+    const pkg = packages[packageIndex];
+    setPackageForm({
+      packageName: pkg.packageName,
+      packageDuration: pkg.packageDuration.toString(),
+      planProgressCall: pkg.planProgressCall.toString(),
+      planRenewalCall: pkg.planRenewalCall.toString(),
+      planUpdateWeek: pkg.planUpdateWeek.toString(),
+      packageColor: pkg.packageColor || "#3b82f6",
     });
-    setEditingPlanIndex(planIndex);
-    setEditPlanDialogOpen(true);
+    setEditingPackageIndex(packageIndex);
+    setEditPackageDialogOpen(true);
   };
 
-  const updatePlan = async () => {
-    if (editingPlanIndex === null) return;
+  const updatePackage = async () => {
+    if (editingPackageIndex === null) return;
 
     const {
-      planName,
-      planDuration,
+      packageName,
+      packageDuration,
       planProgressCall,
       planRenewalCall,
       planUpdateWeek,
-      planColor,
-    } = planForm;
-    const duration = Number.parseInt(planDuration);
+      packageColor,
+    } = packageForm;
+    const duration = Number.parseInt(packageDuration);
     const progressCall = Number.parseInt(planProgressCall);
     const renewalCall = Number.parseInt(planRenewalCall);
     const updateWeek = Number.parseInt(planUpdateWeek);
 
-    const originalPlan = plans[editingPlanIndex];
+    const originalPackage = packages[editingPackageIndex];
     if (
-      !validatePlanForm(
-        planName,
+      !validatePackageForm(
+        packageName,
         duration,
         progressCall,
         renewalCall,
         updateWeek,
         true,
-        originalPlan.planName
+        originalPackage.packageName
       )
     ) {
       return;
     }
 
-    setUpdatingPlan(true);
+    setUpdatingPackage(true);
     try {
-      const updatedPlans = [...plans];
-      updatedPlans[editingPlanIndex] = {
-        ...originalPlan,
-        planName: planName.trim(),
-        planDuration: duration,
+      const updatedPackages = [...packages];
+      updatedPackages[editingPackageIndex] = {
+        ...originalPackage,
+        packageName: packageName.trim(),
+        packageDuration: duration,
         planProgressCall: progressCall,
         planRenewalCall: renewalCall,
         planUpdateWeek: updateWeek,
-        planColor: planColor || originalPlan.planColor || "#3b82f6", // Ensure color is preserved
+        packageColor: packageColor || originalPackage.packageColor || "#3b82f6", // Ensure color is preserved
       };
 
       const response = await fetch("/api/teams/update-team", {
@@ -282,35 +286,35 @@ export function TrainingPlans({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           teamId,
-          plans: updatedPlans,
+          packages: updatedPackages,
         }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        resetPlanForm();
-        setEditPlanDialogOpen(false);
-        setEditingPlanIndex(null);
-        onPlansUpdated(); // This will trigger a refresh of the entire team data
-        toast.success("Training plan updated successfully");
+        resetPackageForm();
+        setEditPackageDialogOpen(false);
+        setEditingPackageIndex(null);
+        onPackagesUpdated(); // This will trigger a refresh of the entire team data
+        toast.success("Training package updated successfully");
       } else {
-        toast.error(data.error || "Failed to update training plan");
+        toast.error(data.error || "Failed to update training package");
       }
     } catch (error) {
-      console.error("Error updating plan:", error);
-      toast.error("Failed to update training plan");
+      console.error("Error updating package:", error);
+      toast.error("Failed to update training package");
     }
-    setUpdatingPlan(false);
+    setUpdatingPackage(false);
   };
 
-  const togglePlanStatus = async (planIndex: number) => {
-    const updatedPlans = [...plans];
-    const plan = updatedPlans[planIndex];
-    const newStatus = !plan.isActive;
+  const togglePackageStatus = async (packageIndex: number) => {
+    const updatedPackages = [...packages];
+    const pkg = updatedPackages[packageIndex];
+    const newStatus = !pkg.isActive;
 
-    updatedPlans[planIndex] = {
-      ...plan,
+    updatedPackages[packageIndex] = {
+      ...pkg,
       isActive: newStatus,
     };
 
@@ -320,60 +324,64 @@ export function TrainingPlans({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           teamId,
-          plans: updatedPlans,
+          packages: updatedPackages,
         }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        onPlansUpdated(); // This will trigger a refresh of the entire team data
+        onPackagesUpdated(); // This will trigger a refresh of the entire team data
         toast.success(
-          `Plan ${newStatus ? "activated" : "deactivated"} successfully`
+          `Package ${newStatus ? "activated" : "deactivated"} successfully`
         );
       } else {
-        toast.error(data.error || "Failed to update plan status");
+        toast.error(data.error || "Failed to update package status");
       }
     } catch (error) {
-      console.error("Error updating plan status:", error);
-      toast.error("Failed to update plan status");
+      console.error("Error updating package status:", error);
+      toast.error("Failed to update package status");
     }
   };
 
-  const deletePlan = async (planIndex: number) => {
-    const planToDelete = plans[planIndex];
+  const deletePackage = async (packageIndex: number) => {
+    const packageToDelete = packages[packageIndex];
 
     if (
       !confirm(
-        `Are you sure you want to permanently delete the plan "${planToDelete.planName}"? This action cannot be undone.`
+        `Are you sure you want to permanently delete the package "${packageToDelete.packageName}"? This action cannot be undone.`
       )
     ) {
       return;
     }
 
     try {
-      const updatedPlans = plans.filter((_, index) => index !== planIndex);
+      const updatedPackages = packages.filter(
+        (_, index) => index !== packageIndex
+      );
 
       const response = await fetch("/api/teams/update-team", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           teamId,
-          plans: updatedPlans,
+          packages: updatedPackages,
         }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        onPlansUpdated(); // This will trigger a refresh of the entire team data
-        toast.success(`Plan "${planToDelete.planName}" deleted successfully`);
+        onPackagesUpdated(); // This will trigger a refresh of the entire team data
+        toast.success(
+          `Package "${packageToDelete.packageName}" deleted successfully`
+        );
       } else {
-        toast.error(data.error || "Failed to delete plan");
+        toast.error(data.error || "Failed to delete package");
       }
     } catch (error) {
-      console.error("Error deleting plan:", error);
-      toast.error("Failed to delete plan");
+      console.error("Error deleting package:", error);
+      toast.error("Failed to delete package");
     }
   };
 
@@ -385,7 +393,7 @@ export function TrainingPlans({
     onColorChange: (color: string) => void;
   }) => (
     <div>
-      <Label>Plan Color</Label>
+      <Label>Package Color</Label>
       <div className="grid grid-cols-6 gap-2 mt-2">
         {COLOR_PALETTE.map((color) => (
           <button
@@ -407,7 +415,7 @@ export function TrainingPlans({
         ))}
       </div>
       <p className="text-xs text-gray-500 mt-2">
-        Choose a color to identify this plan
+        Choose a color to identify this package
       </p>
     </div>
   );
@@ -418,47 +426,47 @@ export function TrainingPlans({
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center">
             <Calendar className="h-5 w-5 mr-2" />
-            Training Plans
+            Training Packages
           </CardTitle>
-          <Dialog open={planDialogOpen} onOpenChange={setPlanDialogOpen}>
+          <Dialog open={packageDialogOpen} onOpenChange={setPackageDialogOpen}>
             <DialogTrigger asChild>
               <Button size="sm" variant="outline">
                 <Plus className="h-4 w-4 mr-1" />
-                Add Plan
+                Add Package
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle>Add Training Plan</DialogTitle>
+                <DialogTitle>Add Training Package</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 pt-4">
                 <div>
-                  <Label htmlFor="add-planName">Plan Name *</Label>
+                  <Label htmlFor="add-packageName">Package Name *</Label>
                   <Input
-                    id="add-planName"
-                    value={planForm.planName}
+                    id="add-packageName"
+                    value={packageForm.packageName}
                     onChange={(e) =>
-                      setPlanForm((prev) => ({
+                      setPackageForm((prev) => ({
                         ...prev,
-                        planName: e.target.value,
+                        packageName: e.target.value,
                       }))
                     }
-                    placeholder="e.g., 12 Week Transformation"
+                    placeholder="e.g., 12 Week Transformation Package"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="add-planDuration">
-                    Plan Duration (weeks) *
+                  <Label htmlFor="add-packageDuration">
+                    Package Duration (weeks) *
                   </Label>
                   <Input
-                    id="add-planDuration"
+                    id="add-packageDuration"
                     type="number"
                     min="1"
-                    value={planForm.planDuration}
+                    value={packageForm.packageDuration}
                     onChange={(e) =>
-                      setPlanForm((prev) => ({
+                      setPackageForm((prev) => ({
                         ...prev,
-                        planDuration: e.target.value,
+                        packageDuration: e.target.value,
                       }))
                     }
                     placeholder="e.g., 12"
@@ -472,9 +480,9 @@ export function TrainingPlans({
                     id="add-planProgressCall"
                     type="number"
                     min="1"
-                    value={planForm.planProgressCall}
+                    value={packageForm.planProgressCall}
                     onChange={(e) =>
-                      setPlanForm((prev) => ({
+                      setPackageForm((prev) => ({
                         ...prev,
                         planProgressCall: e.target.value,
                       }))
@@ -493,9 +501,9 @@ export function TrainingPlans({
                     id="add-planRenewalCall"
                     type="number"
                     min="1"
-                    value={planForm.planRenewalCall}
+                    value={packageForm.planRenewalCall}
                     onChange={(e) =>
-                      setPlanForm((prev) => ({
+                      setPackageForm((prev) => ({
                         ...prev,
                         planRenewalCall: e.target.value,
                       }))
@@ -507,14 +515,16 @@ export function TrainingPlans({
                   </p>
                 </div>
                 <div>
-                  <Label htmlFor="add-planUpdateWeek">Plan Update Week *</Label>
+                  <Label htmlFor="add-planUpdateWeek">
+                    Training Plan Update Week *
+                  </Label>
                   <Input
                     id="add-planUpdateWeek"
                     type="number"
                     min="1"
-                    value={planForm.planUpdateWeek}
+                    value={packageForm.planUpdateWeek}
                     onChange={(e) =>
-                      setPlanForm((prev) => ({
+                      setPackageForm((prev) => ({
                         ...prev,
                         planUpdateWeek: e.target.value,
                       }))
@@ -522,24 +532,24 @@ export function TrainingPlans({
                     placeholder="e.g., 6"
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    Which week should the plan be updated?
+                    Which week should the training plan be updated?
                   </p>
                 </div>
                 <ColorPicker
-                  selectedColor={planForm.planColor}
+                  selectedColor={packageForm.packageColor}
                   onColorChange={(color) =>
-                    setPlanForm((prev) => ({ ...prev, planColor: color }))
+                    setPackageForm((prev) => ({ ...prev, packageColor: color }))
                   }
                 />
                 <div className="flex justify-end space-x-2 pt-4">
                   <Button
                     variant="outline"
-                    onClick={() => setPlanDialogOpen(false)}
+                    onClick={() => setPackageDialogOpen(false)}
                   >
                     Cancel
                   </Button>
-                  <Button onClick={createPlan} disabled={creatingPlan}>
-                    {creatingPlan ? "Creating..." : "Create Plan"}
+                  <Button onClick={createPackage} disabled={creatingPackage}>
+                    {creatingPackage ? "Creating..." : "Create Package"}
                   </Button>
                 </div>
               </div>
@@ -549,12 +559,12 @@ export function TrainingPlans({
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
-          {plans.length === 0 ? (
-            <p className="text-sm text-gray-500">No plans created</p>
+          {packages.length === 0 ? (
+            <p className="text-sm text-gray-500">No packages created</p>
           ) : (
-            plans.map((plan, index) => (
+            packages.map((pkg, index) => (
               <div
-                key={`plan-${plan.planName}-${index}`}
+                key={`package-${pkg.packageName}-${index}`}
                 className="text-sm border rounded p-2"
               >
                 <div className="flex items-center justify-between">
@@ -562,21 +572,22 @@ export function TrainingPlans({
                     <div className="flex items-center gap-2">
                       <Badge
                         style={{
-                          backgroundColor: plan.planColor || "#3b82f6",
+                          backgroundColor: pkg.packageColor || "#3b82f6",
                           color: "white",
                           border: "none",
                         }}
                       >
-                        {plan.planName}
+                        {pkg.packageName}
                       </Badge>
-                      <Badge variant={plan.isActive ? "default" : "secondary"}>
-                        {plan.isActive ? "Active" : "Inactive"}
+                      <Badge variant={pkg.isActive ? "default" : "secondary"}>
+                        {pkg.isActive ? "Active" : "Inactive"}
                       </Badge>
                     </div>
                     <div className="text-gray-500 text-xs mt-1">
-                      {plan.planDuration} weeks • Progress: Week{" "}
-                      {plan.planProgressCall} • Renewal: Week{" "}
-                      {plan.planRenewalCall}
+                      {pkg.packageDuration} weeks • Progress: Week{" "}
+                      {pkg.planProgressCall} • Renewal: Week{" "}
+                      {pkg.planRenewalCall} • Plan Update: Week{" "}
+                      {pkg.planUpdateWeek}
                     </div>
                   </div>
                   <DropdownMenu>
@@ -586,12 +597,14 @@ export function TrainingPlans({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => editPlan(index)}>
+                      <DropdownMenuItem onClick={() => editPackage(index)}>
                         <Edit className="h-4 w-4 mr-2" />
-                        Edit Plan
+                        Edit Package
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => togglePlanStatus(index)}>
-                        {plan.isActive ? (
+                      <DropdownMenuItem
+                        onClick={() => togglePackageStatus(index)}
+                      >
+                        {pkg.isActive ? (
                           <>
                             <Archive className="h-4 w-4 mr-2" />
                             Deactivate
@@ -604,11 +617,11 @@ export function TrainingPlans({
                         )}
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => deletePlan(index)}
+                        onClick={() => deletePackage(index)}
                         className="text-red-600 focus:text-red-600"
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
-                        Delete Plan
+                        Delete Package
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -619,35 +632,43 @@ export function TrainingPlans({
         </div>
       </CardContent>
 
-      {/* Edit Plan Dialog */}
-      <Dialog open={editPlanDialogOpen} onOpenChange={setEditPlanDialogOpen}>
+      {/* Edit Package Dialog */}
+      <Dialog
+        open={editPackageDialogOpen}
+        onOpenChange={setEditPackageDialogOpen}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit Training Plan</DialogTitle>
+            <DialogTitle>Edit Training Package</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div>
-              <Label htmlFor="edit-planName">Plan Name *</Label>
+              <Label htmlFor="edit-packageName">Package Name *</Label>
               <Input
-                id="edit-planName"
-                value={planForm.planName}
+                id="edit-packageName"
+                value={packageForm.packageName}
                 onChange={(e) =>
-                  setPlanForm((prev) => ({ ...prev, planName: e.target.value }))
+                  setPackageForm((prev) => ({
+                    ...prev,
+                    packageName: e.target.value,
+                  }))
                 }
-                placeholder="e.g., 12 Week Transformation"
+                placeholder="e.g., 12 Week Transformation Package"
               />
             </div>
             <div>
-              <Label htmlFor="edit-planDuration">Plan Duration (weeks) *</Label>
+              <Label htmlFor="edit-packageDuration">
+                Package Duration (weeks) *
+              </Label>
               <Input
-                id="edit-planDuration"
+                id="edit-packageDuration"
                 type="number"
                 min="1"
-                value={planForm.planDuration}
+                value={packageForm.packageDuration}
                 onChange={(e) =>
-                  setPlanForm((prev) => ({
+                  setPackageForm((prev) => ({
                     ...prev,
-                    planDuration: e.target.value,
+                    packageDuration: e.target.value,
                   }))
                 }
                 placeholder="e.g., 12"
@@ -661,9 +682,9 @@ export function TrainingPlans({
                 id="edit-planProgressCall"
                 type="number"
                 min="1"
-                value={planForm.planProgressCall}
+                value={packageForm.planProgressCall}
                 onChange={(e) =>
-                  setPlanForm((prev) => ({
+                  setPackageForm((prev) => ({
                     ...prev,
                     planProgressCall: e.target.value,
                   }))
@@ -680,9 +701,9 @@ export function TrainingPlans({
                 id="edit-planRenewalCall"
                 type="number"
                 min="1"
-                value={planForm.planRenewalCall}
+                value={packageForm.planRenewalCall}
                 onChange={(e) =>
-                  setPlanForm((prev) => ({
+                  setPackageForm((prev) => ({
                     ...prev,
                     planRenewalCall: e.target.value,
                   }))
@@ -694,14 +715,16 @@ export function TrainingPlans({
               </p>
             </div>
             <div>
-              <Label htmlFor="edit-planUpdateWeek">Plan Update Week *</Label>
+              <Label htmlFor="edit-planUpdateWeek">
+                Training Plan Update Week *
+              </Label>
               <Input
                 id="edit-planUpdateWeek"
                 type="number"
                 min="1"
-                value={planForm.planUpdateWeek}
+                value={packageForm.planUpdateWeek}
                 onChange={(e) =>
-                  setPlanForm((prev) => ({
+                  setPackageForm((prev) => ({
                     ...prev,
                     planUpdateWeek: e.target.value,
                   }))
@@ -709,24 +732,24 @@ export function TrainingPlans({
                 placeholder="e.g., 6"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Which week should the plan be updated?
+                Which week should the training plan be updated?
               </p>
             </div>
             <ColorPicker
-              selectedColor={planForm.planColor}
+              selectedColor={packageForm.packageColor}
               onColorChange={(color) =>
-                setPlanForm((prev) => ({ ...prev, planColor: color }))
+                setPackageForm((prev) => ({ ...prev, packageColor: color }))
               }
             />
             <div className="flex justify-end space-x-2 pt-4">
               <Button
                 variant="outline"
-                onClick={() => setEditPlanDialogOpen(false)}
+                onClick={() => setEditPackageDialogOpen(false)}
               >
                 Cancel
               </Button>
-              <Button onClick={updatePlan} disabled={updatingPlan}>
-                {updatingPlan ? "Updating..." : "Update Plan"}
+              <Button onClick={updatePackage} disabled={updatingPackage}>
+                {updatingPackage ? "Updating..." : "Update Package"}
               </Button>
             </div>
           </div>

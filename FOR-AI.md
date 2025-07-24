@@ -1,9 +1,8 @@
-1. Rename plans to packages.
 
-2. To calculate the  should use date-fns to cal
-
-2. When I edit a plan that a client is assigned to, it's not updating in the client table.
-If I change a plan name, colour, or all other details, this should reflect on the client's that are associted with this plan.
+Client table:
+1. To calculate the  should use date-fns to cal
+2. on edit/delete just refresh the clienttable component not the entire page.
+3. Updating packages doesn't refresh and reflesct in the table (changes do reflect in the packages UI however). Can we elegantly refresh only the client table to show the updated data?
 
 
 

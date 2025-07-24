@@ -1,5 +1,5 @@
 import { CoachList } from "./coach-list";
-import { TrainingPlans } from "./training-plans";
+import { TrainingPackages } from "./training-packages";
 import { PendingInvites } from "./pending-invites";
 
 interface Coach {
@@ -8,12 +8,13 @@ interface Coach {
   email: string;
 }
 
-interface Plan {
-  planName: string;
-  planDuration: number;
+interface Package {
+  packageName: string;
+  packageDuration: number;
   planProgressCall: number;
   planRenewalCall: number;
   planUpdateWeek: number;
+  packageColor?: string;
   isActive: boolean;
   createdAt: string;
 }
@@ -27,7 +28,7 @@ interface Client {
 
 interface TeamActionsProps {
   coaches: Coach[];
-  plans: Plan[];
+  packages: Package[];
   clients: Client[];
   ownerId: string;
   currentUserId: string;
@@ -37,7 +38,7 @@ interface TeamActionsProps {
 
 export function TeamActions({
   coaches,
-  plans,
+  packages,
   clients,
   ownerId,
   currentUserId,
@@ -56,10 +57,10 @@ export function TeamActions({
           teamId={teamId}
           onInviteSent={onDataUpdated}
         />
-        <TrainingPlans
-          plans={plans}
+        <TrainingPackages
+          packages={packages}
           teamId={teamId}
-          onPlansUpdated={onDataUpdated}
+          onPackagesUpdated={onDataUpdated}
         />
         <div className="space-y-4">
           <div className="text-2xl font-bold mb-2">{clients.length}</div>

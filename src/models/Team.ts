@@ -5,13 +5,14 @@ export interface ITeam extends Document {
   owner: ObjectId // User who created the team
   coaches: ObjectId[] // All team coaches including owner
   clients: ObjectId[] // All clients added to team
-  plans: {
-    planName: string // name of plan (e.g., "12 Week Transformation")
-    planDuration: number // duration of plan in weeks (e.g., 12 weeks)
-    planProgressCall: number // what week during the 'planDuration' should the progress call be scheduled
-    planRenewalCall: number // what week during the 'planDuration' should the renewal call be scheduled
-    planUpdateWeek: number // what week during the 'planDuration' should the plan be updated
-    isActive: boolean // whether this plan is currently available for assignment
+  packages: {
+    packageName: string // name of package (e.g., "12 Week Transformation Package")
+    packageDuration: number // duration of package in weeks (e.g., 12 weeks)
+    planProgressCall: number // what week during the 'packageDuration' should the progress call be scheduled
+    planRenewalCall: number // what week during the 'packageDuration' should the renewal call be scheduled
+    planUpdateWeek: number // what week during the 'packageDuration' should the training plan be updated
+    packageColor: string // hex color code for the package
+    isActive: boolean // whether this package is currently available for assignment
     createdAt: Date
   }[]
   settings: {
@@ -22,7 +23,7 @@ export interface ITeam extends Document {
       age: boolean
       gender: boolean
       assignedCoach: boolean // always true, can't be disabled
-      trainingPlan: boolean // always true, can't be disabled
+      trainingPackage: boolean // always true, can't be disabled
       renewalCallDate: boolean
       progressCallDate: boolean
       planUpdateDate: boolean
@@ -66,15 +67,15 @@ const teamSchema = new Schema<ITeam>(
         ref: "Client",
       },
     ],
-    plans: [
+    packages: [
       {
-        planName: {
+        packageName: {
           type: String,
           required: true,
           trim: true,
           maxlength: 100,
         },
-        planDuration: {
+        packageDuration: {
           type: Number,
           required: true,
           min: 1,
@@ -94,13 +95,9 @@ const teamSchema = new Schema<ITeam>(
           required: true,
           min: 1,
         },
-        planColor: {
+        packageColor: {
           type: String,
           default: "#3b82f6",
-          validate: {
-            validator: (v: string) => /^#[0-9A-Fa-f]{6}$/.test(v),
-            message: "Plan color must be a valid hex color code",
-          },
         },
         isActive: {
           type: Boolean,
@@ -120,7 +117,7 @@ const teamSchema = new Schema<ITeam>(
         age: { type: Boolean, default: false },
         gender: { type: Boolean, default: false },
         assignedCoach: { type: Boolean, default: true }, // always true
-        trainingPlan: { type: Boolean, default: true }, // always true
+        trainingPackage: { type: Boolean, default: true }, // always true
         renewalCallDate: { type: Boolean, default: true },
         progressCallDate: { type: Boolean, default: true },
         planUpdateDate: { type: Boolean, default: true },

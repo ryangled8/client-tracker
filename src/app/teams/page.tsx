@@ -29,9 +29,9 @@ interface Team {
     name: string;
     email: string;
   }>;
-  plans: Array<{
-    planName: string;
-    planDuration: number;
+  packages: Array<{
+    packageName: string;
+    packageDuration: number;
     isActive: boolean;
   }>;
   clients: string[];
@@ -188,8 +188,8 @@ export default function TeamsPage() {
                     <div className="flex items-center text-sm text-gray-600">
                       <Settings className="h-4 w-4 mr-2" />
                       <span>
-                        {team.plans.filter((p) => p.isActive).length} active
-                        plans
+                        {team.packages.filter((p) => p.isActive).length} active
+                        packages
                       </span>
                     </div>
                     <div className="pt-2 border-t">

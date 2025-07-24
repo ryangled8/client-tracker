@@ -13,9 +13,9 @@ export async function POST(req: Request) {
     }
 
     const clientData = await req.json()
-    const { name, team: teamId, assignedCoach, selectedPlan, startDate } = clientData
+    const { name, team: teamId, assignedCoach, selectedPackage, startDate } = clientData
 
-    if (!name || !teamId || !assignedCoach || !selectedPlan) {
+    if (!name || !teamId || !assignedCoach || !selectedPackage) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
@@ -33,10 +33,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 })
     }
 
-    // Verify the selected plan exists in the team
-    const planExists = team.plans.some((plan) => plan.planName === selectedPlan && plan.isActive)
-    if (!planExists) {
-      return NextResponse.json({ error: "Selected plan not found or inactive" }, { status: 400 })
+    // Verify the selected package exists in the team
+    const packageExists = team.packages.some((pkg) => pkg.packageName === selectedPackage && pkg.isActive)
+    if (!packageExists) {
+      return NextResponse.json({ error: "Selected training package not found or inactive" }, { status: 400 })
     }
 
     const client = new Client({

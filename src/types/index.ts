@@ -14,9 +14,9 @@ export interface CreateTeamData {
   name: string
 }
 
-export interface CreatePlanData {
-  planName: string
-  planDuration: number
+export interface CreatePackageData {
+  packageName: string
+  packageDuration: number
   planProgressCall: number
   planRenewalCall: number
   planUpdateWeek: number
@@ -29,7 +29,7 @@ export interface CreateClientData {
   age?: number
   gender?: Gender
   assignedCoach: string
-  selectedPlan: string
+  selectedPackage: string
   startDate: Date
   currentWeight?: number
   targetWeight?: number
@@ -41,7 +41,7 @@ export interface InviteTeamMemberData {
   message?: string
 }
 
-// Team settings interface
+// Add the team settings interface
 export interface TeamSettings {
   clientFormFields: {
     name: boolean
@@ -50,7 +50,7 @@ export interface TeamSettings {
     age: boolean
     gender: boolean
     assignedCoach: boolean
-    trainingPlan: boolean
+    trainingPackage: boolean
     renewalCallDate: boolean
     progressCallDate: boolean
     planUpdateDate: boolean

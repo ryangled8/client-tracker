@@ -62,7 +62,7 @@ export async function GET(req: Request) {
           age: false,
           gender: false,
           assignedCoach: true,
-          trainingPlan: true,
+          trainingPackage: true,
           renewalCallDate: true,
           progressCallDate: true,
           planUpdateDate: true,

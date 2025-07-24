@@ -27,12 +27,13 @@ interface Team {
     name: string;
     email: string;
   }>;
-  plans: Array<{
-    planName: string;
-    planDuration: number;
+  packages: Array<{
+    packageName: string;
+    packageDuration: number;
     planProgressCall: number;
     planRenewalCall: number;
     planUpdateWeek: number;
+    packageColor?: string;
     isActive: boolean;
     createdAt: string;
   }>;
@@ -48,7 +49,7 @@ interface Team {
       name: string;
       email: string;
     };
-    selectedPlan: string;
+    selectedPackage: string;
     startDate: string;
     currentWeight?: number;
     targetWeight?: number;
@@ -92,7 +93,7 @@ export default function TeamPage() {
               age: false,
               gender: false,
               assignedCoach: true,
-              trainingPlan: true,
+              trainingPackage: true,
               renewalCallDate: true,
               progressCallDate: true,
               planUpdateDate: true,
@@ -184,17 +185,17 @@ export default function TeamPage() {
           <AddClientModal
             teamId={team._id}
             coaches={team.coaches}
-            plans={team.plans}
+            packages={team.packages}
             settings={team.settings}
             onClientAdded={() => fetchTeam(team._id)}
           />
         </div>
       </div>
 
-      {/* Team Actions (Coaches, Plans, Client Stats) */}
+      {/* Team Actions (Coaches, Packages, Client Stats) */}
       <TeamActions
         coaches={team.coaches}
-        plans={team.plans}
+        packages={team.packages}
         clients={team.clients}
         ownerId={team.owner._id}
         currentUserId={session?.user?.id || ""}
@@ -206,12 +207,12 @@ export default function TeamPage() {
       <div className="space-y-4">
         <h2 className="text-xl font-bold">Team Clients</h2>
         <ClientsTable
-          key={`clients-${team.plans.length}-${team.plans
-            .map((p) => p.planColor)
+          key={`clients-${team.packages.length}-${team.packages
+            .map((p) => p.packageColor)
             .join("-")}`}
           clients={team.clients}
           coaches={team.coaches}
-          plans={team.plans}
+          packages={team.packages}
           settings={team.settings}
           onClientUpdated={() => fetchTeam(team._id)}
           onClientDeleted={() => fetchTeam(team._id)}

@@ -72,13 +72,13 @@ interface Coach {
   email: string;
 }
 
-interface Plan {
-  planName: string;
-  planDuration: number;
+interface Package {
+  packageName: string;
+  packageDuration: number;
   planProgressCall: number;
   planRenewalCall: number;
   planUpdateWeek: number;
-  planColor?: string;
+  packageColor?: string;
   isActive: boolean;
 }
 
@@ -94,7 +94,7 @@ interface Client {
     name: string;
     email: string;
   };
-  selectedPlan: string;
+  selectedPackage: string;
   startDate: string;
   currentWeight?: number;
   targetWeight?: number;
@@ -110,7 +110,7 @@ interface Client {
 interface ClientsTableProps {
   clients: Client[];
   coaches: Coach[];
-  plans: Plan[];
+  packages: Package[];
   settings: TeamSettings;
   onClientUpdated: () => void;
   onClientDeleted: () => void;
@@ -119,7 +119,7 @@ interface ClientsTableProps {
 export function ClientsTable({
   clients,
   coaches,
-  plans,
+  packages,
   settings,
   onClientUpdated,
   onClientDeleted,
@@ -127,7 +127,7 @@ export function ClientsTable({
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [coachFilter, setCoachFilter] = useState<string>("all");
-  const [planFilter, setPlanFilter] = useState<string>("all");
+  const [packageFilter, setPackageFilter] = useState<string>("all");
   const [filteredClients, setFilteredClients] = useState<Client[]>(clients);
 
   // Apply filters when any filter changes
@@ -157,39 +157,41 @@ export function ClientsTable({
       );
     }
 
-    // Plan filter
-    if (planFilter !== "all") {
-      result = result.filter((client) => client.selectedPlan === planFilter);
+    // Package filter
+    if (packageFilter !== "all") {
+      result = result.filter(
+        (client) => client.selectedPackage === packageFilter
+      );
     }
 
     setFilteredClients(result);
-  }, [clients, searchTerm, statusFilter, coachFilter, planFilter]);
+  }, [clients, searchTerm, statusFilter, coachFilter, packageFilter]);
 
   const calculateDates = (client: Client) => {
-    const plan = plans.find((p) => p.planName === client.selectedPlan);
-    if (!plan) return null;
+    const pkg = packages.find((p) => p.packageName === client.selectedPackage);
+    if (!pkg) return null;
 
     const startDate = new Date(client.startDate);
 
     const renewalCallDate = client.customRenewalCallDate
       ? new Date(client.customRenewalCallDate)
-      : addWeeks(startDate, plan.planRenewalCall);
+      : addWeeks(startDate, pkg.planRenewalCall);
 
     const progressCallDate = client.customProgressCallDate
       ? new Date(client.customProgressCallDate)
-      : addWeeks(startDate, plan.planProgressCall);
+      : addWeeks(startDate, pkg.planProgressCall);
 
     const planUpdateDate = client.customPlanUpdateDate
       ? new Date(client.customPlanUpdateDate)
-      : addWeeks(startDate, plan.planUpdateWeek);
+      : addWeeks(startDate, pkg.planUpdateWeek);
 
-    const planEndDate = addWeeks(startDate, plan.planDuration);
+    const packageEndDate = addWeeks(startDate, pkg.packageDuration);
 
     return {
       renewalCallDate,
       progressCallDate,
       planUpdateDate,
-      planEndDate,
+      packageEndDate,
     };
   };
 
@@ -275,9 +277,9 @@ export function ClientsTable({
     toast.info("Edit client functionality coming soon!");
   };
 
-  // Get unique plans for filter
-  const uniquePlans = Array.from(
-    new Set(clients.map((client) => client.selectedPlan))
+  // Get unique packages for filter
+  const uniquePackages = Array.from(
+    new Set(clients.map((client) => client.selectedPackage))
   );
 
   return (
@@ -321,15 +323,15 @@ export function ClientsTable({
             </SelectContent>
           </Select>
 
-          <Select value={planFilter} onValueChange={setPlanFilter}>
+          <Select value={packageFilter} onValueChange={setPackageFilter}>
             <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Plan" />
+              <SelectValue placeholder="Package" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Plans</SelectItem>
-              {uniquePlans.map((plan) => (
-                <SelectItem key={plan} value={plan}>
-                  {plan}
+              <SelectItem value="all">All Packages</SelectItem>
+              {uniquePackages.map((pkg, index) => (
+                <SelectItem key={`package-${index}-${pkg}`} value={pkg}>
+                  {pkg}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -355,7 +357,7 @@ export function ClientsTable({
                 <TableHead>Gender</TableHead>
               )}
               <TableHead>Coach</TableHead>
-              <TableHead>Training Plan</TableHead>
+              <TableHead>Training Package</TableHead>
               {settings.clientFormFields.startDate && (
                 <TableHead>Start Date</TableHead>
               )}
@@ -407,8 +409,8 @@ export function ClientsTable({
             ) : (
               filteredClients.map((client) => {
                 const dates = calculateDates(client);
-                const plan = plans.find(
-                  (p) => p.planName === client.selectedPlan
+                const pkg = packages.find(
+                  (p) => p.packageName === client.selectedPackage
                 );
 
                 return (
@@ -436,12 +438,12 @@ export function ClientsTable({
                     <TableCell>
                       <Badge
                         style={{
-                          backgroundColor: plan?.planColor || "#3b82f6",
+                          backgroundColor: pkg?.packageColor || "#3b82f6",
                           color: "white",
                           border: "none",
                         }}
                       >
-                        {client.selectedPlan}
+                        {client.selectedPackage}
                       </Badge>
                     </TableCell>
                     {settings.clientFormFields.startDate && (

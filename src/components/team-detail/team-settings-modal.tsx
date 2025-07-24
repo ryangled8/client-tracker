@@ -43,7 +43,7 @@ interface TeamSettings {
     age: boolean;
     gender: boolean;
     assignedCoach: boolean;
-    trainingPlan: boolean;
+    trainingPackage: boolean;
     renewalCallDate: boolean;
     progressCallDate: boolean;
     planUpdateDate: boolean;
@@ -78,10 +78,10 @@ const fieldLabels = {
   gender: "Gender",
   startDate: "Start Date",
   assignedCoach: "Assigned Coach*",
-  trainingPlan: "Training Plan*",
+  trainingPackage: "Training Package*",
   renewalCallDate: "Next Renewal Call Date",
   progressCallDate: "Next Progress Call Date",
-  planUpdateDate: "Next Plan Update Date",
+  planUpdateDate: "Next Training Plan Update Date",
   currentWeight: "Current Weight",
   targetWeight: "Target Weight",
   height: "Height",
@@ -91,12 +91,12 @@ const fieldLabels = {
 };
 
 const fieldDescriptions = {
-  renewalCallDate: "Auto-calculated from training plan",
-  progressCallDate: "Auto-calculated from training plan",
-  planUpdateDate: "Auto-calculated from training plan",
+  renewalCallDate: "Auto-calculated from training package",
+  progressCallDate: "Auto-calculated from training package",
+  planUpdateDate: "Auto-calculated from training package",
 };
 
-const requiredFields = ["name", "assignedCoach", "trainingPlan"];
+const requiredFields = ["name", "assignedCoach", "trainingPackage"];
 
 export function TeamSettingsModal({
   team,
@@ -374,23 +374,23 @@ export function TeamSettingsModal({
                         Are you absolutely sure?
                       </AlertDialogTitle>
                       <AlertDialogDescription className="space-y-2">
-                        <span>
+                        <p>
                           This action cannot be undone. This will permanently
                           delete the team <strong>{team.name}</strong> and
                           remove all associated data including:
-                        </span>
-
-                        <span>All team cspanents and their progress data</span>
-                        <span>All training plans</span>
-                        <span>All team invitations</span>
-                        <span>All team settings</span>
-
+                        </p>
+                        <ul className="list-disc list-inside text-sm space-y-1 mt-2">
+                          <li>All team clients and their progress data</li>
+                          <li>All training packages</li>
+                          <li>All team invitations</li>
+                          <li>All team settings</li>
+                        </ul>
                         <div className="mt-4">
                           <Label
                             htmlFor="deleteConfirmation"
                             className="text-sm font-medium"
                           >
-                            Type the team name<strong>{team.name}</strong>to
+                            Type the team name <strong>{team.name}</strong> to
                             confirm:
                           </Label>
                           <Input

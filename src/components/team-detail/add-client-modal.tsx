@@ -29,9 +29,9 @@ interface Coach {
   email: string;
 }
 
-interface Plan {
-  planName: string;
-  planDuration: number;
+interface Package {
+  packageName: string;
+  packageDuration: number;
   planProgressCall: number;
   planRenewalCall: number;
   planUpdateWeek: number;
@@ -41,7 +41,7 @@ interface Plan {
 interface AddClientModalProps {
   teamId: string;
   coaches: Coach[];
-  plans: Plan[];
+  packages: Package[];
   settings: TeamSettings;
   onClientAdded: () => void;
 }
@@ -49,7 +49,7 @@ interface AddClientModalProps {
 export function AddClientModal({
   teamId,
   coaches,
-  plans,
+  packages,
   settings,
   onClientAdded,
 }: AddClientModalProps) {
@@ -62,7 +62,7 @@ export function AddClientModal({
     age: "",
     gender: "",
     assignedCoach: "",
-    selectedPlan: "",
+    selectedPackage: "",
     startDate: new Date(),
     currentWeight: "",
     targetWeight: "",
@@ -82,9 +82,9 @@ export function AddClientModal({
         age: "",
         gender: "",
         assignedCoach: coaches.length > 0 ? coaches[0]._id : "",
-        selectedPlan:
-          plans.filter((p) => p.isActive).length > 0
-            ? plans.filter((p) => p.isActive)[0].planName
+        selectedPackage:
+          packages.filter((p) => p.isActive).length > 0
+            ? packages.filter((p) => p.isActive)[0].packageName
             : "",
         startDate: new Date(),
         currentWeight: "",
@@ -95,7 +95,7 @@ export function AddClientModal({
         notes: "",
       });
     }
-  }, [dialogOpen, coaches, plans]);
+  }, [dialogOpen, coaches, packages]);
 
   const handleInputChange = (field: string, value: string | Date) => {
     setFormData((prev) => ({
@@ -115,8 +115,8 @@ export function AddClientModal({
       return false;
     }
 
-    if (!formData.selectedPlan) {
-      toast.error("Training plan is required");
+    if (!formData.selectedPackage) {
+      toast.error("Training package is required");
       return false;
     }
 
@@ -149,7 +149,7 @@ export function AddClientModal({
         name: formData.name.trim(),
         team: teamId,
         assignedCoach: formData.assignedCoach,
-        selectedPlan: formData.selectedPlan,
+        selectedPackage: formData.selectedPackage,
         startDate: formData.startDate,
         status: formData.status,
       };
@@ -205,7 +205,7 @@ export function AddClientModal({
     setSaving(false);
   };
 
-  const activePlans = plans.filter((plan) => plan.isActive);
+  const activePackages = packages.filter((pkg) => pkg.isActive);
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -324,29 +324,29 @@ export function AddClientModal({
               </Select>
             </div>
 
-            {/* Training Plan - Always required */}
+            {/* Training Package - Always required */}
             <div>
-              <Label htmlFor="selectedPlan" className="font-medium">
-                Training Plan *
+              <Label htmlFor="selectedPackage" className="font-medium">
+                Training Package *
               </Label>
               <Select
-                value={formData.selectedPlan}
+                value={formData.selectedPackage}
                 onValueChange={(value) =>
-                  handleInputChange("selectedPlan", value)
+                  handleInputChange("selectedPackage", value)
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select plan" />
+                  <SelectValue placeholder="Select package" />
                 </SelectTrigger>
                 <SelectContent>
-                  {activePlans.length === 0 ? (
+                  {activePackages.length === 0 ? (
                     <SelectItem value="" disabled>
-                      No active plans available
+                      No active packages available
                     </SelectItem>
                   ) : (
-                    activePlans.map((plan) => (
-                      <SelectItem key={plan.planName} value={plan.planName}>
-                        {plan.planName} ({plan.planDuration} weeks)
+                    activePackages.map((pkg) => (
+                      <SelectItem key={pkg.packageName} value={pkg.packageName}>
+                        {pkg.packageName} ({pkg.packageDuration} weeks)
                       </SelectItem>
                     ))
                   )}

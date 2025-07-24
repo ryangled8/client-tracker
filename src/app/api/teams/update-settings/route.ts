@@ -40,7 +40,7 @@ export async function PUT(req: Request) {
       if (settings.clientFormFields) {
         settings.clientFormFields.name = true
         settings.clientFormFields.assignedCoach = true
-        settings.clientFormFields.trainingPlan = true
+        settings.clientFormFields.trainingPackage = true
       }
 
       // Validate notice period

@@ -11,7 +11,7 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { teamId, name, plans } = await req.json()
+    const { teamId, name, packages } = await req.json()
 
     if (!teamId) {
       return NextResponse.json({ error: "Team ID is required" }, { status: 400 })
@@ -31,7 +31,7 @@ export async function PUT(req: Request) {
 
     const updateData: any = {}
     if (name) updateData.name = name
-    if (plans) updateData.plans = plans
+    if (packages) updateData.packages = packages
 
     const updatedTeam = await Team.findByIdAndUpdate(teamId, updateData, { new: true })
 
