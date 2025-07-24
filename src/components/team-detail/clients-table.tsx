@@ -337,18 +337,32 @@ export function ClientsTable({
           <TableHeader>
             <TableRow>
               <TableHead>Client</TableHead>
-              {settings.clientFormFields.email && <TableHead>Email</TableHead>}
-              {settings.clientFormFields.phone && <TableHead>Phone</TableHead>}
-              {settings.clientFormFields.age && <TableHead>Age</TableHead>}
-              {settings.clientFormFields.gender && (
-                <TableHead>Gender</TableHead>
-              )}
               <TableHead>Coach</TableHead>
               {settings.clientFormFields.startDate && (
                 <TableHead>Start Date</TableHead>
               )}
               <TableHead>Training Package</TableHead>
               <TableHead>Package End Date</TableHead>
+              {settings.clientFormFields.progressCallDate && (
+                <TableHead>Next Progress Call</TableHead>
+              )}
+              {settings.clientFormFields.planUpdateDate && (
+                <TableHead>Next Plan Update</TableHead>
+              )}
+              {settings.clientFormFields.renewalCallDate && (
+                <TableHead>Renewal Call</TableHead>
+              )}
+              {settings.clientFormFields.status && (
+                <TableHead>Status</TableHead>
+              )}
+
+              {/* Additional fields from settings (before notes) */}
+              {settings.clientFormFields.email && <TableHead>Email</TableHead>}
+              {settings.clientFormFields.phone && <TableHead>Phone</TableHead>}
+              {settings.clientFormFields.age && <TableHead>Age</TableHead>}
+              {settings.clientFormFields.gender && (
+                <TableHead>Gender</TableHead>
+              )}
               {settings.clientFormFields.currentWeight && (
                 <TableHead>Current Weight</TableHead>
               )}
@@ -361,32 +375,61 @@ export function ClientsTable({
               {settings.clientFormFields.membershipType && (
                 <TableHead>Membership Type</TableHead>
               )}
-              {settings.clientFormFields.renewalCallDate && (
-                <TableHead>Renewal Call</TableHead>
-              )}
-              {settings.clientFormFields.progressCallDate && (
-                <TableHead>Progress Call</TableHead>
-              )}
-              {settings.clientFormFields.planUpdateDate && (
-                <TableHead>Plan Update</TableHead>
-              )}
+
+              {/* Notes always comes last before actions */}
               {settings.clientFormFields.notes && <TableHead>Notes</TableHead>}
-              {settings.clientFormFields.status && (
-                <TableHead>Status</TableHead>
-              )}
-              <TableHead className="w-[80px]">Actions</TableHead>
+              <TableHead className="w-[80px]">
+                <div className="flex items-center justify-between">
+                  <span>Actions</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 ml-2"
+                    title="Reorder columns (coming soon)"
+                  >
+                    <svg
+                      className="h-3 w-3"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 6h16M4 12h16M4 18h16"
+                      />
+                    </svg>
+                  </Button>
+                </div>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredClients.length === 0 ? (
               <TableRow>
                 {(() => {
-                  const totalColumns =
-                    Object.values(settings.clientFormFields).filter(Boolean)
-                      .length + 3; // +3 for Coach, Training Package, Package End Date, and Actions columns
+                  // Count all visible columns
+                  let columnCount = 4; // Client, Coach, Training Package, Package End Date (always visible)
+                  if (settings.clientFormFields.startDate) columnCount++;
+                  if (settings.clientFormFields.progressCallDate) columnCount++;
+                  if (settings.clientFormFields.planUpdateDate) columnCount++;
+                  if (settings.clientFormFields.renewalCallDate) columnCount++;
+                  if (settings.clientFormFields.status) columnCount++;
+                  if (settings.clientFormFields.email) columnCount++;
+                  if (settings.clientFormFields.phone) columnCount++;
+                  if (settings.clientFormFields.age) columnCount++;
+                  if (settings.clientFormFields.gender) columnCount++;
+                  if (settings.clientFormFields.currentWeight) columnCount++;
+                  if (settings.clientFormFields.targetWeight) columnCount++;
+                  if (settings.clientFormFields.height) columnCount++;
+                  if (settings.clientFormFields.membershipType) columnCount++;
+                  if (settings.clientFormFields.notes) columnCount++;
+                  columnCount++; // Actions column
+
                   return (
                     <TableCell
-                      colSpan={totalColumns}
+                      colSpan={columnCount}
                       className="h-24 text-center"
                     >
                       No clients found.
@@ -406,23 +449,19 @@ export function ClientsTable({
                     <TableCell>
                       <div className="font-medium">{client.name}</div>
                     </TableCell>
-                    {settings.clientFormFields.email && (
-                      <TableCell>{client.email || "-"}</TableCell>
-                    )}
-                    {settings.clientFormFields.phone && (
-                      <TableCell>{client.phone || "-"}</TableCell>
-                    )}
-                    {settings.clientFormFields.age && (
-                      <TableCell>{client.age || "-"}</TableCell>
-                    )}
-                    {settings.clientFormFields.gender && (
-                      <TableCell>{client.gender || "-"}</TableCell>
-                    )}
+
                     <TableCell>
                       {client.assignedCoach && client.assignedCoach.name
                         ? client.assignedCoach.name
                         : "Unassigned"}
                     </TableCell>
+
+                    {settings.clientFormFields.startDate && (
+                      <TableCell>
+                        {formatDateDisplay(new Date(client.startDate))}
+                      </TableCell>
+                    )}
+
                     <TableCell>
                       <Badge
                         style={{
@@ -434,6 +473,7 @@ export function ClientsTable({
                         {client.selectedPackage}
                       </Badge>
                     </TableCell>
+
                     <TableCell>
                       {dates && (
                         <div className="text-gray-700">
@@ -441,48 +481,6 @@ export function ClientsTable({
                         </div>
                       )}
                     </TableCell>
-                    {settings.clientFormFields.startDate && (
-                      <TableCell>
-                        {formatDateDisplay(new Date(client.startDate))}
-                      </TableCell>
-                    )}
-                    {settings.clientFormFields.currentWeight && (
-                      <TableCell>
-                        {client.currentWeight
-                          ? `${client.currentWeight} kg`
-                          : "-"}
-                      </TableCell>
-                    )}
-                    {settings.clientFormFields.targetWeight && (
-                      <TableCell>
-                        {client.targetWeight
-                          ? `${client.targetWeight} kg`
-                          : "-"}
-                      </TableCell>
-                    )}
-                    {settings.clientFormFields.height && (
-                      <TableCell>
-                        {client.height ? `${client.height} cm` : "-"}
-                      </TableCell>
-                    )}
-                    {settings.clientFormFields.membershipType && (
-                      <TableCell>{client.membershipType || "-"}</TableCell>
-                    )}
-
-                    {settings.clientFormFields.renewalCallDate && (
-                      <TableCell>
-                        {dates && (
-                          <div
-                            className={getDateClassName(dates.renewalCallDate)}
-                          >
-                            {formatDateDisplay(dates.renewalCallDate)}
-                            {isDateOverdue(dates.renewalCallDate) && (
-                              <AlertCircle className="inline-block ml-1 h-3 w-3" />
-                            )}
-                          </div>
-                        )}
-                      </TableCell>
-                    )}
 
                     {settings.clientFormFields.progressCallDate && (
                       <TableCell>
@@ -524,17 +522,17 @@ export function ClientsTable({
                       </TableCell>
                     )}
 
-                    {settings.clientFormFields.notes && (
+                    {settings.clientFormFields.renewalCallDate && (
                       <TableCell>
-                        {client.notes ? (
+                        {dates && (
                           <div
-                            className="max-w-[200px] truncate"
-                            title={client.notes}
+                            className={getDateClassName(dates.renewalCallDate)}
                           >
-                            {client.notes}
+                            {formatDateDisplay(dates.renewalCallDate)}
+                            {isDateOverdue(dates.renewalCallDate) && (
+                              <AlertCircle className="inline-block ml-1 h-3 w-3" />
+                            )}
                           </div>
-                        ) : (
-                          <span className="text-gray-400">-</span>
                         )}
                       </TableCell>
                     )}
@@ -554,6 +552,58 @@ export function ClientsTable({
                         >
                           {client.status}
                         </Badge>
+                      </TableCell>
+                    )}
+
+                    {/* Additional fields from settings */}
+                    {settings.clientFormFields.email && (
+                      <TableCell>{client.email || "-"}</TableCell>
+                    )}
+                    {settings.clientFormFields.phone && (
+                      <TableCell>{client.phone || "-"}</TableCell>
+                    )}
+                    {settings.clientFormFields.age && (
+                      <TableCell>{client.age || "-"}</TableCell>
+                    )}
+                    {settings.clientFormFields.gender && (
+                      <TableCell>{client.gender || "-"}</TableCell>
+                    )}
+                    {settings.clientFormFields.currentWeight && (
+                      <TableCell>
+                        {client.currentWeight
+                          ? `${client.currentWeight} kg`
+                          : "-"}
+                      </TableCell>
+                    )}
+                    {settings.clientFormFields.targetWeight && (
+                      <TableCell>
+                        {client.targetWeight
+                          ? `${client.targetWeight} kg`
+                          : "-"}
+                      </TableCell>
+                    )}
+                    {settings.clientFormFields.height && (
+                      <TableCell>
+                        {client.height ? `${client.height} cm` : "-"}
+                      </TableCell>
+                    )}
+                    {settings.clientFormFields.membershipType && (
+                      <TableCell>{client.membershipType || "-"}</TableCell>
+                    )}
+
+                    {/* Notes always comes last before actions */}
+                    {settings.clientFormFields.notes && (
+                      <TableCell>
+                        {client.notes ? (
+                          <div
+                            className="max-w-[200px] truncate"
+                            title={client.notes}
+                          >
+                            {client.notes}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
                       </TableCell>
                     )}
 
