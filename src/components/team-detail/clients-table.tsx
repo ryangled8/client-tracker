@@ -36,20 +36,12 @@ import {
   AlertCircle,
 } from "lucide-react";
 import type { TeamSettings } from "@/types";
+import {
+  calculateClientDates,
+  formatDateForDisplay,
+} from "@/utils/dateCalculations";
 
-// Add these helper functions at the top of the component:
-const addWeeks = (date: Date, weeks: number): Date => {
-  const result = new Date(date);
-  result.setDate(result.getDate() + weeks * 7);
-  return result;
-};
-
-const addDays = (date: Date, days: number): Date => {
-  const result = new Date(date);
-  result.setDate(result.getDate() + days);
-  return result;
-};
-
+// Remove the existing helper functions and replace with:
 const isAfter = (date1: Date, date2: Date): boolean => {
   return date1.getTime() > date2.getTime();
 };
@@ -58,12 +50,10 @@ const isBefore = (date1: Date, date2: Date): boolean => {
   return date1.getTime() < date2.getTime();
 };
 
-const formatDate = (date: Date, format: string): string => {
-  if (format === "dd/mm/yyyy") {
-    return date.toLocaleDateString("en-GB");
-  } else {
-    return date.toLocaleDateString("en-US");
-  }
+const addDays = (date: Date, days: number): Date => {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
 };
 
 interface Coach {
@@ -74,10 +64,10 @@ interface Coach {
 
 interface Package {
   packageName: string;
-  packageDuration: number;
-  planProgressCall: number;
-  planRenewalCall: number;
-  planUpdateWeek: number;
+  durationInWeeks: number;
+  progressIntervalInWeeks: number;
+  planUpdateIntervalInWeeks: number;
+  renewalCallWeeksBeforeEnd: number;
   packageColor?: string;
   isActive: boolean;
 }
@@ -171,32 +161,29 @@ export function ClientsTable({
     const pkg = packages.find((p) => p.packageName === client.selectedPackage);
     if (!pkg) return null;
 
-    const startDate = new Date(client.startDate);
+    const packageConfig = {
+      durationInWeeks: pkg.durationInWeeks,
+      progressIntervalInWeeks: pkg.progressIntervalInWeeks,
+      planUpdateIntervalInWeeks: pkg.planUpdateIntervalInWeeks,
+      renewalCallWeeksBeforeEnd: pkg.renewalCallWeeksBeforeEnd,
+    };
 
-    const renewalCallDate = client.customRenewalCallDate
-      ? new Date(client.customRenewalCallDate)
-      : addWeeks(startDate, pkg.planRenewalCall);
-
-    const progressCallDate = client.customProgressCallDate
-      ? new Date(client.customProgressCallDate)
-      : addWeeks(startDate, pkg.planProgressCall);
-
-    const planUpdateDate = client.customPlanUpdateDate
-      ? new Date(client.customPlanUpdateDate)
-      : addWeeks(startDate, pkg.planUpdateWeek);
-
-    const packageEndDate = addWeeks(startDate, pkg.packageDuration);
+    const dates = calculateClientDates(
+      client.startDate,
+      packageConfig,
+      client.customRenewalCallDate
+    );
 
     return {
-      renewalCallDate,
-      progressCallDate,
-      planUpdateDate,
-      packageEndDate,
+      renewalCallDate: dates.renewalCallDate,
+      progressCallDate: dates.nextProgressCallDate,
+      planUpdateDate: dates.nextPlanUpdateDate,
+      packageEndDate: dates.packageEndDate,
     };
   };
 
   const formatDateDisplay = (date: Date) => {
-    return formatDate(date, settings.dateFormat);
+    return formatDateForDisplay(date, settings.dateFormat);
   };
 
   const isDateSoon = (date: Date) => {
@@ -357,10 +344,11 @@ export function ClientsTable({
                 <TableHead>Gender</TableHead>
               )}
               <TableHead>Coach</TableHead>
-              <TableHead>Training Package</TableHead>
               {settings.clientFormFields.startDate && (
                 <TableHead>Start Date</TableHead>
               )}
+              <TableHead>Training Package</TableHead>
+              <TableHead>Package End Date</TableHead>
               {settings.clientFormFields.currentWeight && (
                 <TableHead>Current Weight</TableHead>
               )}
@@ -395,7 +383,7 @@ export function ClientsTable({
                 {(() => {
                   const totalColumns =
                     Object.values(settings.clientFormFields).filter(Boolean)
-                      .length + 2; // +2 for Coach and Actions columns
+                      .length + 3; // +3 for Coach, Training Package, Package End Date, and Actions columns
                   return (
                     <TableCell
                       colSpan={totalColumns}
@@ -446,6 +434,13 @@ export function ClientsTable({
                         {client.selectedPackage}
                       </Badge>
                     </TableCell>
+                    <TableCell>
+                      {dates && (
+                        <div className="text-gray-700">
+                          {formatDateDisplay(dates.packageEndDate)}
+                        </div>
+                      )}
+                    </TableCell>
                     {settings.clientFormFields.startDate && (
                       <TableCell>
                         {formatDateDisplay(new Date(client.startDate))}
@@ -491,7 +486,7 @@ export function ClientsTable({
 
                     {settings.clientFormFields.progressCallDate && (
                       <TableCell>
-                        {dates && (
+                        {dates && dates.progressCallDate && (
                           <div
                             className={getDateClassName(dates.progressCallDate)}
                           >
@@ -501,12 +496,17 @@ export function ClientsTable({
                             )}
                           </div>
                         )}
+                        {dates && !dates.progressCallDate && (
+                          <span className="text-gray-400">
+                            No upcoming calls
+                          </span>
+                        )}
                       </TableCell>
                     )}
 
                     {settings.clientFormFields.planUpdateDate && (
                       <TableCell>
-                        {dates && (
+                        {dates && dates.planUpdateDate && (
                           <div
                             className={getDateClassName(dates.planUpdateDate)}
                           >
@@ -515,6 +515,11 @@ export function ClientsTable({
                               <AlertCircle className="inline-block ml-1 h-3 w-3" />
                             )}
                           </div>
+                        )}
+                        {dates && !dates.planUpdateDate && (
+                          <span className="text-gray-400">
+                            No upcoming updates
+                          </span>
                         )}
                       </TableCell>
                     )}

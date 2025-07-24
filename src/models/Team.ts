@@ -7,10 +7,10 @@ export interface ITeam extends Document {
   clients: ObjectId[] // All clients added to team
   packages: {
     packageName: string // name of package (e.g., "12 Week Transformation Package")
-    packageDuration: number // duration of package in weeks (e.g., 12 weeks)
-    planProgressCall: number // what week during the 'packageDuration' should the progress call be scheduled
-    planRenewalCall: number // what week during the 'packageDuration' should the renewal call be scheduled
-    planUpdateWeek: number // what week during the 'packageDuration' should the training plan be updated
+    durationInWeeks: number // duration of package in weeks (e.g., 12 weeks)
+    progressIntervalInWeeks: number // how often progress calls occur (e.g., every 10 weeks)
+    planUpdateIntervalInWeeks: number // how often plan updates occur (e.g., every 12 weeks)
+    renewalCallWeeksBeforeEnd: number // weeks before package end for renewal call (default: 2)
     packageColor: string // hex color code for the package
     isActive: boolean // whether this package is currently available for assignment
     createdAt: Date
@@ -75,24 +75,24 @@ const teamSchema = new Schema<ITeam>(
           trim: true,
           maxlength: 100,
         },
-        packageDuration: {
+        durationInWeeks: {
           type: Number,
           required: true,
           min: 1,
         },
-        planProgressCall: {
+        progressIntervalInWeeks: {
           type: Number,
           required: true,
           min: 1,
         },
-        planRenewalCall: {
+        planUpdateIntervalInWeeks: {
           type: Number,
           required: true,
           min: 1,
         },
-        planUpdateWeek: {
+        renewalCallWeeksBeforeEnd: {
           type: Number,
-          required: true,
+          default: 2,
           min: 1,
         },
         packageColor: {

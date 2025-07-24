@@ -1,64 +1,106 @@
-// Frontend utility functions for date calculations
+// Package Date Calculations using date-fns to avoid long-term drift due to uneven days in months & leap years.
+
+import { addWeeks, subWeeks, format } from "date-fns"
+
+export interface PackageConfig {
+  durationInWeeks: number
+  progressIntervalInWeeks: number
+  planUpdateIntervalInWeeks: number
+  renewalCallWeeksBeforeEnd: number
+}
+
 export interface ClientDates {
   packageEndDate: Date
-  progressCallDate: Date
+  nextProgressCallDate: Date | null
+  nextPlanUpdateDate: Date | null
   renewalCallDate: Date
-  planUpdateDate: Date
+  allProgressCallDates: Date[]
+  allPlanUpdateDates: Date[]
 }
 
 export function calculateClientDates(
   startDate: Date | string,
-  trainingPackage: {
-    packageDuration: number
-    planProgressCall: number
-    planRenewalCall: number
-    planUpdateWeek: number
-  },
-  customDates?: {
-    customProgressCallDate?: Date
-    customRenewalCallDate?: Date
-    customPlanUpdateDate?: Date
-  },
+  packageConfig: PackageConfig,
+  customRenewalCallDate?: Date | string,
 ): ClientDates {
   const start = new Date(startDate)
+  const { durationInWeeks, progressIntervalInWeeks, planUpdateIntervalInWeeks, renewalCallWeeksBeforeEnd } =
+    packageConfig
+
+  // Calculate package end date
+  const packageEndDate = addWeeks(start, durationInWeeks)
+
+  // Calculate all progress call dates
+  const allProgressCallDates: Date[] = []
+  const totalProgressIntervals = Math.floor(durationInWeeks / progressIntervalInWeeks)
+  for (let i = 1; i <= totalProgressIntervals; i++) {
+    allProgressCallDates.push(addWeeks(start, i * progressIntervalInWeeks))
+  }
+
+  // Calculate all plan update dates
+  const allPlanUpdateDates: Date[] = []
+  const totalPlanUpdates = Math.floor(durationInWeeks / planUpdateIntervalInWeeks)
+  for (let i = 1; i <= totalPlanUpdates; i++) {
+    allPlanUpdateDates.push(addWeeks(start, i * planUpdateIntervalInWeeks))
+  }
+
+  // Find next upcoming progress call date
+  const now = new Date()
+  const nextProgressCallDate = allProgressCallDates.find((date) => date > now) || null
+
+  // Find next upcoming plan update date
+  const nextPlanUpdateDate = allPlanUpdateDates.find((date) => date > now) || null
+
+  // Calculate renewal call date (2 weeks before package end, or custom date)
+  const renewalCallDate = customRenewalCallDate
+    ? new Date(customRenewalCallDate)
+    : subWeeks(packageEndDate, renewalCallWeeksBeforeEnd)
 
   return {
-    packageEndDate: addWeeks(start, trainingPackage.packageDuration),
-    progressCallDate: customDates?.customProgressCallDate || addWeeks(start, trainingPackage.planProgressCall),
-    renewalCallDate: customDates?.customRenewalCallDate || addWeeks(start, trainingPackage.planRenewalCall),
-    planUpdateDate: customDates?.customPlanUpdateDate || addWeeks(start, trainingPackage.planUpdateWeek),
+    packageEndDate,
+    nextProgressCallDate,
+    nextPlanUpdateDate,
+    renewalCallDate,
+    allProgressCallDates,
+    allPlanUpdateDates,
   }
 }
 
-export function addWeeks(date: Date, weeks: number): Date {
-  const result = new Date(date)
-  result.setDate(result.getDate() + weeks * 7)
-  return result
+export function formatDateForDisplay(date: Date, dateFormat: "dd/mm/yyyy" | "mm/dd/yyyy"): string {
+  if (dateFormat === "dd/mm/yyyy") {
+    return format(date, "dd/MM/yyyy")
+  } else {
+    return format(date, "MM/dd/yyyy")
+  }
 }
 
-export function addDays(date: Date, days: number): Date {
-  const result = new Date(date)
-  result.setDate(result.getDate() + days)
-  return result
-}
+export function generateExampleDates(
+  durationInWeeks: number,
+  progressIntervalInWeeks: number,
+  planUpdateIntervalInWeeks: number,
+  renewalCallWeeksBeforeEnd = 2,
+): {
+  progressCallWeeks: number[]
+  planUpdateWeeks: number[]
+  renewalCallWeek: number
+} {
+  const progressCallWeeks: number[] = []
+  const totalProgressIntervals = Math.floor(durationInWeeks / progressIntervalInWeeks)
+  for (let i = 1; i <= totalProgressIntervals; i++) {
+    progressCallWeeks.push(i * progressIntervalInWeeks)
+  }
 
-// Helper to check if a date is overdue
-export function isOverdue(date: Date): boolean {
-  return new Date() > date
-}
+  const planUpdateWeeks: number[] = []
+  const totalPlanUpdates = Math.floor(durationInWeeks / planUpdateIntervalInWeeks)
+  for (let i = 1; i <= totalPlanUpdates; i++) {
+    planUpdateWeeks.push(i * planUpdateIntervalInWeeks)
+  }
 
-// Helper to get days until a date
-export function getDaysUntil(date: Date): number {
-  const today = new Date()
-  const diffTime = date.getTime() - today.getTime()
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-}
+  const renewalCallWeek = Math.max(1, durationInWeeks - renewalCallWeeksBeforeEnd)
 
-// Format date for display
-export function formatDate(date: Date): string {
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  })
+  return {
+    progressCallWeeks,
+    planUpdateWeeks,
+    renewalCallWeek,
+  }
 }

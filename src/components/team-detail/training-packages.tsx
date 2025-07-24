@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import type React from "react";
+
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import {
   Calendar,
@@ -29,14 +32,16 @@ import {
   ArchiveRestore,
   Check,
   Trash2,
+  Info,
 } from "lucide-react";
+import { generateExampleDates } from "@/utils/dateCalculations";
 
 interface Package {
   packageName: string;
-  packageDuration: number;
-  planProgressCall: number;
-  planRenewalCall: number;
-  planUpdateWeek: number;
+  durationInWeeks: number;
+  progressIntervalInWeeks: number;
+  planUpdateIntervalInWeeks: number;
+  renewalCallWeeksBeforeEnd: number;
   packageColor?: string;
   isActive: boolean;
   createdAt: string;
@@ -44,11 +49,17 @@ interface Package {
 
 interface PackageFormData {
   packageName: string;
-  packageDuration: string;
-  planProgressCall: string;
-  planRenewalCall: string;
-  planUpdateWeek: string;
+  durationInWeeks: string;
+  progressIntervalInWeeks: string;
+  planUpdateIntervalInWeeks: string;
+  renewalCallWeeksBeforeEnd: string;
   packageColor: string;
+}
+
+interface ExampleSchedule {
+  progressCallWeeks: number[];
+  planUpdateWeeks: number[];
+  renewalCallWeek: number;
 }
 
 interface TrainingPackagesProps {
@@ -73,6 +84,34 @@ const COLOR_PALETTE = [
   { name: "Violet", value: "#7c3aed" },
 ];
 
+// Move this function outside the component to prevent re-creation on every render
+const generateExampleText = (
+  durationInWeeks: string,
+  progressIntervalInWeeks: string,
+  planUpdateIntervalInWeeks: string,
+  renewalCallWeeksBeforeEnd: string
+): ExampleSchedule | null => {
+  const duration = Number.parseInt(durationInWeeks) || 0;
+  const progressInterval = Number.parseInt(progressIntervalInWeeks) || 0;
+  const planUpdateInterval = Number.parseInt(planUpdateIntervalInWeeks) || 0;
+  const renewalWeeks = Number.parseInt(renewalCallWeeksBeforeEnd) || 2;
+
+  if (duration > 0 && progressInterval > 0 && planUpdateInterval > 0) {
+    const example = generateExampleDates(
+      duration,
+      progressInterval,
+      planUpdateInterval,
+      renewalWeeks
+    );
+    return {
+      progressCallWeeks: example.progressCallWeeks,
+      planUpdateWeeks: example.planUpdateWeeks,
+      renewalCallWeek: example.renewalCallWeek,
+    };
+  }
+  return null;
+};
+
 export function TrainingPackages({
   packages,
   teamId,
@@ -87,20 +126,20 @@ export function TrainingPackages({
   );
   const [packageForm, setPackageForm] = useState<PackageFormData>({
     packageName: "",
-    packageDuration: "",
-    planProgressCall: "",
-    planRenewalCall: "",
-    planUpdateWeek: "",
+    durationInWeeks: "",
+    progressIntervalInWeeks: "",
+    planUpdateIntervalInWeeks: "",
+    renewalCallWeeksBeforeEnd: "2",
     packageColor: "#3b82f6",
   });
 
   const resetPackageForm = () => {
     setPackageForm({
       packageName: "",
-      packageDuration: "",
-      planProgressCall: "",
-      planRenewalCall: "",
-      planUpdateWeek: "",
+      durationInWeeks: "",
+      progressIntervalInWeeks: "",
+      planUpdateIntervalInWeeks: "",
+      renewalCallWeeksBeforeEnd: "2",
       packageColor: "#3b82f6",
     });
   };
@@ -108,9 +147,9 @@ export function TrainingPackages({
   const validatePackageForm = (
     packageName: string,
     duration: number,
-    progressCall: number,
-    renewalCall: number,
-    updateWeek: number,
+    progressInterval: number,
+    planUpdateInterval: number,
+    renewalCallWeeks: number,
     isEdit = false,
     originalPackageName = ""
   ) => {
@@ -124,19 +163,39 @@ export function TrainingPackages({
       return false;
     }
 
-    if (!progressCall || progressCall < 1 || progressCall > duration) {
-      toast.error(`Progress call week must be between 1 and ${duration}`);
+    if (!progressInterval || progressInterval < 1) {
+      toast.error("Progress call interval must be at least 1 week");
       return false;
     }
 
-    if (!renewalCall || renewalCall < 1 || renewalCall > duration) {
-      toast.error(`Renewal call week must be between 1 and ${duration}`);
+    if (!planUpdateInterval || planUpdateInterval < 1) {
+      toast.error("Plan update interval must be at least 1 week");
       return false;
     }
 
-    if (!updateWeek || updateWeek < 1 || updateWeek > duration) {
+    if (
+      !renewalCallWeeks ||
+      renewalCallWeeks < 1 ||
+      renewalCallWeeks >= duration
+    ) {
       toast.error(
-        `Training plan update week must be between 1 and ${duration}`
+        `Renewal call must be between 1 and ${
+          duration - 1
+        } weeks before package end`
+      );
+      return false;
+    }
+
+    if (progressInterval > duration) {
+      toast.error(
+        "Progress call interval cannot be longer than package duration"
+      );
+      return false;
+    }
+
+    if (planUpdateInterval > duration) {
+      toast.error(
+        "Plan update interval cannot be longer than package duration"
       );
       return false;
     }
@@ -159,24 +218,24 @@ export function TrainingPackages({
   const createPackage = async () => {
     const {
       packageName,
-      packageDuration,
-      planProgressCall,
-      planRenewalCall,
-      planUpdateWeek,
+      durationInWeeks,
+      progressIntervalInWeeks,
+      planUpdateIntervalInWeeks,
+      renewalCallWeeksBeforeEnd,
       packageColor,
     } = packageForm;
-    const duration = Number.parseInt(packageDuration);
-    const progressCall = Number.parseInt(planProgressCall);
-    const renewalCall = Number.parseInt(planRenewalCall);
-    const updateWeek = Number.parseInt(planUpdateWeek);
+    const duration = Number.parseInt(durationInWeeks);
+    const progressInterval = Number.parseInt(progressIntervalInWeeks);
+    const planUpdateInterval = Number.parseInt(planUpdateIntervalInWeeks);
+    const renewalWeeks = Number.parseInt(renewalCallWeeksBeforeEnd);
 
     if (
       !validatePackageForm(
         packageName,
         duration,
-        progressCall,
-        renewalCall,
-        updateWeek
+        progressInterval,
+        planUpdateInterval,
+        renewalWeeks
       )
     ) {
       return;
@@ -186,10 +245,10 @@ export function TrainingPackages({
     try {
       const newPackage = {
         packageName: packageName.trim(),
-        packageDuration: duration,
-        planProgressCall: progressCall,
-        planRenewalCall: renewalCall,
-        planUpdateWeek: updateWeek,
+        durationInWeeks: duration,
+        progressIntervalInWeeks: progressInterval,
+        planUpdateIntervalInWeeks: planUpdateInterval,
+        renewalCallWeeksBeforeEnd: renewalWeeks,
         packageColor: packageColor,
         isActive: true,
         createdAt: new Date().toISOString(),
@@ -211,7 +270,7 @@ export function TrainingPackages({
       if (response.ok) {
         resetPackageForm();
         setPackageDialogOpen(false);
-        onPackagesUpdated(); // This will trigger a refresh of the entire team data
+        onPackagesUpdated();
         toast.success("Training package created successfully");
       } else {
         toast.error(data.error || "Failed to create training package");
@@ -227,10 +286,10 @@ export function TrainingPackages({
     const pkg = packages[packageIndex];
     setPackageForm({
       packageName: pkg.packageName,
-      packageDuration: pkg.packageDuration.toString(),
-      planProgressCall: pkg.planProgressCall.toString(),
-      planRenewalCall: pkg.planRenewalCall.toString(),
-      planUpdateWeek: pkg.planUpdateWeek.toString(),
+      durationInWeeks: pkg.durationInWeeks.toString(),
+      progressIntervalInWeeks: pkg.progressIntervalInWeeks.toString(),
+      renewalCallWeeksBeforeEnd: pkg.renewalCallWeeksBeforeEnd.toString(),
+      planUpdateIntervalInWeeks: pkg.planUpdateIntervalInWeeks.toString(),
       packageColor: pkg.packageColor || "#3b82f6",
     });
     setEditingPackageIndex(packageIndex);
@@ -242,25 +301,25 @@ export function TrainingPackages({
 
     const {
       packageName,
-      packageDuration,
-      planProgressCall,
-      planRenewalCall,
-      planUpdateWeek,
+      durationInWeeks,
+      progressIntervalInWeeks,
+      planUpdateIntervalInWeeks,
+      renewalCallWeeksBeforeEnd,
       packageColor,
     } = packageForm;
-    const duration = Number.parseInt(packageDuration);
-    const progressCall = Number.parseInt(planProgressCall);
-    const renewalCall = Number.parseInt(planRenewalCall);
-    const updateWeek = Number.parseInt(planUpdateWeek);
+    const duration = Number.parseInt(durationInWeeks);
+    const progressInterval = Number.parseInt(progressIntervalInWeeks);
+    const planUpdateInterval = Number.parseInt(planUpdateIntervalInWeeks);
+    const renewalWeeks = Number.parseInt(renewalCallWeeksBeforeEnd);
 
     const originalPackage = packages[editingPackageIndex];
     if (
       !validatePackageForm(
         packageName,
         duration,
-        progressCall,
-        renewalCall,
-        updateWeek,
+        progressInterval,
+        planUpdateInterval,
+        renewalWeeks,
         true,
         originalPackage.packageName
       )
@@ -274,11 +333,11 @@ export function TrainingPackages({
       updatedPackages[editingPackageIndex] = {
         ...originalPackage,
         packageName: packageName.trim(),
-        packageDuration: duration,
-        planProgressCall: progressCall,
-        planRenewalCall: renewalCall,
-        planUpdateWeek: updateWeek,
-        packageColor: packageColor || originalPackage.packageColor || "#3b82f6", // Ensure color is preserved
+        durationInWeeks: duration,
+        progressIntervalInWeeks: progressInterval,
+        planUpdateIntervalInWeeks: planUpdateInterval,
+        renewalCallWeeksBeforeEnd: renewalWeeks,
+        packageColor: packageColor || originalPackage.packageColor || "#3b82f6",
       };
 
       const response = await fetch("/api/teams/update-team", {
@@ -296,7 +355,7 @@ export function TrainingPackages({
         resetPackageForm();
         setEditPackageDialogOpen(false);
         setEditingPackageIndex(null);
-        onPackagesUpdated(); // This will trigger a refresh of the entire team data
+        onPackagesUpdated();
         toast.success("Training package updated successfully");
       } else {
         toast.error(data.error || "Failed to update training package");
@@ -331,7 +390,7 @@ export function TrainingPackages({
       const data = await response.json();
 
       if (response.ok) {
-        onPackagesUpdated(); // This will trigger a refresh of the entire team data
+        onPackagesUpdated();
         toast.success(
           `Package ${newStatus ? "activated" : "deactivated"} successfully`
         );
@@ -372,7 +431,7 @@ export function TrainingPackages({
       const data = await response.json();
 
       if (response.ok) {
-        onPackagesUpdated(); // This will trigger a refresh of the entire team data
+        onPackagesUpdated();
         toast.success(
           `Package "${packageToDelete.packageName}" deleted successfully`
         );
@@ -420,6 +479,21 @@ export function TrainingPackages({
     </div>
   );
 
+  // Replace the existing getExampleText function with this memoized version
+  const exampleText = useMemo(() => {
+    return generateExampleText(
+      packageForm.durationInWeeks,
+      packageForm.progressIntervalInWeeks,
+      packageForm.planUpdateIntervalInWeeks,
+      packageForm.renewalCallWeeksBeforeEnd
+    );
+  }, [
+    packageForm.durationInWeeks,
+    packageForm.progressIntervalInWeeks,
+    packageForm.planUpdateIntervalInWeeks,
+    packageForm.renewalCallWeeksBeforeEnd,
+  ]);
+
   return (
     <Card>
       <CardHeader>
@@ -435,125 +509,6 @@ export function TrainingPackages({
                 Add Package
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Add Training Package</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 pt-4">
-                <div>
-                  <Label htmlFor="add-packageName">Package Name *</Label>
-                  <Input
-                    id="add-packageName"
-                    value={packageForm.packageName}
-                    onChange={(e) =>
-                      setPackageForm((prev) => ({
-                        ...prev,
-                        packageName: e.target.value,
-                      }))
-                    }
-                    placeholder="e.g., 12 Week Transformation Package"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="add-packageDuration">
-                    Package Duration (weeks) *
-                  </Label>
-                  <Input
-                    id="add-packageDuration"
-                    type="number"
-                    min="1"
-                    value={packageForm.packageDuration}
-                    onChange={(e) =>
-                      setPackageForm((prev) => ({
-                        ...prev,
-                        packageDuration: e.target.value,
-                      }))
-                    }
-                    placeholder="e.g., 12"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="add-planProgressCall">
-                    Progress Call Week *
-                  </Label>
-                  <Input
-                    id="add-planProgressCall"
-                    type="number"
-                    min="1"
-                    value={packageForm.planProgressCall}
-                    onChange={(e) =>
-                      setPackageForm((prev) => ({
-                        ...prev,
-                        planProgressCall: e.target.value,
-                      }))
-                    }
-                    placeholder="e.g., 4"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Which week should the progress call be scheduled?
-                  </p>
-                </div>
-                <div>
-                  <Label htmlFor="add-planRenewalCall">
-                    Renewal Call Week *
-                  </Label>
-                  <Input
-                    id="add-planRenewalCall"
-                    type="number"
-                    min="1"
-                    value={packageForm.planRenewalCall}
-                    onChange={(e) =>
-                      setPackageForm((prev) => ({
-                        ...prev,
-                        planRenewalCall: e.target.value,
-                      }))
-                    }
-                    placeholder="e.g., 10"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Which week should the renewal call be scheduled?
-                  </p>
-                </div>
-                <div>
-                  <Label htmlFor="add-planUpdateWeek">
-                    Training Plan Update Week *
-                  </Label>
-                  <Input
-                    id="add-planUpdateWeek"
-                    type="number"
-                    min="1"
-                    value={packageForm.planUpdateWeek}
-                    onChange={(e) =>
-                      setPackageForm((prev) => ({
-                        ...prev,
-                        planUpdateWeek: e.target.value,
-                      }))
-                    }
-                    placeholder="e.g., 6"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Which week should the training plan be updated?
-                  </p>
-                </div>
-                <ColorPicker
-                  selectedColor={packageForm.packageColor}
-                  onColorChange={(color) =>
-                    setPackageForm((prev) => ({ ...prev, packageColor: color }))
-                  }
-                />
-                <div className="flex justify-end space-x-2 pt-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => setPackageDialogOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button onClick={createPackage} disabled={creatingPackage}>
-                    {creatingPackage ? "Creating..." : "Create Package"}
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
           </Dialog>
         </div>
       </CardHeader>
@@ -584,10 +539,10 @@ export function TrainingPackages({
                       </Badge>
                     </div>
                     <div className="text-gray-500 text-xs mt-1">
-                      {pkg.packageDuration} weeks • Progress: Week{" "}
-                      {pkg.planProgressCall} • Renewal: Week{" "}
-                      {pkg.planRenewalCall} • Plan Update: Week{" "}
-                      {pkg.planUpdateWeek}
+                      {pkg.durationInWeeks} weeks • Progress: Every{" "}
+                      {pkg.progressIntervalInWeeks} weeks • Plan Updates: Every{" "}
+                      {pkg.planUpdateIntervalInWeeks} weeks • Renewal:{" "}
+                      {pkg.renewalCallWeeksBeforeEnd} weeks before end
                     </div>
                   </div>
                   <DropdownMenu>
@@ -632,129 +587,249 @@ export function TrainingPackages({
         </div>
       </CardContent>
 
-      {/* Edit Package Dialog */}
-      <Dialog
+      {/* Create Package Modal */}
+      <PackageModal
+        isEdit={false}
+        open={packageDialogOpen}
+        onOpenChange={setPackageDialogOpen}
+        packageForm={packageForm}
+        setPackageForm={setPackageForm}
+        createPackage={createPackage}
+        creatingPackage={creatingPackage}
+        ColorPicker={ColorPicker}
+        exampleText={exampleText}
+      />
+
+      {/* Edit Package Modal */}
+      <PackageModal
+        isEdit={true}
         open={editPackageDialogOpen}
         onOpenChange={setEditPackageDialogOpen}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Edit Training Package</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-4">
-            <div>
-              <Label htmlFor="edit-packageName">Package Name *</Label>
-              <Input
-                id="edit-packageName"
-                value={packageForm.packageName}
-                onChange={(e) =>
-                  setPackageForm((prev) => ({
-                    ...prev,
-                    packageName: e.target.value,
-                  }))
-                }
-                placeholder="e.g., 12 Week Transformation Package"
-              />
-            </div>
-            <div>
-              <Label htmlFor="edit-packageDuration">
-                Package Duration (weeks) *
-              </Label>
-              <Input
-                id="edit-packageDuration"
-                type="number"
-                min="1"
-                value={packageForm.packageDuration}
-                onChange={(e) =>
-                  setPackageForm((prev) => ({
-                    ...prev,
-                    packageDuration: e.target.value,
-                  }))
-                }
-                placeholder="e.g., 12"
-              />
-            </div>
-            <div>
-              <Label htmlFor="edit-planProgressCall">
-                Progress Call Week *
-              </Label>
-              <Input
-                id="edit-planProgressCall"
-                type="number"
-                min="1"
-                value={packageForm.planProgressCall}
-                onChange={(e) =>
-                  setPackageForm((prev) => ({
-                    ...prev,
-                    planProgressCall: e.target.value,
-                  }))
-                }
-                placeholder="e.g., 4"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Which week should the progress call be scheduled?
-              </p>
-            </div>
-            <div>
-              <Label htmlFor="edit-planRenewalCall">Renewal Call Week *</Label>
-              <Input
-                id="edit-planRenewalCall"
-                type="number"
-                min="1"
-                value={packageForm.planRenewalCall}
-                onChange={(e) =>
-                  setPackageForm((prev) => ({
-                    ...prev,
-                    planRenewalCall: e.target.value,
-                  }))
-                }
-                placeholder="e.g., 10"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Which week should the renewal call be scheduled?
-              </p>
-            </div>
-            <div>
-              <Label htmlFor="edit-planUpdateWeek">
-                Training Plan Update Week *
-              </Label>
-              <Input
-                id="edit-planUpdateWeek"
-                type="number"
-                min="1"
-                value={packageForm.planUpdateWeek}
-                onChange={(e) =>
-                  setPackageForm((prev) => ({
-                    ...prev,
-                    planUpdateWeek: e.target.value,
-                  }))
-                }
-                placeholder="e.g., 6"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Which week should the training plan be updated?
-              </p>
-            </div>
-            <ColorPicker
-              selectedColor={packageForm.packageColor}
-              onColorChange={(color) =>
-                setPackageForm((prev) => ({ ...prev, packageColor: color }))
-              }
-            />
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button
-                variant="outline"
-                onClick={() => setEditPackageDialogOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button onClick={updatePackage} disabled={updatingPackage}>
-                {updatingPackage ? "Updating..." : "Update Package"}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+        packageForm={packageForm}
+        setPackageForm={setPackageForm}
+        updatePackage={updatePackage}
+        updatingPackage={updatingPackage}
+        ColorPicker={ColorPicker}
+        exampleText={exampleText}
+      />
     </Card>
   );
 }
+
+const PackageModal = ({
+  isEdit = false,
+  open,
+  onOpenChange,
+  packageForm,
+  setPackageForm,
+  createPackage,
+  updatePackage,
+  creatingPackage,
+  updatingPackage,
+  ColorPicker,
+  exampleText,
+}: {
+  isEdit?: boolean;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  packageForm: PackageFormData;
+  setPackageForm: React.Dispatch<React.SetStateAction<PackageFormData>>;
+  createPackage?: () => Promise<void>;
+  updatePackage?: () => Promise<void>;
+  creatingPackage?: boolean;
+  updatingPackage?: boolean;
+  ColorPicker: React.FC<{
+    selectedColor: string;
+    onColorChange: (color: string) => void;
+  }>;
+  exampleText: ExampleSchedule | null;
+}) => (
+  <Dialog open={open} onOpenChange={onOpenChange}>
+    <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogHeader>
+        <DialogTitle>
+          {isEdit ? "Edit Package" : "Create New Package"}
+        </DialogTitle>
+        <p className="text-sm text-gray-600 mt-2">
+          Define a custom package with specific duration and call schedules
+        </p>
+      </DialogHeader>
+      <div className="space-y-6 pt-4">
+        <div>
+          <Label htmlFor={`${isEdit ? "edit" : "add"}-packageName`}>
+            Package Name *
+          </Label>
+          <Input
+            id={`${isEdit ? "edit" : "add"}-packageName`}
+            value={packageForm.packageName}
+            onChange={(e) =>
+              setPackageForm((prev: PackageFormData) => ({
+                ...prev,
+                packageName: e.target.value,
+              }))
+            }
+            placeholder="e.g., 12 Week Transformation Package"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor={`${isEdit ? "edit" : "add"}-durationInWeeks`}>
+            Duration of package (weeks) *
+          </Label>
+          <Input
+            id={`${isEdit ? "edit" : "add"}-durationInWeeks`}
+            type="number"
+            min="1"
+            value={packageForm.durationInWeeks}
+            onChange={(e) =>
+              setPackageForm((prev: PackageFormData) => ({
+                ...prev,
+                durationInWeeks: e.target.value,
+              }))
+            }
+            placeholder="e.g., 12"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor={`${isEdit ? "edit" : "add"}-progressIntervalInWeeks`}>
+            Progress Call Interval (weeks) *
+          </Label>
+          <Input
+            id={`${isEdit ? "edit" : "add"}-progressIntervalInWeeks`}
+            type="number"
+            min="1"
+            value={packageForm.progressIntervalInWeeks}
+            onChange={(e) =>
+              setPackageForm((prev: PackageFormData) => ({
+                ...prev,
+                progressIntervalInWeeks: e.target.value,
+              }))
+            }
+            placeholder="e.g., 10"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            How often progress calls occur (starting from start date)
+          </p>
+        </div>
+
+        <div>
+          <Label
+            htmlFor={`${isEdit ? "edit" : "add"}-planUpdateIntervalInWeeks`}
+          >
+            Plan Update Interval (weeks) *
+          </Label>
+          <Input
+            id={`${isEdit ? "edit" : "add"}-planUpdateIntervalInWeeks`}
+            type="number"
+            min="1"
+            value={packageForm.planUpdateIntervalInWeeks}
+            onChange={(e) =>
+              setPackageForm((prev: PackageFormData) => ({
+                ...prev,
+                planUpdateIntervalInWeeks: e.target.value,
+              }))
+            }
+            placeholder="e.g., 12"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            How often plan updates occur (starting from start date)
+          </p>
+        </div>
+
+        <div>
+          <Label
+            htmlFor={`${isEdit ? "edit" : "add"}-renewalCallWeeksBeforeEnd`}
+          >
+            Renewal Call (weeks before end)
+          </Label>
+          <Input
+            id={`${isEdit ? "edit" : "add"}-renewalCallWeeksBeforeEnd`}
+            type="number"
+            min="1"
+            value={packageForm.renewalCallWeeksBeforeEnd}
+            onChange={(e) =>
+              setPackageForm((prev: PackageFormData) => ({
+                ...prev,
+                renewalCallWeeksBeforeEnd: e.target.value,
+              }))
+            }
+            placeholder="2"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Auto-calculated for 2 weeks before the end of the package
+          </p>
+        </div>
+
+        <ColorPicker
+          selectedColor={packageForm.packageColor}
+          onColorChange={(color) =>
+            setPackageForm((prev: PackageFormData) => ({
+              ...prev,
+              packageColor: color,
+            }))
+          }
+        />
+
+        {/* Example Section */}
+        {exampleText && (
+          <>
+            <Separator />
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="flex items-start space-x-2">
+                <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                <div className="space-y-2">
+                  <h4 className="font-medium text-blue-900">
+                    Example Schedule
+                  </h4>
+                  <p className="text-sm text-blue-800">
+                    A {packageForm.durationInWeeks} Week Package with progress
+                    calls every {packageForm.progressIntervalInWeeks} weeks and
+                    plan updates every {packageForm.planUpdateIntervalInWeeks}{" "}
+                    weeks will generate:
+                  </p>
+                  <div className="space-y-1 text-sm text-blue-700">
+                    {exampleText.progressCallWeeks.length > 0 && (
+                      <p>
+                        <strong>Progress calls at weeks:</strong>{" "}
+                        {exampleText.progressCallWeeks.join(", ")}...
+                      </p>
+                    )}
+                    {exampleText.planUpdateWeeks.length > 0 && (
+                      <p>
+                        <strong>Plan updates at weeks:</strong>{" "}
+                        {exampleText.planUpdateWeeks.join(", ")}...
+                      </p>
+                    )}
+                    <p>
+                      <strong>Renewal call at week:</strong>{" "}
+                      {exampleText.renewalCallWeek}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
+        <div className="flex justify-end space-x-2 pt-4">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={isEdit ? updatePackage : createPackage}
+            disabled={isEdit ? updatingPackage : creatingPackage}
+          >
+            {isEdit
+              ? updatingPackage
+                ? "Updating..."
+                : "Update Package"
+              : creatingPackage
+              ? "Creating..."
+              : "Create Package"}
+          </Button>
+        </div>
+      </div>
+    </DialogContent>
+  </Dialog>
+);
