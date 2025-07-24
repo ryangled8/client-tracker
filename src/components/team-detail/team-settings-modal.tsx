@@ -379,12 +379,12 @@ export function TeamSettingsModal({
                           delete the team <strong>{team.name}</strong> and
                           remove all associated data including:
                         </span>
-                        <ul className="list-disc list-inside text-sm space-y-1 mt-2">
-                          <li>All team clients and their progress data</li>
-                          <li>All training plans</li>
-                          <li>All team invitations</li>
-                          <li>All team settings</li>
-                        </ul>
+
+                        <span>All team cspanents and their progress data</span>
+                        <span>All training plans</span>
+                        <span>All team invitations</span>
+                        <span>All team settings</span>
+
                         <div className="mt-4">
                           <Label
                             htmlFor="deleteConfirmation"

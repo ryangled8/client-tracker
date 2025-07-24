@@ -144,20 +144,44 @@ export function AddClientModal({
 
     setSaving(true);
     try {
-      const clientData = {
-        ...formData,
+      // Clean up the data - only include fields that have values
+      const clientData: any = {
+        name: formData.name.trim(),
         team: teamId,
-        age: formData.age ? Number.parseInt(formData.age) : undefined,
-        currentWeight: formData.currentWeight
-          ? Number.parseFloat(formData.currentWeight)
-          : undefined,
-        targetWeight: formData.targetWeight
-          ? Number.parseFloat(formData.targetWeight)
-          : undefined,
-        height: formData.height
-          ? Number.parseFloat(formData.height)
-          : undefined,
+        assignedCoach: formData.assignedCoach,
+        selectedPlan: formData.selectedPlan,
+        startDate: formData.startDate,
+        status: formData.status,
       };
+
+      // Only add optional fields if they have values
+      if (formData.email && formData.email.trim()) {
+        clientData.email = formData.email.trim();
+      }
+      if (formData.phone && formData.phone.trim()) {
+        clientData.phone = formData.phone.trim();
+      }
+      if (formData.age && formData.age.trim()) {
+        clientData.age = Number.parseInt(formData.age);
+      }
+      if (formData.gender && formData.gender.trim()) {
+        clientData.gender = formData.gender;
+      }
+      if (formData.currentWeight && formData.currentWeight.trim()) {
+        clientData.currentWeight = Number.parseFloat(formData.currentWeight);
+      }
+      if (formData.targetWeight && formData.targetWeight.trim()) {
+        clientData.targetWeight = Number.parseFloat(formData.targetWeight);
+      }
+      if (formData.height && formData.height.trim()) {
+        clientData.height = Number.parseFloat(formData.height);
+      }
+      if (formData.membershipType && formData.membershipType.trim()) {
+        clientData.membershipType = formData.membershipType.trim();
+      }
+      if (formData.notes && formData.notes.trim()) {
+        clientData.notes = formData.notes.trim();
+      }
 
       const response = await fetch("/api/clients/add-client", {
         method: "POST",

@@ -348,9 +348,29 @@ export function ClientsTable({
           <TableHeader>
             <TableRow>
               <TableHead>Client</TableHead>
+              {settings.clientFormFields.email && <TableHead>Email</TableHead>}
+              {settings.clientFormFields.phone && <TableHead>Phone</TableHead>}
+              {settings.clientFormFields.age && <TableHead>Age</TableHead>}
+              {settings.clientFormFields.gender && (
+                <TableHead>Gender</TableHead>
+              )}
               <TableHead>Coach</TableHead>
               <TableHead>Training Plan</TableHead>
-              <TableHead>Start Date</TableHead>
+              {settings.clientFormFields.startDate && (
+                <TableHead>Start Date</TableHead>
+              )}
+              {settings.clientFormFields.currentWeight && (
+                <TableHead>Current Weight</TableHead>
+              )}
+              {settings.clientFormFields.targetWeight && (
+                <TableHead>Target Weight</TableHead>
+              )}
+              {settings.clientFormFields.height && (
+                <TableHead>Height</TableHead>
+              )}
+              {settings.clientFormFields.membershipType && (
+                <TableHead>Membership Type</TableHead>
+              )}
               {settings.clientFormFields.renewalCallDate && (
                 <TableHead>Renewal Call</TableHead>
               )}
@@ -361,16 +381,28 @@ export function ClientsTable({
                 <TableHead>Plan Update</TableHead>
               )}
               {settings.clientFormFields.notes && <TableHead>Notes</TableHead>}
-              <TableHead>Status</TableHead>
+              {settings.clientFormFields.status && (
+                <TableHead>Status</TableHead>
+              )}
               <TableHead className="w-[80px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredClients.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} className="h-24 text-center">
-                  No clients found.
-                </TableCell>
+                {(() => {
+                  const totalColumns =
+                    Object.values(settings.clientFormFields).filter(Boolean)
+                      .length + 2; // +2 for Coach and Actions columns
+                  return (
+                    <TableCell
+                      colSpan={totalColumns}
+                      className="h-24 text-center"
+                    >
+                      No clients found.
+                    </TableCell>
+                  );
+                })()}
               </TableRow>
             ) : (
               filteredClients.map((client) => {
@@ -383,18 +415,24 @@ export function ClientsTable({
                   <TableRow key={client._id}>
                     <TableCell>
                       <div className="font-medium">{client.name}</div>
-                      {client.email && (
-                        <div className="text-xs text-gray-500">
-                          {client.email}
-                        </div>
-                      )}
-                      {client.phone && (
-                        <div className="text-xs text-gray-500">
-                          {client.phone}
-                        </div>
-                      )}
                     </TableCell>
-                    <TableCell>{client.assignedCoach.name}</TableCell>
+                    {settings.clientFormFields.email && (
+                      <TableCell>{client.email || "-"}</TableCell>
+                    )}
+                    {settings.clientFormFields.phone && (
+                      <TableCell>{client.phone || "-"}</TableCell>
+                    )}
+                    {settings.clientFormFields.age && (
+                      <TableCell>{client.age || "-"}</TableCell>
+                    )}
+                    {settings.clientFormFields.gender && (
+                      <TableCell>{client.gender || "-"}</TableCell>
+                    )}
+                    <TableCell>
+                      {client.assignedCoach && client.assignedCoach.name
+                        ? client.assignedCoach.name
+                        : "Unassigned"}
+                    </TableCell>
                     <TableCell>
                       <Badge
                         style={{
@@ -406,9 +444,33 @@ export function ClientsTable({
                         {client.selectedPlan}
                       </Badge>
                     </TableCell>
-                    <TableCell>
-                      {formatDateDisplay(new Date(client.startDate))}
-                    </TableCell>
+                    {settings.clientFormFields.startDate && (
+                      <TableCell>
+                        {formatDateDisplay(new Date(client.startDate))}
+                      </TableCell>
+                    )}
+                    {settings.clientFormFields.currentWeight && (
+                      <TableCell>
+                        {client.currentWeight
+                          ? `${client.currentWeight} kg`
+                          : "-"}
+                      </TableCell>
+                    )}
+                    {settings.clientFormFields.targetWeight && (
+                      <TableCell>
+                        {client.targetWeight
+                          ? `${client.targetWeight} kg`
+                          : "-"}
+                      </TableCell>
+                    )}
+                    {settings.clientFormFields.height && (
+                      <TableCell>
+                        {client.height ? `${client.height} cm` : "-"}
+                      </TableCell>
+                    )}
+                    {settings.clientFormFields.membershipType && (
+                      <TableCell>{client.membershipType || "-"}</TableCell>
+                    )}
 
                     {settings.clientFormFields.renewalCallDate && (
                       <TableCell>
@@ -470,21 +532,23 @@ export function ClientsTable({
                       </TableCell>
                     )}
 
-                    <TableCell>
-                      <Badge
-                        variant={
-                          client.status === "active"
-                            ? "default"
-                            : client.status === "paused"
-                            ? "outline"
-                            : client.status === "completed"
-                            ? "secondary"
-                            : "destructive"
-                        }
-                      >
-                        {client.status}
-                      </Badge>
-                    </TableCell>
+                    {settings.clientFormFields.status && (
+                      <TableCell>
+                        <Badge
+                          variant={
+                            client.status === "active"
+                              ? "default"
+                              : client.status === "paused"
+                              ? "outline"
+                              : client.status === "completed"
+                              ? "secondary"
+                              : "destructive"
+                          }
+                        >
+                          {client.status}
+                        </Badge>
+                      </TableCell>
+                    )}
 
                     <TableCell>
                       <DropdownMenu>

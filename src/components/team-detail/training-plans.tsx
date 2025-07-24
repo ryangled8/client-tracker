@@ -207,7 +207,7 @@ export function TrainingPlans({
       if (response.ok) {
         resetPlanForm();
         setPlanDialogOpen(false);
-        onPlansUpdated();
+        onPlansUpdated(); // This will trigger a refresh of the entire team data
         toast.success("Training plan created successfully");
       } else {
         toast.error(data.error || "Failed to create training plan");
@@ -274,7 +274,7 @@ export function TrainingPlans({
         planProgressCall: progressCall,
         planRenewalCall: renewalCall,
         planUpdateWeek: updateWeek,
-        planColor: planColor,
+        planColor: planColor || originalPlan.planColor || "#3b82f6", // Ensure color is preserved
       };
 
       const response = await fetch("/api/teams/update-team", {
@@ -292,7 +292,7 @@ export function TrainingPlans({
         resetPlanForm();
         setEditPlanDialogOpen(false);
         setEditingPlanIndex(null);
-        onPlansUpdated();
+        onPlansUpdated(); // This will trigger a refresh of the entire team data
         toast.success("Training plan updated successfully");
       } else {
         toast.error(data.error || "Failed to update training plan");
@@ -327,7 +327,7 @@ export function TrainingPlans({
       const data = await response.json();
 
       if (response.ok) {
-        onPlansUpdated();
+        onPlansUpdated(); // This will trigger a refresh of the entire team data
         toast.success(
           `Plan ${newStatus ? "activated" : "deactivated"} successfully`
         );
@@ -366,7 +366,7 @@ export function TrainingPlans({
       const data = await response.json();
 
       if (response.ok) {
-        onPlansUpdated();
+        onPlansUpdated(); // This will trigger a refresh of the entire team data
         toast.success(`Plan "${planToDelete.planName}" deleted successfully`);
       } else {
         toast.error(data.error || "Failed to delete plan");

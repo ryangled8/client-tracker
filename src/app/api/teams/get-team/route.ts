@@ -31,7 +31,13 @@ export async function GET(req: Request) {
     const team = await Team.findById(teamId)
       .populate("owner", "name email")
       .populate("coaches", "name email")
-      .populate("clients")
+      .populate({
+        path: "clients",
+        populate: {
+          path: "assignedCoach",
+          select: "name email",
+        },
+      })
 
     if (!team) {
       return NextResponse.json({ error: "Team not found" }, { status: 404 })
