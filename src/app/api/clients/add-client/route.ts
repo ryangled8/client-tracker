@@ -55,7 +55,7 @@ export async function POST(req: Request) {
     if (typeof clientData.email === "string" && clientData.email.trim()) {
       clientToSave.email = clientData.email.trim()
     } else {
-      delete clientToSave.email // <— this guarantees it's not passed as undefined/null
+      delete clientToSave.email // <— this guarantees 'email' it's not passed as undefined/null
     }
 
     if (clientData.phone && clientData.phone.trim()) {
@@ -83,11 +83,7 @@ export async function POST(req: Request) {
       clientToSave.notes = clientData.notes.trim()
     }
 
-    // const client = new Client(clientToSave)
-    // await client.save()
-
-    // return NextResponse.json({ client }, { status: 201 })
-
+    // use Client.create instead of new Client() to ensure we don't recreate the client model in the DB and it suddnely expects a value for email even if there wasn't one passed.
     const client = await Client.create(clientToSave)
 
     return NextResponse.json({ client }, { status: 201 })

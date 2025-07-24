@@ -194,7 +194,7 @@ clientSchema.index({ selectedPackage: 1 })
 clientSchema.index({ team: 1, status: 1 })
 clientSchema.index({ assignedCoach: 1, status: 1 })
 
-// Simple compound index for unique email per team - only when email exists
+// Ensures a team can't have multiple clients with the same email
 clientSchema.index(
   { team: 1, email: 1 },
   {

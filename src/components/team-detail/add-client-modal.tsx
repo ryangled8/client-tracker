@@ -156,8 +156,6 @@ export function AddClientModal({
         status: formData.status,
       };
 
-      console.log("cd: ", clientData);
-
       // Only add optional fields if they have values - same as other optional fields
       if (formData.email && formData.email.trim()) {
         clientData.email = formData.email.trim();
