@@ -54,6 +54,7 @@ interface TeamSettings {
     membershipType: boolean;
     startDate: boolean;
     notes: boolean;
+    paymentDate: boolean;
   };
   noticePeriodWeeks: number;
   dateFormat: "dd/mm/yyyy" | "mm/dd/yyyy";
@@ -74,6 +75,7 @@ const fieldLabels = {
   name: "Client Name*",
   email: "Email",
   phone: "Phone",
+  paymentDate: "Payment Date",
   age: "Age",
   gender: "Gender",
   startDate: "Start Date*",
@@ -101,6 +103,7 @@ const fieldDescriptions = {
   name: "The name of the client",
   email: "The email address of the client",
   phone: "The phone number of the client",
+  paymentDate: "The date the client made payment",
   age: "The age of the client",
   gender: "The gender of the client",
   assignedCoach: "The coach assigned to the client",

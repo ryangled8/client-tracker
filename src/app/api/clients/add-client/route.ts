@@ -82,6 +82,9 @@ export async function POST(req: Request) {
     if (clientData.notes && clientData.notes.trim()) {
       clientToSave.notes = clientData.notes.trim()
     }
+    if (clientData.paymentDate) {
+      clientToSave.paymentDate = new Date(clientData.paymentDate)
+    }
 
     // use Client.create instead of new Client() to ensure we don't recreate the client model in the DB and it suddnely expects a value for email even if there wasn't one passed.
     const client = await Client.create(clientToSave)

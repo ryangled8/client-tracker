@@ -104,6 +104,7 @@ interface Client {
   status: "active" | "inactive" | "paused";
   membershipType?: string;
   notes?: string;
+  paymentDate?: string;
   customRenewalCallDate?: string;
   customProgressCallDate?: string;
   customPlanUpdateDate?: string;
@@ -603,6 +604,11 @@ export function ClientsTable({
               {settings.clientFormFields.phone && (
                 <TableHead className="border-l w-[140px]">Phone</TableHead>
               )}
+              {settings.clientFormFields.paymentDate && (
+                <TableHead className="border-l w-[140px]">
+                  Payment Date
+                </TableHead>
+              )}
               {settings.clientFormFields.age && (
                 <TableHead className="border-l w-[80px]">Age</TableHead>
               )}
@@ -672,6 +678,7 @@ export function ClientsTable({
                   if (settings.clientFormFields.status) columnCount++;
                   if (settings.clientFormFields.email) columnCount++;
                   if (settings.clientFormFields.phone) columnCount++;
+                  if (settings.clientFormFields.paymentDate) columnCount++;
                   if (settings.clientFormFields.age) columnCount++;
                   if (settings.clientFormFields.gender) columnCount++;
                   if (settings.clientFormFields.currentWeight) columnCount++;
@@ -872,6 +879,17 @@ export function ClientsTable({
                         {settings.clientFormFields.phone && (
                           <TableCell className="border-l">
                             {client.phone || "-"}
+                          </TableCell>
+                        )}
+                        {settings.clientFormFields.paymentDate && (
+                          <TableCell className="border-l">
+                            {client.paymentDate ? (
+                              formatDateDisplay(new Date(client.paymentDate))
+                            ) : (
+                              <span className="text-gray-500">
+                                Not yet paid
+                              </span>
+                            )}
                           </TableCell>
                         )}
                         {settings.clientFormFields.age && (

@@ -21,6 +21,7 @@ export interface ITeam extends Document {
       name: boolean // always true, can't be disabled
       email: boolean
       phone: boolean
+      paymentDate: boolean
       age: boolean
       gender: boolean
       assignedCoach: boolean // always true, can't be disabled
@@ -118,7 +119,8 @@ const teamSchema = new Schema<ITeam>(
       clientFormFields: {
         name: { type: Boolean, default: true }, // always true
         email: { type: Boolean, default: true },
-        phone: { type: Boolean, default: true },
+        phone: { type: Boolean, default: false },
+        paymentDate: { type: Boolean, default: false },
         age: { type: Boolean, default: false },
         gender: { type: Boolean, default: false },
         assignedCoach: { type: Boolean, default: true }, // always true

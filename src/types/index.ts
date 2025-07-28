@@ -47,6 +47,7 @@ export interface TeamSettings {
     name: boolean
     email: boolean
     phone: boolean
+    paymentDate: boolean
     age: boolean
     gender: boolean
     assignedCoach: boolean

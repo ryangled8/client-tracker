@@ -90,7 +90,8 @@ export default function TeamPage() {
             clientFormFields: {
               name: true,
               email: true,
-              phone: true,
+              phone: false,
+              paymentDate: false,
               age: false,
               gender: false,
               assignedCoach: true,

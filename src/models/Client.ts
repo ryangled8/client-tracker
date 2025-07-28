@@ -22,6 +22,9 @@ export interface IClient extends Document {
   targetWeight?: number
   height?: number // in cm
 
+  // Payment Information
+  paymentDate?: Date
+
   // Status
   status: "active" | "inactive" | "paused"
 
@@ -123,6 +126,11 @@ const clientSchema = new Schema<IClient>(
     height: {
       type: Number,
       min: 0, // in cm
+    },
+
+    // Payment Information
+    paymentDate: {
+      type: Date,
     },
 
     // Status

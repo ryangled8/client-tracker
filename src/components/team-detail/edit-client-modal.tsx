@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -60,6 +61,7 @@ interface Client {
   status: "active" | "inactive" | "paused";
   membershipType?: string;
   notes?: string;
+  paymentDate?: string;
   customRenewalCallDate?: string;
   customProgressCallDate?: string;
   customPlanUpdateDate?: string;
@@ -85,6 +87,7 @@ export function EditClientModal({
   onClientUpdated,
 }: EditClientModalProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [notYetPaid, setNotYetPaid] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -94,6 +97,7 @@ export function EditClientModal({
     assignedCoach: "",
     selectedPackage: "",
     startDate: "",
+    paymentDate: "",
     currentWeight: "",
     targetWeight: "",
     height: "",
@@ -105,6 +109,10 @@ export function EditClientModal({
   // Reset form when client changes
   useEffect(() => {
     if (client) {
+      const hasPaymentDate =
+        client.paymentDate && client.paymentDate.trim() !== "";
+      setNotYetPaid(!hasPaymentDate);
+
       setFormData({
         name: client.name || "",
         email: client.email || "",
@@ -115,6 +123,9 @@ export function EditClientModal({
         selectedPackage: client.selectedPackage || "",
         startDate: client.startDate
           ? new Date(client.startDate).toISOString().split("T")[0]
+          : "",
+        paymentDate: hasPaymentDate
+          ? new Date(client.paymentDate!).toISOString().split("T")[0]
           : "",
         currentWeight: client.currentWeight?.toString() || "",
         targetWeight: client.targetWeight?.toString() || "",
@@ -179,6 +190,14 @@ export function EditClientModal({
       if (formData.membershipType.trim())
         updateData.membershipType = formData.membershipType.trim();
       if (formData.notes.trim()) updateData.notes = formData.notes.trim();
+
+      // Only add payment date if not marked as "not yet paid" and has a value
+      if (!notYetPaid && formData.paymentDate) {
+        updateData.paymentDate = formData.paymentDate;
+      } else if (notYetPaid) {
+        // Explicitly clear payment date if marked as not yet paid
+        updateData.paymentDate = null;
+      }
 
       const response = await fetch("/api/clients/update-client", {
         method: "PUT",
@@ -260,6 +279,35 @@ export function EditClientModal({
                   onChange={(e) => handleInputChange("phone", e.target.value)}
                   placeholder="+1 (555) 123-4567"
                 />
+              </div>
+            )}
+
+            {/* Payment Date */}
+            {settings.clientFormFields.paymentDate && (
+              <div>
+                <Label htmlFor="edit-paymentDate">Payment Date</Label>
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="edit-notYetPaid"
+                      checked={notYetPaid}
+                      onCheckedChange={setNotYetPaid}
+                    />
+                    <Label htmlFor="edit-notYetPaid" className="text-sm">
+                      Not yet paid
+                    </Label>
+                  </div>
+                  {!notYetPaid && (
+                    <Input
+                      id="edit-paymentDate"
+                      type="date"
+                      value={formData.paymentDate}
+                      onChange={(e) =>
+                        handleInputChange("paymentDate", e.target.value)
+                      }
+                    />
+                  )}
+                </div>
               </div>
             )}
 

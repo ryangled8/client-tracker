@@ -58,7 +58,8 @@ export async function GET(req: Request) {
         clientFormFields: {
           name: true,
           email: true,
-          phone: true,
+          phone: false,
+          paymentDate: false,
           age: false,
           gender: false,
           assignedCoach: true,
