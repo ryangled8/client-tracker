@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -44,6 +45,7 @@ interface Package {
   renewalCallWeeksBeforeEnd: number;
   packageColor?: string;
   isActive: boolean;
+  isRecurring: boolean;
   createdAt: string;
 }
 
@@ -54,6 +56,7 @@ interface PackageFormData {
   planUpdateIntervalInWeeks: string;
   renewalCallWeeksBeforeEnd: string;
   packageColor: string;
+  isRecurring: boolean;
 }
 
 interface ExampleSchedule {
@@ -131,6 +134,7 @@ export function TrainingPackages({
     planUpdateIntervalInWeeks: "",
     renewalCallWeeksBeforeEnd: "2",
     packageColor: "#3b82f6",
+    isRecurring: false,
   });
 
   const resetPackageForm = () => {
@@ -141,6 +145,7 @@ export function TrainingPackages({
       planUpdateIntervalInWeeks: "",
       renewalCallWeeksBeforeEnd: "2",
       packageColor: "#3b82f6",
+      isRecurring: false,
     });
   };
 
@@ -150,16 +155,12 @@ export function TrainingPackages({
     progressInterval: number,
     planUpdateInterval: number,
     renewalCallWeeks: number,
+    isRecurring: boolean,
     isEdit = false,
     originalPackageName = ""
   ) => {
     if (!packageName.trim()) {
       toast.error("Package name is required");
-      return false;
-    }
-
-    if (!duration || duration < 1) {
-      toast.error("Package duration must be at least 1 week");
       return false;
     }
 
@@ -173,31 +174,39 @@ export function TrainingPackages({
       return false;
     }
 
-    if (
-      !renewalCallWeeks ||
-      renewalCallWeeks < 1 ||
-      renewalCallWeeks >= duration
-    ) {
-      toast.error(
-        `Renewal call must be between 1 and ${
-          duration - 1
-        } weeks before package end`
-      );
-      return false;
-    }
+    // Only validate duration and renewal call for non-recurring packages
+    if (!isRecurring) {
+      if (!duration || duration < 1) {
+        toast.error("Package duration must be at least 1 week");
+        return false;
+      }
 
-    if (progressInterval > duration) {
-      toast.error(
-        "Progress call interval cannot be longer than package duration"
-      );
-      return false;
-    }
+      if (
+        !renewalCallWeeks ||
+        renewalCallWeeks < 1 ||
+        renewalCallWeeks >= duration
+      ) {
+        toast.error(
+          `Renewal call must be between 1 and ${
+            duration - 1
+          } weeks before package end`
+        );
+        return false;
+      }
 
-    if (planUpdateInterval > duration) {
-      toast.error(
-        "Plan update interval cannot be longer than package duration"
-      );
-      return false;
+      if (progressInterval > duration) {
+        toast.error(
+          "Progress call interval cannot be longer than package duration"
+        );
+        return false;
+      }
+
+      if (planUpdateInterval > duration) {
+        toast.error(
+          "Plan update interval cannot be longer than package duration"
+        );
+        return false;
+      }
     }
 
     // Check if package name already exists (skip if editing the same package)
@@ -223,11 +232,12 @@ export function TrainingPackages({
       planUpdateIntervalInWeeks,
       renewalCallWeeksBeforeEnd,
       packageColor,
+      isRecurring,
     } = packageForm;
-    const duration = Number.parseInt(durationInWeeks);
+    const duration = Number.parseInt(durationInWeeks) || 0;
     const progressInterval = Number.parseInt(progressIntervalInWeeks);
     const planUpdateInterval = Number.parseInt(planUpdateIntervalInWeeks);
-    const renewalWeeks = Number.parseInt(renewalCallWeeksBeforeEnd);
+    const renewalWeeks = Number.parseInt(renewalCallWeeksBeforeEnd) || 2;
 
     if (
       !validatePackageForm(
@@ -235,7 +245,8 @@ export function TrainingPackages({
         duration,
         progressInterval,
         planUpdateInterval,
-        renewalWeeks
+        renewalWeeks,
+        isRecurring
       )
     ) {
       return;
@@ -245,12 +256,13 @@ export function TrainingPackages({
     try {
       const newPackage = {
         packageName: packageName.trim(),
-        durationInWeeks: duration,
+        durationInWeeks: isRecurring ? 0 : duration, // Set to 0 for recurring packages
         progressIntervalInWeeks: progressInterval,
         planUpdateIntervalInWeeks: planUpdateInterval,
-        renewalCallWeeksBeforeEnd: renewalWeeks,
+        renewalCallWeeksBeforeEnd: isRecurring ? 0 : renewalWeeks, // Set to 0 for recurring packages
         packageColor: packageColor,
         isActive: true,
+        isRecurring: isRecurring,
         createdAt: new Date().toISOString(),
       };
 
@@ -291,6 +303,7 @@ export function TrainingPackages({
       renewalCallWeeksBeforeEnd: pkg.renewalCallWeeksBeforeEnd.toString(),
       planUpdateIntervalInWeeks: pkg.planUpdateIntervalInWeeks.toString(),
       packageColor: pkg.packageColor || "#3b82f6",
+      isRecurring: pkg.isRecurring || false,
     });
     setEditingPackageIndex(packageIndex);
     setEditPackageDialogOpen(true);
@@ -306,11 +319,12 @@ export function TrainingPackages({
       planUpdateIntervalInWeeks,
       renewalCallWeeksBeforeEnd,
       packageColor,
+      isRecurring,
     } = packageForm;
-    const duration = Number.parseInt(durationInWeeks);
+    const duration = Number.parseInt(durationInWeeks) || 0;
     const progressInterval = Number.parseInt(progressIntervalInWeeks);
     const planUpdateInterval = Number.parseInt(planUpdateIntervalInWeeks);
-    const renewalWeeks = Number.parseInt(renewalCallWeeksBeforeEnd);
+    const renewalWeeks = Number.parseInt(renewalCallWeeksBeforeEnd) || 2;
 
     const originalPackage = packages[editingPackageIndex];
     if (
@@ -320,6 +334,7 @@ export function TrainingPackages({
         progressInterval,
         planUpdateInterval,
         renewalWeeks,
+        isRecurring,
         true,
         originalPackage.packageName
       )
@@ -337,11 +352,12 @@ export function TrainingPackages({
       updatedPackages[editingPackageIndex] = {
         ...originalPackage,
         packageName: packageName.trim(),
-        durationInWeeks: duration,
+        durationInWeeks: isRecurring ? 0 : duration,
         progressIntervalInWeeks: progressInterval,
         planUpdateIntervalInWeeks: planUpdateInterval,
-        renewalCallWeeksBeforeEnd: renewalWeeks,
+        renewalCallWeeksBeforeEnd: isRecurring ? 0 : renewalWeeks,
         packageColor: packageColor || originalPackage.packageColor || "#3b82f6",
+        isRecurring: isRecurring,
       };
 
       const response = await fetch("/api/teams/update-team", {
@@ -492,6 +508,7 @@ export function TrainingPackages({
 
   // Replace the existing getExampleText function with this memoized version
   const exampleText = useMemo(() => {
+    if (packageForm.isRecurring) return null; // Don't show example for recurring packages
     return generateExampleText(
       packageForm.durationInWeeks,
       packageForm.progressIntervalInWeeks,
@@ -503,6 +520,7 @@ export function TrainingPackages({
     packageForm.progressIntervalInWeeks,
     packageForm.planUpdateIntervalInWeeks,
     packageForm.renewalCallWeeksBeforeEnd,
+    packageForm.isRecurring,
   ]);
 
   return (
@@ -550,10 +568,20 @@ export function TrainingPackages({
                       </Badge>
                     </div>
                     <div className="text-gray-500 text-xs mt-1">
-                      {pkg.durationInWeeks} weeks • Progress: Every{" "}
-                      {pkg.progressIntervalInWeeks} weeks • Plan Updates: Every{" "}
-                      {pkg.planUpdateIntervalInWeeks} weeks • Renewal:{" "}
-                      {pkg.renewalCallWeeksBeforeEnd} weeks before end
+                      {pkg.isRecurring ? (
+                        <>
+                          Recurring • Progress: Every{" "}
+                          {pkg.progressIntervalInWeeks} weeks • Plan Updates:
+                          Every {pkg.planUpdateIntervalInWeeks} weeks
+                        </>
+                      ) : (
+                        <>
+                          {pkg.durationInWeeks} weeks • Progress: Every{" "}
+                          {pkg.progressIntervalInWeeks} weeks • Plan Updates:
+                          Every {pkg.planUpdateIntervalInWeeks} weeks • Renewal:{" "}
+                          {pkg.renewalCallWeeksBeforeEnd} weeks before end
+                        </>
+                      )}
                     </div>
                   </div>
                   <DropdownMenu>
@@ -683,24 +711,49 @@ const PackageModal = ({
           />
         </div>
 
-        <div>
-          <Label htmlFor={`${isEdit ? "edit" : "add"}-durationInWeeks`}>
-            Duration of package (weeks) *
-          </Label>
-          <Input
-            id={`${isEdit ? "edit" : "add"}-durationInWeeks`}
-            type="number"
-            min="1"
-            value={packageForm.durationInWeeks}
-            onChange={(e) =>
+        {/* Recurring Package Toggle - moved under package name */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label htmlFor={`${isEdit ? "edit" : "add"}-isRecurring`}>
+              Recurring Package
+            </Label>
+            <p className="text-xs text-gray-500">
+              Recurring packages automatically renew without a renewal call
+            </p>
+          </div>
+          <Switch
+            id={`${isEdit ? "edit" : "add"}-isRecurring`}
+            checked={packageForm.isRecurring}
+            onCheckedChange={(checked) =>
               setPackageForm((prev: PackageFormData) => ({
                 ...prev,
-                durationInWeeks: e.target.value,
+                isRecurring: checked,
               }))
             }
-            placeholder="e.g., 12"
           />
         </div>
+
+        {/* Conditionally show duration field only for non-recurring packages */}
+        {!packageForm.isRecurring && (
+          <div>
+            <Label htmlFor={`${isEdit ? "edit" : "add"}-durationInWeeks`}>
+              Duration of package (weeks) *
+            </Label>
+            <Input
+              id={`${isEdit ? "edit" : "add"}-durationInWeeks`}
+              type="number"
+              min="1"
+              value={packageForm.durationInWeeks}
+              onChange={(e) =>
+                setPackageForm((prev: PackageFormData) => ({
+                  ...prev,
+                  durationInWeeks: e.target.value,
+                }))
+              }
+              placeholder="e.g., 12"
+            />
+          </div>
+        )}
 
         <div>
           <Label htmlFor={`${isEdit ? "edit" : "add"}-progressIntervalInWeeks`}>
@@ -748,29 +801,32 @@ const PackageModal = ({
           </p>
         </div>
 
-        <div>
-          <Label
-            htmlFor={`${isEdit ? "edit" : "add"}-renewalCallWeeksBeforeEnd`}
-          >
-            Renewal Call (weeks before end)
-          </Label>
-          <Input
-            id={`${isEdit ? "edit" : "add"}-renewalCallWeeksBeforeEnd`}
-            type="number"
-            min="1"
-            value={packageForm.renewalCallWeeksBeforeEnd}
-            onChange={(e) =>
-              setPackageForm((prev: PackageFormData) => ({
-                ...prev,
-                renewalCallWeeksBeforeEnd: e.target.value,
-              }))
-            }
-            placeholder="2"
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            Auto-calculated for 2 weeks before the end of the package
-          </p>
-        </div>
+        {/* Conditionally show renewal call field only for non-recurring packages */}
+        {!packageForm.isRecurring && (
+          <div>
+            <Label
+              htmlFor={`${isEdit ? "edit" : "add"}-renewalCallWeeksBeforeEnd`}
+            >
+              Renewal Call (weeks before end)
+            </Label>
+            <Input
+              id={`${isEdit ? "edit" : "add"}-renewalCallWeeksBeforeEnd`}
+              type="number"
+              min="1"
+              value={packageForm.renewalCallWeeksBeforeEnd}
+              onChange={(e) =>
+                setPackageForm((prev: PackageFormData) => ({
+                  ...prev,
+                  renewalCallWeeksBeforeEnd: e.target.value,
+                }))
+              }
+              placeholder="2"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Auto-calculated for 2 weeks before the end of the package
+            </p>
+          </div>
+        )}
 
         <ColorPicker
           selectedColor={packageForm.packageColor}
@@ -782,8 +838,8 @@ const PackageModal = ({
           }
         />
 
-        {/* Example Section */}
-        {exampleText && (
+        {/* Example Section - only show for non-recurring packages */}
+        {exampleText && !packageForm.isRecurring && (
           <>
             <Separator />
             <div className="bg-blue-50 p-4 rounded-lg">
@@ -817,6 +873,30 @@ const PackageModal = ({
                       {exampleText.renewalCallWeek}
                     </p>
                   </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Show recurring package info */}
+        {packageForm.isRecurring && (
+          <>
+            <Separator />
+            <div className="bg-green-50 p-4 rounded-lg">
+              <div className="flex items-start space-x-2">
+                <Info className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                <div className="space-y-2">
+                  <h4 className="font-medium text-green-900">
+                    Recurring Package
+                  </h4>
+                  <p className="text-sm text-green-800">
+                    This recurring package will generate progress calls every{" "}
+                    {packageForm.progressIntervalInWeeks} weeks and plan updates
+                    every {packageForm.planUpdateIntervalInWeeks} weeks
+                    indefinitely. No renewal calls will be scheduled as the
+                    package automatically continues.
+                  </p>
                 </div>
               </div>
             </div>

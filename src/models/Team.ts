@@ -13,6 +13,7 @@ export interface ITeam extends Document {
     renewalCallWeeksBeforeEnd: number // weeks before package end for renewal call (default: 2)
     packageColor: string // hex color code for the package
     isActive: boolean // whether this package is currently available for assignment
+    isRecurring: boolean // is a package recurring (e.g., monthly rolling subscription) (renewall date isn't calculated when true)
     createdAt: Date
   }[]
   settings: {
@@ -102,6 +103,10 @@ const teamSchema = new Schema<ITeam>(
         isActive: {
           type: Boolean,
           default: true,
+        },
+        isRecurring: {
+          type: Boolean,
+          default: false,
         },
         createdAt: {
           type: Date,

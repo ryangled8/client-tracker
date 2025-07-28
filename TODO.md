@@ -10,11 +10,22 @@ Managing Clients:
 - add a minimal / relaxed table view options which increase/descrease padding/row heights - ensure chioce is persisted.
 
 Managing Packages:
-- Add recurring as an option in create package which doesn't calculate an end date. Plan this out in AI.
+- Set 'phone' to false by default on add client and add a 'Payment date' option above 'Gender'.
+- If I try add a client to a team before there's any packages, I get this error:
+Error: A <Select.Item /> must have a value prop that is not an empty string. This is because the Select value can be set to an empty string to clear the selection and show the placeholder.
+
+src/components/ui/select.tsx (107:5) @ SelectItem
+
+
+  105 | }: React.ComponentProps<typeof SelectPrimitive.Item>) {
+  106 |   return (
+> 107 |     <SelectPrimitive.Item
+      |     ^
+
+Please fix.
 
 *Once the above is done ^:*
 - Add a 'coach colour' section in team settings and style the coach name in the table to the chosen colour and same tag style as the plan name - use the same colour pallete options from the training-plans modal.
-- Set phone to false by default on add client
 
 
 Cleanup / Fixes:

@@ -37,6 +37,7 @@ interface Package {
   renewalCallWeeksBeforeEnd: number;
   packageColor?: string;
   isActive: boolean;
+  isRecurring: boolean;
 }
 
 interface Client {

@@ -35,6 +35,7 @@ interface Team {
     planUpdateWeek: number;
     packageColor?: string;
     isActive: boolean;
+    isRecurring: boolean;
     createdAt: string;
   }>;
   clients: Array<{

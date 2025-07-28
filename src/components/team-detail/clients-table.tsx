@@ -61,6 +61,12 @@ const addDays = (date: Date, days: number): Date => {
   return result;
 };
 
+const addWeeks = (date: Date, weeks: number): Date => {
+  const result = new Date(date);
+  result.setDate(result.getDate() + weeks * 7);
+  return result;
+};
+
 interface Coach {
   _id: string;
   name: string;
@@ -75,6 +81,7 @@ interface Package {
   renewalCallWeeksBeforeEnd: number;
   packageColor?: string;
   isActive: boolean;
+  isRecurring: boolean;
 }
 
 interface Client {
@@ -110,6 +117,29 @@ interface ClientsTableProps {
   onClientUpdated: () => void;
   onClientDeleted: () => void;
 }
+
+// Helper function to calculate all dates for recurring packages
+const calculateRecurringDates = (
+  startDate: Date,
+  intervalWeeks: number,
+  currentDate: Date = new Date(),
+  weeksAhead = 12
+) => {
+  const dates: Date[] = [];
+  let currentWeek = intervalWeeks;
+
+  // Calculate all dates from start to current + weeksAhead
+  const endDate = addWeeks(currentDate, weeksAhead);
+
+  while (true) {
+    const date = addWeeks(startDate, currentWeek);
+    if (date > endDate) break;
+    dates.push(date);
+    currentWeek += intervalWeeks;
+  }
+
+  return dates;
+};
 
 export function ClientsTable({
   clients,
@@ -169,27 +199,62 @@ export function ClientsTable({
     const pkg = packages.find((p) => p.packageName === client.selectedPackage);
     if (!pkg) return null;
 
-    const packageConfig = {
-      durationInWeeks: pkg.durationInWeeks,
-      progressIntervalInWeeks: pkg.progressIntervalInWeeks,
-      planUpdateIntervalInWeeks: pkg.planUpdateIntervalInWeeks,
-      renewalCallWeeksBeforeEnd: pkg.renewalCallWeeksBeforeEnd,
-    };
+    const startDate = new Date(client.startDate);
 
-    const dates = calculateClientDates(
-      client.startDate,
-      packageConfig,
-      client.customRenewalCallDate
-    );
+    if (pkg.isRecurring) {
+      // For recurring packages, calculate extensive historical and future dates
+      const progressDates = calculateRecurringDates(
+        startDate,
+        pkg.progressIntervalInWeeks,
+        new Date(),
+        12 // Show 12 weeks ahead
+      );
 
-    return {
-      renewalCallDate: dates.renewalCallDate,
-      progressCallDate: dates.nextProgressCallDate,
-      planUpdateDate: dates.nextPlanUpdateDate,
-      packageEndDate: dates.packageEndDate,
-      allProgressCallDates: dates.allProgressCallDates,
-      allPlanUpdateDates: dates.allPlanUpdateDates,
-    };
+      const planUpdateDates = calculateRecurringDates(
+        startDate,
+        pkg.planUpdateIntervalInWeeks,
+        new Date(),
+        12 // Show 12 weeks ahead
+      );
+
+      const now = new Date();
+      const nextProgressCall = progressDates.find((date) => isAfter(date, now));
+      const nextPlanUpdate = planUpdateDates.find((date) => isAfter(date, now));
+
+      return {
+        renewalCallDate: null, // No renewal for recurring packages
+        progressCallDate: nextProgressCall || null,
+        planUpdateDate: nextPlanUpdate || null,
+        packageEndDate: null, // No end date for recurring packages
+        allProgressCallDates: progressDates,
+        allPlanUpdateDates: planUpdateDates,
+        isRecurring: true,
+      };
+    } else {
+      // For fixed packages, use existing logic
+      const packageConfig = {
+        durationInWeeks: pkg.durationInWeeks,
+        progressIntervalInWeeks: pkg.progressIntervalInWeeks,
+        planUpdateIntervalInWeeks: pkg.planUpdateIntervalInWeeks,
+        renewalCallWeeksBeforeEnd: pkg.renewalCallWeeksBeforeEnd,
+      };
+
+      const dates = calculateClientDates(
+        client.startDate,
+        packageConfig,
+        client.customRenewalCallDate
+      );
+
+      return {
+        renewalCallDate: dates.renewalCallDate,
+        progressCallDate: dates.nextProgressCallDate,
+        planUpdateDate: dates.nextPlanUpdateDate,
+        packageEndDate: dates.packageEndDate,
+        allProgressCallDates: dates.allProgressCallDates,
+        allPlanUpdateDates: dates.allPlanUpdateDates,
+        isRecurring: false,
+      };
+    }
   };
 
   const formatDateDisplay = (date: Date) => {
@@ -258,7 +323,7 @@ export function ClientsTable({
             <h4 className="font-medium text-xs mb-0.5 text-gray-900">
               Progress Calls
             </h4>
-            <div className="space-y-0.5">
+            <div className="space-y-0.5 max-h-32 overflow-y-auto">
               {pastProgressCalls.map((date, index) => (
                 <div
                   key={`past-progress-${index}`}
@@ -291,7 +356,7 @@ export function ClientsTable({
             <h4 className="font-medium text-xs mb-0.5 text-gray-900">
               Plan Updates
             </h4>
-            <div className="space-y-0.5">
+            <div className="space-y-0.5 max-h-32 overflow-y-auto">
               {pastPlanUpdates.map((date, index) => (
                 <div
                   key={`past-update-${index}`}
@@ -323,22 +388,38 @@ export function ClientsTable({
           <div>
             <h4 className="font-medium text-xs mb-0.5 text-gray-900 flex gap-1.5 items-center">
               Renewal Call
-              <div className="text-gray-500 text-xs">
-                ({pkg.renewalCallWeeksBeforeEnd} weeks before package end)
-              </div>
+              {pkg?.isRecurring ? (
+                <div className="text-gray-500 text-xs">
+                  (Not applicable - recurring package)
+                </div>
+              ) : (
+                <div className="text-gray-500 text-xs">
+                  ({pkg?.renewalCallWeeksBeforeEnd} weeks before package end)
+                </div>
+              )}
             </h4>
             <div className="space-y-0.5">
-              <div
-                className={`text-xs text-gray-700 flex items-center gap-1 ${
-                  isDateOverdue(dates.renewalCallDate) &&
-                  "text-red-600 font-bold"
-                }`}
-              >
-                {formatDateDisplay(dates.renewalCallDate)}
-                {isDateOverdue(dates.renewalCallDate) && (
-                  <AlertCircle className="inline-block ml-1 h-3 w-3" />
-                )}
-              </div>
+              {pkg?.isRecurring ? (
+                <div className="text-xs text-gray-400">
+                  Package automatically renews
+                </div>
+              ) : dates.renewalCallDate ? (
+                <div
+                  className={`text-xs text-gray-700 flex items-center gap-1 ${
+                    isDateOverdue(dates.renewalCallDate) &&
+                    "text-red-600 font-bold"
+                  }`}
+                >
+                  {formatDateDisplay(dates.renewalCallDate)}
+                  {isDateOverdue(dates.renewalCallDate) && (
+                    <AlertCircle className="inline-block ml-1 h-3 w-3" />
+                  )}
+                </div>
+              ) : (
+                <div className="text-xs text-gray-400">
+                  No renewal call scheduled
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -657,23 +738,35 @@ export function ClientsTable({
                         )}
 
                         <TableCell className="border-l">
-                          <Badge
-                            className="rounded-full"
-                            style={{
-                              backgroundColor: pkg?.packageColor || "#3b82f6",
-                              color: "white",
-                              border: "none",
-                            }}
-                          >
-                            {client.selectedPackage}
-                          </Badge>
+                          {pkg ? (
+                            <Badge
+                              className="rounded-full"
+                              style={{
+                                backgroundColor: pkg.packageColor || "#3b82f6",
+                                color: "white",
+                                border: "none",
+                              }}
+                            >
+                              {client.selectedPackage}
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="rounded-full">
+                              No package assigned
+                            </Badge>
+                          )}
                         </TableCell>
 
                         <TableCell className="border-l">
-                          {dates && (
+                          {dates && dates.packageEndDate ? (
                             <div className="text-gray-700">
                               {formatDateDisplay(dates.packageEndDate)}
                             </div>
+                          ) : pkg?.isRecurring ? (
+                            <span className="text-gray-400">
+                              N/A (Recurring)
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">N/A</span>
                           )}
                         </TableCell>
 
@@ -695,6 +788,9 @@ export function ClientsTable({
                               <span className="text-gray-400">
                                 No upcoming calls
                               </span>
+                            )}
+                            {!dates && (
+                              <span className="text-gray-400">N/A</span>
                             )}
                           </TableCell>
                         )}
@@ -718,12 +814,19 @@ export function ClientsTable({
                                 No upcoming updates
                               </span>
                             )}
+                            {!dates && (
+                              <span className="text-gray-400">N/A</span>
+                            )}
                           </TableCell>
                         )}
 
                         {settings.clientFormFields.renewalCallDate && (
                           <TableCell className="border-l">
-                            {dates && (
+                            {pkg?.isRecurring ? (
+                              <span className="text-gray-400">
+                                N/A (Recurring)
+                              </span>
+                            ) : dates && dates.renewalCallDate ? (
                               <div
                                 className={getDateClassName(
                                   dates.renewalCallDate
@@ -734,6 +837,8 @@ export function ClientsTable({
                                   <AlertCircle className="inline-block ml-1 h-3 w-3" />
                                 )}
                               </div>
+                            ) : (
+                              <span className="text-gray-400">N/A</span>
                             )}
                           </TableCell>
                         )}
