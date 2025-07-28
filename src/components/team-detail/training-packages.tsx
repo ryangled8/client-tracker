@@ -330,6 +330,10 @@ export function TrainingPackages({
     setUpdatingPackage(true);
     try {
       const updatedPackages = [...packages];
+
+      // Preserve the original package name for client references if only non-name fields changed
+      const isNameChanged = packageName.trim() !== originalPackage.packageName;
+
       updatedPackages[editingPackageIndex] = {
         ...originalPackage,
         packageName: packageName.trim(),
@@ -346,6 +350,13 @@ export function TrainingPackages({
         body: JSON.stringify({
           teamId,
           packages: updatedPackages,
+          // Include a flag to indicate if we need to update client package references
+          updateClientPackageReferences: isNameChanged
+            ? {
+                oldPackageName: originalPackage.packageName,
+                newPackageName: packageName.trim(),
+              }
+            : null,
         }),
       });
 

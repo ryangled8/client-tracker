@@ -207,9 +207,6 @@ export default function TeamPage() {
       <div className="space-y-4">
         <h2 className="text-xl font-bold">Team Clients</h2>
         <ClientsTable
-          key={`clients-${team.packages.length}-${team.packages
-            .map((p) => p.packageColor)
-            .join("-")}`}
           clients={team.clients}
           coaches={team.coaches}
           packages={team.packages}

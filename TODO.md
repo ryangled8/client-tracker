@@ -1,13 +1,13 @@
 TODO:
 
 Date calcs:
-- Thoroughly check date calculations - with a fresh head*
+- Thoroughly check date calculations - with a fresh head* - seems to be working (as of checking 27/07/25).
 
 Managing Clients:
+- adding 2 clients without email still adds emial as null and throws error?!
 - adding a client throws error if there are no plans.
-- move editclient logic into new file - clienttable is too big now.
-- on edit/delete just refresh the clienttable component not the entire page.
-- Updating the package name clears all of the dates for the clients that had that package assigned to them. Updaing package durations, intervals and colour does not affect the table like editing the name does.
+- add reorder columns logic & ensure it persists for the team.
+- add a minimal / relaxed table view options which increase/descrease padding/row heights - ensure chioce is persisted.
 
 Managing Packages:
 - Add recurring as an option in create package which doesn't calculate an end date. Plan this out in AI.
@@ -22,6 +22,11 @@ Cleanup / Fixes:
 - Fix descendent html errors in confrim delete team 
 - id/page.tsx: Property 'planColor' does not exist on type '{ planName: string; planDuration: number; planProgressCall: number; planRenewalCall: number; planUpdateWeek: number; isActive: boolean; createdAt: string; }'.ts(2339)
 - fix all any types
+- on edit/delete client just refresh the clienttable component not the entire page.
+- Errors for API endpoints when they timeout currently show a window popup but need to gracefully show a toast ui saying 'X action (like adding a team/client) has timed out due to poor connection).
+Add team error: [MongooseError: Operation `teams.insertOne()` buffering timed out after 10000ms]
+ POST /api/teams/add-team 500 in 10996ms
+Code that needs to change to toast: 'alert("Error creating team");'
 
 ---
 

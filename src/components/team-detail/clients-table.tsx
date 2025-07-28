@@ -44,6 +44,7 @@ import {
   calculateClientDates,
   formatDateForDisplay,
 } from "@/utils/dateCalculations";
+import { EditClientModal } from "./edit-client-modal";
 
 // Remove the existing helper functions and replace with:
 const isAfter = (date1: Date, date2: Date): boolean => {
@@ -124,6 +125,8 @@ export function ClientsTable({
   const [packageFilter, setPackageFilter] = useState<string>("all");
   const [filteredClients, setFilteredClients] = useState<Client[]>(clients);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Apply filters when any filter changes
   useEffect(() => {
@@ -399,9 +402,15 @@ export function ClientsTable({
     }
   };
 
-  const handleEditClient = (clientId: string) => {
-    // TODO: Implement edit client functionality
-    toast.info("Edit client functionality coming soon!");
+  const handleEditClient = (client: Client) => {
+    setEditingClient(client);
+    setIsEditModalOpen(true);
+  };
+
+  const handleClientUpdated = (updatedClient: Client) => {
+    // Update the client in the local state without full page refresh
+    onClientUpdated();
+    toast.success("Client updated successfully");
   };
 
   // Get unique packages for filter
@@ -822,7 +831,7 @@ export function ClientsTable({
                             <DropdownMenuContent align="end">
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
                               <DropdownMenuItem
-                                onClick={() => handleEditClient(client._id)}
+                                onClick={() => handleEditClient(client)}
                               >
                                 <Edit className="mr-2 h-4 w-4" />
                                 Edit Client
@@ -885,6 +894,20 @@ export function ClientsTable({
           </TableBody>
         </Table>
       </div>
+
+      {/* Edit Client Modal */}
+      <EditClientModal
+        client={editingClient}
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditingClient(null);
+        }}
+        coaches={coaches}
+        packages={packages}
+        settings={settings}
+        onClientUpdated={handleClientUpdated}
+      />
     </div>
   );
 }
