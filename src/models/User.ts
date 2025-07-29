@@ -11,6 +11,11 @@ export interface IUser extends Document {
   createdTeams: ObjectId[] // Teams this user created
   memberTeams: ObjectId[] // Teams this user is a member of
 
+  // User preferences
+  preferences: {
+    tableView: "compact" | "relaxed"
+  }
+
   // Metadata
   lastLoginAt?: Date
   createdAt: Date
@@ -55,6 +60,14 @@ const userSchema = new Schema<IUser>(
         ref: "Team",
       },
     ],
+
+    preferences: {
+      tableView: {
+        type: String,
+        enum: ["compact", "relaxed"],
+        default: "relaxed",
+      },
+    },
 
     // Metadata
     lastLoginAt: Date,

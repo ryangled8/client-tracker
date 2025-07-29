@@ -3,17 +3,17 @@ TODO:
 Date calcs:
 - Thoroughly check date calculations - with a fresh head* - seems to be working (as of checking 27/07/25).
 
-Managing Clients:
-- adding 2 clients without email still adds emial as null and throws error?!
-- adding a client throws error if there are no plans.
-- add reorder columns logic & ensure it persists for the team.
-- add a minimal / relaxed table view options which increase/descrease padding/row heights - ensure chioce is persisted.
-
 *Once the above is done ^:*
+- CSV uploads and mapping
 - Add a 'coach colour' section in team settings and style the coach name in the table to the chosen colour and same tag style as the plan name - use the same colour pallete options from the training-plans modal.
 
 
+Managing Clients:
+- add reorder columns logic & ensure it persists for the team.
+
+
 Cleanup / Fixes:
+- PRIMARY FIX: adding 2 clients without email still adds emial as null and throws error?!
 - Remove invites from TeamInvites in the database if they're accepted, declined or expired
 - Fix descendent html errors in confrim delete team 
 - id/page.tsx: Property 'planColor' does not exist on type '{ planName: string; planDuration: number; planProgressCall: number; planRenewalCall: number; planUpdateWeek: number; isActive: boolean; createdAt: string; }'.ts(2339)

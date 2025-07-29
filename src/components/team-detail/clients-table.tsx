@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,6 +37,8 @@ import {
   AlertCircle,
   ChevronRight,
   ChevronDown,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 import type { TeamSettings } from "@/types";
 import {
@@ -45,6 +46,7 @@ import {
   formatDateForDisplay,
 } from "@/utils/dateCalculations";
 import { EditClientModal } from "./edit-client-modal";
+import { Tag } from "@/components/tag";
 
 // Remove the existing helper functions and replace with:
 const isAfter = (date1: Date, date2: Date): boolean => {
@@ -158,6 +160,46 @@ export function ClientsTable({
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [tableView, setTableView] = useState<"compact" | "relaxed">("relaxed");
+  const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
+
+  // Load user preferences on mount
+  useEffect(() => {
+    const loadPreferences = async () => {
+      try {
+        const response = await fetch("/api/user/preferences");
+        if (response.ok) {
+          const data = await response.json();
+          setTableView(data.preferences?.tableView || "relaxed");
+        }
+      } catch (error) {
+        console.error("Error loading preferences:", error);
+      } finally {
+        setIsLoadingPreferences(false);
+      }
+    };
+
+    loadPreferences();
+  }, []);
+
+  const handleTableViewToggle = async () => {
+    const newView = tableView === "compact" ? "relaxed" : "compact";
+    setTableView(newView);
+
+    try {
+      await fetch("/api/user/preferences", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          preferences: { tableView: newView },
+        }),
+      });
+    } catch (error) {
+      console.error("Error saving preferences:", error);
+    }
+  };
 
   // Apply filters when any filter changes
   useEffect(() => {
@@ -500,6 +542,10 @@ export function ClientsTable({
     new Set(clients.map((client) => client.selectedPackage))
   );
 
+  const isCompact = tableView === "compact";
+  const cellPadding = isCompact ? "px-4 py-2" : "px-6 py-4";
+  const rowHeight = isCompact ? "" : "h-16";
+
   return (
     <div className="space-y-4">
       {/* Filters */}
@@ -562,112 +608,127 @@ export function ClientsTable({
       </div>
 
       {/* Table */}
-      <div className="rounded-md border overflow-hidden">
+      <div className={`rounded-md border ${isCompact ? "" : "border-2"}`}>
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className={rowHeight}>
               <TableHead className="w-[40px]"></TableHead>
-              <TableHead className="border-l w-[180px]">Client</TableHead>
-              <TableHead className="border-l w-[150px]">Coach</TableHead>
+              <TableHead className={`border-l w-[180px] ${cellPadding}`}>
+                Client
+              </TableHead>
+              <TableHead className={`border-l w-[150px] ${cellPadding}`}>
+                Coach
+              </TableHead>
               {settings.clientFormFields.startDate && (
-                <TableHead className="border-l w-[200px]">Start Date</TableHead>
+                <TableHead className={`border-l w-[200px] ${cellPadding}`}>
+                  Start Date
+                </TableHead>
               )}
-              <TableHead className="border-l w-[200px]">
+              <TableHead className={`border-l w-[200px] ${cellPadding}`}>
                 Training Package
               </TableHead>
-              <TableHead className="border-l w-[200px]">
+              <TableHead className={`border-l w-[200px] ${cellPadding}`}>
                 Package End Date
               </TableHead>
               {settings.clientFormFields.progressCallDate && (
-                <TableHead className="border-l w-[200px]">
+                <TableHead className={`border-l w-[200px] ${cellPadding}`}>
                   Next Progress Call
                 </TableHead>
               )}
               {settings.clientFormFields.planUpdateDate && (
-                <TableHead className="border-l w-[200px]">
+                <TableHead className={`border-l w-[200px] ${cellPadding}`}>
                   Next Plan Update
                 </TableHead>
               )}
               {settings.clientFormFields.renewalCallDate && (
-                <TableHead className="border-l w-[200px]">
+                <TableHead className={`border-l w-[200px] ${cellPadding}`}>
                   Renewal Call
                 </TableHead>
               )}
               {settings.clientFormFields.status && (
-                <TableHead className="border-l w-[100px]">Status</TableHead>
+                <TableHead className={`border-l w-[100px] ${cellPadding}`}>
+                  Status
+                </TableHead>
               )}
 
               {/* Additional fields from settings */}
-              {settings.clientFormFields.email && (
-                <TableHead className="border-l w-[250px]">Email</TableHead>
-              )}
               {settings.clientFormFields.phone && (
-                <TableHead className="border-l w-[140px]">Phone</TableHead>
+                <TableHead className={`border-l w-[140px] ${cellPadding}`}>
+                  Phone
+                </TableHead>
               )}
               {settings.clientFormFields.paymentDate && (
-                <TableHead className="border-l w-[140px]">
+                <TableHead className={`border-l w-[140px] ${cellPadding}`}>
                   Payment Date
                 </TableHead>
               )}
               {settings.clientFormFields.age && (
-                <TableHead className="border-l w-[80px]">Age</TableHead>
+                <TableHead className={`border-l w-[80px] ${cellPadding}`}>
+                  Age
+                </TableHead>
               )}
               {settings.clientFormFields.gender && (
-                <TableHead className="border-l w-[100px]">Gender</TableHead>
+                <TableHead className={`border-l w-[100px] ${cellPadding}`}>
+                  Gender
+                </TableHead>
               )}
               {settings.clientFormFields.currentWeight && (
-                <TableHead className="border-l w-[120px]">
+                <TableHead className={`border-l w-[120px] ${cellPadding}`}>
                   Current Weight
                 </TableHead>
               )}
               {settings.clientFormFields.targetWeight && (
-                <TableHead className="border-l w-[120px]">
+                <TableHead className={`border-l w-[120px] ${cellPadding}`}>
                   Target Weight
                 </TableHead>
               )}
               {settings.clientFormFields.height && (
-                <TableHead className="border-l w-[100px]">Height</TableHead>
+                <TableHead className={`border-l w-[100px] ${cellPadding}`}>
+                  Height
+                </TableHead>
               )}
               {settings.clientFormFields.membershipType && (
-                <TableHead className="border-l w-[150px]">
+                <TableHead className={`border-l w-[150px] ${cellPadding}`}>
                   Membership Type
                 </TableHead>
               )}
 
               {/* Notes always comes last before actions */}
               {settings.clientFormFields.notes && (
-                <TableHead className="border-l w-[300px]">Notes</TableHead>
+                <TableHead className={`border-l w-[300px] ${cellPadding}`}>
+                  Notes
+                </TableHead>
               )}
               <TableHead className="border-l w-[80px]">
                 <div className="flex items-center justify-between">
                   <span>Actions</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0 ml-2"
-                    title="Reorder columns (coming soon)"
-                  >
-                    <svg
-                      className="h-3 w-3"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                  <div className="relative inline-flex group">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleTableViewToggle}
+                      disabled={isLoadingPreferences}
+                      className="h-6 w-6 p-0 ml-2"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 6h16M4 12h16M4 18h16"
-                      />
-                    </svg>
-                  </Button>
+                      {tableView === "compact" ? (
+                        <Maximize2 className="h-4 w-4" />
+                      ) : (
+                        <Minimize2 className="h-4 w-4" />
+                      )}
+                    </Button>
+                    <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-800 text-white text-xs rounded-md px-2 py-1 whitespace-nowrap pointer-events-none z-10">
+                      {tableView === "compact"
+                        ? "Relaxed table view"
+                        : "Compact table view"}
+                    </div>
+                  </div>
                 </div>
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredClients.length === 0 ? (
-              <TableRow>
+              <TableRow className={rowHeight}>
                 {(() => {
                   // Count all visible columns
                   let columnCount = 5; // Expand, Client, Coach, Training Package, Package End Date (always visible)
@@ -676,7 +737,6 @@ export function ClientsTable({
                   if (settings.clientFormFields.planUpdateDate) columnCount++;
                   if (settings.clientFormFields.renewalCallDate) columnCount++;
                   if (settings.clientFormFields.status) columnCount++;
-                  if (settings.clientFormFields.email) columnCount++;
                   if (settings.clientFormFields.phone) columnCount++;
                   if (settings.clientFormFields.paymentDate) columnCount++;
                   if (settings.clientFormFields.age) columnCount++;
@@ -711,7 +771,9 @@ export function ClientsTable({
                   return (
                     <React.Fragment key={client._id}>
                       <TableRow
-                        className={isEvenRow ? "bg-white" : "bg-gray-50"}
+                        className={`${
+                          isEvenRow ? "bg-white" : "bg-gray-50"
+                        } ${rowHeight}`}
                       >
                         <TableCell>
                           <Button
@@ -728,42 +790,56 @@ export function ClientsTable({
                           </Button>
                         </TableCell>
 
-                        <TableCell className="border-l">
+                        <TableCell className={`border-l ${cellPadding}`}>
                           <div className="font-bold">{client.name}</div>
+                          {settings.clientFormFields.email && (
+                            <div
+                              className={`text-gray-500 ${
+                                isCompact ? "mt-0" : "mt-0.5"
+                              }`}
+                            >
+                              {client.email || "No email"}
+                            </div>
+                          )}
                         </TableCell>
 
-                        <TableCell className="border-l">
+                        <TableCell className={`border-l ${cellPadding}`}>
                           {client.assignedCoach && client.assignedCoach.name
                             ? client.assignedCoach.name
                             : "Unassigned"}
                         </TableCell>
 
                         {settings.clientFormFields.startDate && (
-                          <TableCell className="border-l">
+                          <TableCell className={`border-l ${cellPadding}`}>
                             {formatDateDisplay(new Date(client.startDate))}
                           </TableCell>
                         )}
 
-                        <TableCell className="border-l">
+                        <TableCell className={`border-l ${cellPadding}`}>
                           {pkg ? (
-                            <Badge
-                              className="rounded-full"
-                              style={{
-                                backgroundColor: pkg.packageColor || "#3b82f6",
-                                color: "white",
-                                border: "none",
-                              }}
-                            >
-                              {client.selectedPackage}
-                            </Badge>
+                            <Tag
+                              label={client.selectedPackage}
+                              bgColour={pkg.packageColor || "bg-blue-100"}
+                              textColour={
+                                pkg.packageColor
+                                  ? "text-white"
+                                  : "text-blue-800"
+                              }
+                              size="small"
+                              isMinimal={false}
+                            />
                           ) : (
-                            <Badge variant="secondary" className="rounded-full">
-                              No package assigned
-                            </Badge>
+                            <Tag
+                              label="No package assigned"
+                              bgColour="bg-gray-100"
+                              textColour="text-gray-600"
+                              size="small"
+                              isMinimal={false}
+                            />
                           )}
                         </TableCell>
 
-                        <TableCell className="border-l">
+                        <TableCell className={`border-l ${cellPadding}`}>
                           {dates && dates.packageEndDate ? (
                             <div className="text-gray-700">
                               {formatDateDisplay(dates.packageEndDate)}
@@ -778,7 +854,7 @@ export function ClientsTable({
                         </TableCell>
 
                         {settings.clientFormFields.progressCallDate && (
-                          <TableCell className="border-l">
+                          <TableCell className={`border-l ${cellPadding}`}>
                             {dates && dates.progressCallDate && (
                               <div
                                 className={getDateClassName(
@@ -803,7 +879,7 @@ export function ClientsTable({
                         )}
 
                         {settings.clientFormFields.planUpdateDate && (
-                          <TableCell className="border-l">
+                          <TableCell className={`border-l ${cellPadding}`}>
                             {dates && dates.planUpdateDate && (
                               <div
                                 className={getDateClassName(
@@ -828,7 +904,7 @@ export function ClientsTable({
                         )}
 
                         {settings.clientFormFields.renewalCallDate && (
-                          <TableCell className="border-l">
+                          <TableCell className={`border-l ${cellPadding}`}>
                             {pkg?.isRecurring ? (
                               <span className="text-gray-400">
                                 N/A (Recurring)
@@ -851,38 +927,44 @@ export function ClientsTable({
                         )}
 
                         {settings.clientFormFields.status && (
-                          <TableCell className="border-l">
-                            <Badge
-                              className="rounded-full capitalize"
-                              style={{
-                                backgroundColor:
-                                  client.status === "active"
-                                    ? "#22c55e"
-                                    : client.status === "paused"
-                                    ? "#f97316"
-                                    : "#ec4899",
-                                color: "white",
-                                border: "none",
-                              }}
-                            >
-                              {client.status}
-                            </Badge>
+                          <TableCell className={`border-l ${cellPadding}`}>
+                            <Tag
+                              label={client.status}
+                              icon={
+                                client.status === "active"
+                                  ? "✅"
+                                  : client.status === "paused"
+                                  ? "⏸️"
+                                  : "❌"
+                              }
+                              bgColour={
+                                client.status === "active"
+                                  ? "bg-green-100"
+                                  : client.status === "paused"
+                                  ? "bg-yellow-100"
+                                  : "bg-red-100"
+                              }
+                              textColour={
+                                client.status === "active"
+                                  ? "text-green-800"
+                                  : client.status === "paused"
+                                  ? "text-yellow-800"
+                                  : "text-red-800"
+                              }
+                              size="small"
+                              isMinimal={isCompact}
+                            />
                           </TableCell>
                         )}
 
                         {/* Additional fields from settings */}
-                        {settings.clientFormFields.email && (
-                          <TableCell className="border-l">
-                            {client.email || "-"}
-                          </TableCell>
-                        )}
                         {settings.clientFormFields.phone && (
-                          <TableCell className="border-l">
+                          <TableCell className={`border-l ${cellPadding}`}>
                             {client.phone || "-"}
                           </TableCell>
                         )}
                         {settings.clientFormFields.paymentDate && (
-                          <TableCell className="border-l">
+                          <TableCell className={`border-l ${cellPadding}`}>
                             {client.paymentDate ? (
                               formatDateDisplay(new Date(client.paymentDate))
                             ) : (
@@ -893,43 +975,43 @@ export function ClientsTable({
                           </TableCell>
                         )}
                         {settings.clientFormFields.age && (
-                          <TableCell className="border-l">
+                          <TableCell className={`border-l ${cellPadding}`}>
                             {client.age || "-"}
                           </TableCell>
                         )}
                         {settings.clientFormFields.gender && (
-                          <TableCell className="border-l">
+                          <TableCell className={`border-l ${cellPadding}`}>
                             {client.gender || "-"}
                           </TableCell>
                         )}
                         {settings.clientFormFields.currentWeight && (
-                          <TableCell className="border-l">
+                          <TableCell className={`border-l ${cellPadding}`}>
                             {client.currentWeight
                               ? `${client.currentWeight} kg`
                               : "-"}
                           </TableCell>
                         )}
                         {settings.clientFormFields.targetWeight && (
-                          <TableCell className="border-l">
+                          <TableCell className={`border-l ${cellPadding}`}>
                             {client.targetWeight
                               ? `${client.targetWeight} kg`
                               : "-"}
                           </TableCell>
                         )}
                         {settings.clientFormFields.height && (
-                          <TableCell className="border-l">
+                          <TableCell className={`border-l ${cellPadding}`}>
                             {client.height ? `${client.height} cm` : "-"}
                           </TableCell>
                         )}
                         {settings.clientFormFields.membershipType && (
-                          <TableCell className="border-l">
+                          <TableCell className={`border-l ${cellPadding}`}>
                             {client.membershipType || "-"}
                           </TableCell>
                         )}
 
                         {/* Notes always comes last before actions */}
                         {settings.clientFormFields.notes && (
-                          <TableCell className="border-l">
+                          <TableCell className={`border-l ${cellPadding}`}>
                             {client.notes ? (
                               <div
                                 className="max-w-[280px] truncate"
@@ -943,7 +1025,7 @@ export function ClientsTable({
                           </TableCell>
                         )}
 
-                        <TableCell className="border-l">
+                        <TableCell className={`border-l ${cellPadding}`}>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" className="h-8 w-8 p-0">
@@ -1002,7 +1084,9 @@ export function ClientsTable({
                       {/* Expanded content */}
                       {isExpanded && (
                         <TableRow
-                          className={isEvenRow ? "bg-white" : "bg-gray-50"}
+                          className={`${
+                            isEvenRow ? "bg-white" : "bg-gray-50"
+                          } ${rowHeight}`}
                         >
                           <TableCell colSpan={100}>
                             {renderExpandedContent(client)}
