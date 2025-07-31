@@ -365,8 +365,11 @@ export function AddClientModal({
                   <SelectValue placeholder="Select coach" />
                 </SelectTrigger>
                 <SelectContent>
-                  {coaches.map((coach) => (
-                    <SelectItem key={coach._id} value={coach._id}>
+                  {coaches.map((coach, index) => (
+                    <SelectItem
+                      key={`add-coach-${coach._id}-${index}`}
+                      value={coach._id}
+                    >
                       {coach.name}
                     </SelectItem>
                   ))}
@@ -394,8 +397,11 @@ export function AddClientModal({
                       No active packages available
                     </div>
                   ) : (
-                    activePackages.map((pkg) => (
-                      <SelectItem key={pkg.packageName} value={pkg.packageName}>
+                    activePackages.map((pkg, index) => (
+                      <SelectItem
+                        key={`add-package-${pkg.packageName}-${index}`}
+                        value={pkg.packageName}
+                      >
                         {pkg.packageName} ({pkg.durationInWeeks} weeks)
                       </SelectItem>
                     ))

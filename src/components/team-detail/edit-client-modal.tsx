@@ -366,8 +366,11 @@ export function EditClientModal({
                   <SelectValue placeholder="Select a coach" />
                 </SelectTrigger>
                 <SelectContent>
-                  {coaches.map((coach) => (
-                    <SelectItem key={coach._id} value={coach._id}>
+                  {coaches.map((coach, index) => (
+                    <SelectItem
+                      key={`edit-coach-${coach._id}-${index}`}
+                      value={coach._id}
+                    >
                       {coach.name}
                     </SelectItem>
                   ))}
@@ -392,8 +395,11 @@ export function EditClientModal({
                 <SelectContent>
                   {packages
                     .filter((pkg) => pkg.isActive)
-                    .map((pkg) => (
-                      <SelectItem key={pkg.packageName} value={pkg.packageName}>
+                    .map((pkg, index) => (
+                      <SelectItem
+                        key={`edit-package-${pkg.packageName}-${index}`}
+                        value={pkg.packageName}
+                      >
                         {pkg.packageName}
                       </SelectItem>
                     ))}

@@ -578,8 +578,11 @@ export function ClientsTable({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Coaches</SelectItem>
-              {coaches.map((coach) => (
-                <SelectItem key={coach._id} value={coach._id}>
+              {coaches.map((coach, index) => (
+                <SelectItem
+                  key={`filter-coach-${coach._id}-${index}`}
+                  value={coach._id}
+                >
                   {coach.name}
                 </SelectItem>
               ))}
@@ -593,7 +596,7 @@ export function ClientsTable({
             <SelectContent>
               <SelectItem value="all">All Packages</SelectItem>
               {uniquePackages.map((pkg, index) => (
-                <SelectItem key={`package-${index}-${pkg}`} value={pkg}>
+                <SelectItem key={`filter-package-${pkg}-${index}`} value={pkg}>
                   {pkg}
                 </SelectItem>
               ))}

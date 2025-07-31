@@ -11,6 +11,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { TeamSettingsModal } from "@/components/team-detail/team-settings-modal";
 import { AddClientModal } from "@/components/team-detail/add-client-modal";
+import { CSVUploadModal } from "@/components/team-detail/csv-upload-modal";
 import { ClientsTable } from "@/components/team-detail/clients-table";
 import type { TeamSettings } from "@/types";
 
@@ -184,9 +185,18 @@ export default function TeamPage() {
               onSettingsUpdated={() => fetchTeam(team._id)}
             />
           )}
+
+          <CSVUploadModal
+            teamId={team._id}
+            coaches={[team.owner, ...team.coaches]}
+            packages={team.packages}
+            settings={team.settings}
+            onClientsImported={() => fetchTeam(team._id)}
+          />
+
           <AddClientModal
             teamId={team._id}
-            coaches={team.coaches}
+            coaches={[team.owner, ...team.coaches]}
             packages={team.packages}
             settings={team.settings}
             onClientAdded={() => fetchTeam(team._id)}
@@ -210,7 +220,7 @@ export default function TeamPage() {
         <h2 className="text-xl font-bold">Team Clients</h2>
         <ClientsTable
           clients={team.clients}
-          coaches={team.coaches}
+          coaches={[team.owner, ...team.coaches]}
           packages={team.packages}
           settings={team.settings}
           onClientUpdated={() => fetchTeam(team._id)}
