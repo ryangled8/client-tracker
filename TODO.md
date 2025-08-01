@@ -6,7 +6,6 @@ Date calcs & Mapping - Done but need to thoroughly test and check:
 
 
 --
-*Once the above is done ^:*
 - Add a 'coach colour' section in team settings and style the coach name in the table to the chosen colour and same tag style as the plan name - use the same colour pallete options from the training-plans modal.
 
 
@@ -16,6 +15,7 @@ Managing Clients:
 
 Cleanup / Fixes:
 - PRIMARY FIX: adding 2 clients without email still adds emial as null and throws error?!
+- Invite notification not showing anymore.
 - Remove invites from TeamInvites in the database if they're accepted, declined or expired
 - Fix descendent html errors in confrim delete team 
 - id/page.tsx: Property 'planColor' does not exist on type '{ planName: string; planDuration: number; planProgressCall: number; planRenewalCall: number; planUpdateWeek: number; isActive: boolean; createdAt: string; }'.ts(2339)
