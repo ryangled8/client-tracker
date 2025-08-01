@@ -402,7 +402,7 @@ export function AddClientModal({
                         key={`add-package-${pkg.packageName}-${index}`}
                         value={pkg.packageName}
                       >
-                        {pkg.packageName} ({pkg.durationInWeeks} weeks)
+                        {pkg.packageName}
                       </SelectItem>
                     ))
                   )}

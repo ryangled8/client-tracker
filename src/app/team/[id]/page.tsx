@@ -188,7 +188,7 @@ export default function TeamPage() {
 
           <CSVUploadModal
             teamId={team._id}
-            coaches={[team.owner, ...team.coaches]}
+            coaches={team.coaches}
             packages={team.packages}
             settings={team.settings}
             onClientsImported={() => fetchTeam(team._id)}
@@ -196,7 +196,7 @@ export default function TeamPage() {
 
           <AddClientModal
             teamId={team._id}
-            coaches={[team.owner, ...team.coaches]}
+            coaches={team.coaches}
             packages={team.packages}
             settings={team.settings}
             onClientAdded={() => fetchTeam(team._id)}
@@ -220,7 +220,7 @@ export default function TeamPage() {
         <h2 className="text-xl font-bold">Team Clients</h2>
         <ClientsTable
           clients={team.clients}
-          coaches={[team.owner, ...team.coaches]}
+          coaches={team.coaches}
           packages={team.packages}
           settings={team.settings}
           onClientUpdated={() => fetchTeam(team._id)}

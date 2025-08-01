@@ -1,10 +1,12 @@
 TODO:
 
-Date calcs:
+Date calcs & Mapping - Done but need to thoroughly test and check:
 - Thoroughly check date calculations - with a fresh head* - seems to be working (as of checking 27/07/25).
+- CSV uploads and mapping - thoroughly check
 
+
+--
 *Once the above is done ^:*
-- CSV uploads and mapping
 - Add a 'coach colour' section in team settings and style the coach name in the table to the chosen colour and same tag style as the plan name - use the same colour pallete options from the training-plans modal.
 
 
