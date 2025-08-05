@@ -847,7 +847,10 @@ export function ClientsTable({
                 <Button
                   variant="default"
                   size="xs"
-                  onClick={clearAllFilters}
+                  onClick={() => {
+                    setOverdueFilter(false);
+                    setSortBy("newest");
+                  }}
                   className="f-hm text-sm text-white hover:opacity-80 cursor-pointer rounded-sm bg-red-600 px-2 py-1 h-full aspect-square"
                 >
                   <X className="h-4 w-4" />
@@ -897,7 +900,10 @@ export function ClientsTable({
                 <Button
                   variant="default"
                   size="xs"
-                  onClick={clearAllFilters}
+                  onClick={() => {
+                    setDueSoonFilter(false);
+                    setSortBy("newest");
+                  }}
                   className="f-hm text-sm text-white hover:opacity-80 cursor-pointer rounded-sm bg-orange-600 px-2 py-1 h-full aspect-square"
                 >
                   <X className="h-4 w-4" />
