@@ -187,12 +187,7 @@ export default function TeamPage() {
           />
         </div>
 
-        <CoachList
-          coaches={team.coaches}
-          ownerId={team.owner._id}
-          teamId={team._id}
-          onInviteSent={() => fetchTeam(team._id)}
-        />
+        <CoachList coaches={team.coaches} ownerId={team.owner._id} />
 
         {/* Pending Invites (Owner Only) */}
         <PendingInvites
