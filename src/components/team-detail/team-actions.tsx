@@ -1,6 +1,6 @@
-import { CoachList } from "./coach-list";
 import { TrainingPackages } from "./training-packages";
-import { PendingInvites } from "./pending-invites";
+import { TeamSettingsModal } from "./team-settings-modal";
+import { CoachInvite } from "./coach-invite";
 
 interface Coach {
   _id: string;
@@ -16,6 +16,7 @@ interface Package {
   planUpdateWeek: number;
   packageColor?: string;
   isActive: boolean;
+  isRecurring: boolean;
   createdAt: string;
 }
 
@@ -26,7 +27,19 @@ interface Client {
   status: string;
 }
 
+interface Team {
+  _id: string;
+  name: string;
+  owner: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+  settings: any;
+}
+
 interface TeamActionsProps {
+  team: Team;
   coaches: Coach[];
   packages: Package[];
   clients: Client[];
@@ -37,9 +50,8 @@ interface TeamActionsProps {
 }
 
 export function TeamActions({
-  coaches,
+  team,
   packages,
-  clients,
   ownerId,
   currentUserId,
   teamId,
@@ -48,43 +60,19 @@ export function TeamActions({
   const isOwner = ownerId === currentUserId;
 
   return (
-    <div className="space-y-6">
-      {/* Main Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <CoachList
-          coaches={coaches}
-          ownerId={ownerId}
-          teamId={teamId}
-          onInviteSent={onDataUpdated}
-        />
-        <TrainingPackages
-          packages={packages}
-          teamId={teamId}
-          onPackagesUpdated={onDataUpdated}
-        />
-        <div className="space-y-4">
-          <div className="text-2xl font-bold mb-2">{clients.length}</div>
-          <div className="space-y-1">
-            <div className="flex justify-between text-sm">
-              <span>Active:</span>
-              <span>{clients.filter((c) => c.status === "active").length}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span>Inactive:</span>
-              <span>
-                {clients.filter((c) => c.status === "inactive").length}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="flex gap-2">
+      {/* Invite coach CTA */}
+      <CoachInvite teamId={teamId} onInviteSent={onDataUpdated} />
 
-      {/* Pending Invites (Owner Only) */}
-      <PendingInvites
+      <TrainingPackages
+        packages={packages}
         teamId={teamId}
-        isOwner={isOwner}
-        onInvitesCancelled={onDataUpdated}
+        onPackagesUpdated={onDataUpdated}
       />
+
+      {isOwner && (
+        <TeamSettingsModal team={team} onSettingsUpdated={onDataUpdated} />
+      )}
     </div>
   );
 }

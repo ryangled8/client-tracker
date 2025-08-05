@@ -595,8 +595,8 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
         }}
       >
         <DialogTrigger asChild>
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
+          <Button size="lg">
+            <Plus className="h-4 w-4" />
             Upload via CSV
           </Button>
         </DialogTrigger>

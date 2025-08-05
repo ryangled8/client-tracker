@@ -120,3 +120,75 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+/* Custom styles */
+body {
+  color: #1C1D22;
+  background-color: #F9FAFC;
+}
+
+/* Typography */
+/* Neue Haas Grotesk Roman */
+.f-hr {
+  font-family: "neue-haas-grotesk-display", sans-serif;
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Neue Haas Grotesk Medium */
+.f-hm {
+  font-family: "neue-haas-grotesk-display", sans-serif;
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+.h1 {
+  @apply text-3xl md:text-4xl tracking-tight;
+}
+
+.h2 {
+  @apply text-2xl md:text-3xl tracking-tight;
+}
+
+.h3 {
+  @apply text-xl md:text-2xl tracking-tight;
+}
+
+.h4 {
+  @apply text-lg md:text-xl;
+}
+
+.h5 {
+  @apply text-base md:text-lg;
+}
+
+.h6 {
+  @apply text-sm md:text-base;
+}
+
+.p-lg {
+  @apply text-lg md:text-xl opacity-70;
+}
+
+/* Colours */
+/* Black */
+.bg-blk {
+  @apply bg-[#1C1D22];
+}
+.text-blk {
+  @apply text-[#1C1D22];
+}
+.text-blk-80 {
+  @apply text-[#1C1D22] opacity-80;
+}
+.text-blk-60 {
+  @apply text-[#1C1D22] opacity-60;
+}
+
+/* Light Blue BG */
+.bg-lb {
+  @apply bg-[#F9FAFC];
+}

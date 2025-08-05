@@ -3,7 +3,7 @@
 import type React from "react";
 
 import { useState, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -524,13 +524,10 @@ export function TrainingPackages({
   ]);
 
   return (
-    <Card>
+    <Card className="p-0 rounded-none border-none shadow-none">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center">
-            <Calendar className="h-5 w-5 mr-2" />
-            Training Packages
-          </CardTitle>
+          <div className="text-blk-60 mb-1 text-sm">Training Packages</div>
           <Dialog open={packageDialogOpen} onOpenChange={setPackageDialogOpen}>
             <DialogTrigger asChild>
               <Button size="sm" variant="outline">

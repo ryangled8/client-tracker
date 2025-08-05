@@ -224,8 +224,8 @@ export function AddClientModal({
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
+        <Button size="lg">
+          <Plus className="h-4 w-4" />
           Add Client
         </Button>
       </DialogTrigger>

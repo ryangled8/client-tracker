@@ -1,7 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CoachInvite } from "./coach-invite";
-import { Users } from "lucide-react";
 
 interface Coach {
   _id: string;
@@ -23,32 +21,29 @@ export function CoachList({
   onInviteSent,
 }: CoachListProps) {
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center">
-            <Users className="h-5 w-5 mr-2" />
-            Coaches
-          </CardTitle>
-          <CoachInvite teamId={teamId} onInviteSent={onInviteSent} />
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
-          {coaches.map((coach) => (
-            <div key={coach._id} className="flex items-center justify-between">
-              <div>
-                <span className="text-sm font-medium">{coach.name}</span>
-                <p className="text-xs text-gray-500">{coach.email}</p>
+    <>
+      <div className="mt-8">
+        <div className="text-sm mb-4">
+          <div className="text-blk-60 mb-1">Coaches</div>
+
+          <div className="flex flex-col gap-1">
+            {coaches.map((coach) => (
+              <div key={coach._id} className="space-x-1.5">
+                <span>{coach.name}</span>
+
+                {coach._id === ownerId && (
+                  <Badge variant="secondary">Head Coach</Badge>
+                )}
+                {coach._id !== ownerId && (
+                  <Badge variant="outline">Coach</Badge>
+                )}
               </div>
-              {coach._id === ownerId && (
-                <Badge variant="secondary">Owner</Badge>
-              )}
-              {coach._id !== ownerId && <Badge variant="outline">Coach</Badge>}
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </CardContent>
-    </Card>
+
+        <CoachInvite teamId={teamId} onInviteSent={onInviteSent} />
+      </div>
+    </>
   );
 }

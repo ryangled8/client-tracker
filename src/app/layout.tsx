@@ -1,21 +1,11 @@
 import type React from "react";
 import type { Metadata } from "next";
 import AuthSessionProvider from "@/components/providers/session-provider";
-import { Geist, Geist_Mono } from "next/font/google";
+
 import "./globals.css";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
 import { Toaster } from "@/components/ui/sonner";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import Navigation from "@/components/custom/navigation/navigation";
+// import NavigationServerComponentWrapper from "@/components/custom/navigation/navigation-server-component-wrapper";
 
 export const metadata: Metadata = {
   title: "Client Tracker",
@@ -29,16 +19,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <head>
+        <link rel="stylesheet" href="https://use.typekit.net/vhq4ehl.css" />
+      </head>
+
+      <body className="f-hr antialiased">
         <AuthSessionProvider>
-          <SidebarProvider>
-            <AppSidebar />
-            <main className="flex-1 w-full">
-              <div className="p-8">{children}</div>
+          {/* <NavigationServerComponentWrapper /> */}
+          <div className="flex flex-col h-screen">
+            <Navigation />
+
+            <main className="bg-white rounded-md p-8 mx-4 mb-4 overflow-y-scroll h-full">
+              {children}
             </main>
-          </SidebarProvider>
+          </div>
+
           <Toaster />
         </AuthSessionProvider>
       </body>

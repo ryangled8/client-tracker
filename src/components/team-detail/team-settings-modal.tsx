@@ -237,11 +237,12 @@ export function TeamSettingsModal({
       }}
     >
       <DialogTrigger asChild>
-        <Button variant="outline">
-          <Settings className="h-4 w-4 mr-2" />
-          Settings
+        <Button variant="outline" size="lg">
+          <Settings className="h-4 w-4" />
+          Team Settings
         </Button>
       </DialogTrigger>
+
       <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Team Settings</DialogTitle>
@@ -249,9 +250,12 @@ export function TeamSettingsModal({
         <div className="space-y-6 pt-4">
           {/* General Settings */}
           <div>
-            <h3 className="text-lg font-medium mb-4">General</h3>
+            <h3 className="f-hm mb-2">General</h3>
+
             <div>
-              <Label htmlFor="teamName">Team Name</Label>
+              <Label htmlFor="teamName" className="mb-1.5">
+                Team Name
+              </Label>
               <Input
                 id="teamName"
                 value={teamName}

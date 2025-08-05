@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,9 +13,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { TeamsPageSkeleton } from "@/components/team-skeleton";
-import { Plus, Users, Calendar, Settings } from "lucide-react";
+import { Plus, Users } from "lucide-react";
+import { TeamCard } from "@/components/custom/team-card";
 
-interface Team {
+export interface Team {
   _id: string;
   name: string;
   owner: {
@@ -95,7 +95,7 @@ export default function TeamsPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <section className="section-body">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Teams</h1>
@@ -165,45 +165,10 @@ export default function TeamsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {teams.map((team) => (
-            <Link key={team._id} href={`/team/${team._id}`}>
-              <Card className="cursor-pointer hover:shadow-md transition-shadow h-full">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{team.name}</CardTitle>
-                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                      {team.owner.name === "You" ? "Owner" : "Member"}
-                    </span>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Users className="h-4 w-4 mr-2" />
-                      <span>{team.coaches.length} coaches</span>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      <span>{team.clients.length} clients</span>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Settings className="h-4 w-4 mr-2" />
-                      <span>
-                        {team.packages.filter((p) => p.isActive).length} active
-                        packages
-                      </span>
-                    </div>
-                    <div className="pt-2 border-t">
-                      <p className="text-xs text-gray-500">
-                        Created {new Date(team.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+            <TeamCard team={team} key={team._id} />
           ))}
         </div>
       )}
-    </div>
+    </section>
   );
 }

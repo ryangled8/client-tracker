@@ -3,17 +3,16 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TeamActions } from "@/components/team-detail/team-actions";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import { TeamSettingsModal } from "@/components/team-detail/team-settings-modal";
 import { AddClientModal } from "@/components/team-detail/add-client-modal";
 import { CSVUploadModal } from "@/components/team-detail/csv-upload-modal";
 import { ClientsTable } from "@/components/team-detail/clients-table";
 import type { TeamSettings } from "@/types";
+import { ButtonRounded } from "@/components/custom/buttons/button-rounded";
+import { CoachList } from "@/components/team-detail/coach-list";
+import { PendingInvites } from "@/components/team-detail/pending-invites";
 
 interface Team {
   _id: string;
@@ -149,75 +148,84 @@ export default function TeamPage() {
         <h1 className="text-2xl font-bold text-gray-900 mb-4">
           Team not found
         </h1>
-        <Link href="/teams">
-          <Button variant="outline">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Teams
-          </Button>
-        </Link>
+        <ButtonRounded
+          url="/teams"
+          variant="primary"
+          icon="ArrowLeft"
+          size="md"
+        />
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <section>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Link href="/teams">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">{team.name}</h1>
-            <p className="text-gray-600 mt-1">
-              Created {new Date(team.createdAt).toLocaleDateString()} by{" "}
-              {team.owner.name}
-            </p>
-          </div>
-        </div>
-        <div className="flex space-x-2">
-          {team.owner._id === session?.user?.id && (
-            <TeamSettingsModal
-              team={team}
-              onSettingsUpdated={() => fetchTeam(team._id)}
+      <header className="pb-6 border-b">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <ButtonRounded
+              url="/teams"
+              variant="primary"
+              icon="ArrowLeft"
+              size="md"
             />
-          )}
 
-          <CSVUploadModal
-            teamId={team._id}
+            <h1 className="h2 f-hr">{team.name}</h1>
+          </div>
+
+          {/* Main CTAs */}
+          <TeamActions
+            team={team}
             coaches={team.coaches}
             packages={team.packages}
-            settings={team.settings}
-            onClientsImported={() => fetchTeam(team._id)}
-          />
-
-          <AddClientModal
+            clients={team.clients}
+            ownerId={team.owner._id}
+            currentUserId={session?.user?.id || ""}
             teamId={team._id}
-            coaches={team.coaches}
-            packages={team.packages}
-            settings={team.settings}
-            onClientAdded={() => fetchTeam(team._id)}
+            onDataUpdated={() => fetchTeam(team._id)}
           />
         </div>
-      </div>
 
-      {/* Team Actions (Coaches, Packages, Client Stats) */}
-      <TeamActions
-        coaches={team.coaches}
-        packages={team.packages}
-        clients={team.clients}
-        ownerId={team.owner._id}
-        currentUserId={session?.user?.id || ""}
-        teamId={team._id}
-        onDataUpdated={() => fetchTeam(team._id)}
-      />
+        <CoachList
+          coaches={team.coaches}
+          ownerId={team.owner._id}
+          teamId={team._id}
+          onInviteSent={() => fetchTeam(team._id)}
+        />
+
+        {/* Pending Invites (Owner Only) */}
+        <PendingInvites
+          teamId={team._id}
+          isOwner={team.owner._id === session?.user?.id}
+          onInvitesCancelled={() => fetchTeam(team._id)}
+        />
+      </header>
 
       {/* Team Clients Table */}
-      <div className="space-y-4">
-        <h2 className="text-xl font-bold">Team Clients</h2>
+      <div className="mt-10">
+        <div className="flex justify-between mb-4">
+          <h2 className="f-hm mb-2">Team Clients</h2>
+
+          <div className="flex gap-2">
+            <CSVUploadModal
+              teamId={team._id}
+              coaches={team.coaches}
+              packages={team.packages}
+              settings={team.settings}
+              onClientsImported={() => fetchTeam(team._id)}
+            />
+
+            <AddClientModal
+              teamId={team._id}
+              coaches={team.coaches}
+              packages={team.packages}
+              settings={team.settings}
+              onClientAdded={() => fetchTeam(team._id)}
+            />
+          </div>
+        </div>
+
         <ClientsTable
           clients={team.clients}
           coaches={team.coaches}
@@ -227,6 +235,6 @@ export default function TeamPage() {
           onClientDeleted={() => fetchTeam(team._id)}
         />
       </div>
-    </div>
+    </section>
   );
 }
