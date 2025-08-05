@@ -40,6 +40,7 @@ import {
   Maximize2,
   Minimize2,
   X,
+  EyeIcon,
 } from "lucide-react";
 import type { TeamSettings } from "@/types";
 import {
@@ -241,8 +242,8 @@ export function ClientsTable({
     coachFilter !== "all" ||
     packageFilter !== "all" ||
     sortBy !== "newest" ||
-    dueSoonFilter;
-
+    dueSoonFilter ||
+    overdueFilter;
   // Save filters to localStorage whenever they change
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -796,95 +797,134 @@ export function ClientsTable({
 
   return (
     <div className="space-y-4">
-      {/* Notice period warnings - only show if there are clients due soon */}
-      {clients.filter(isClientDueSoon).length > 0 && (
-        <div className="mt-4 text-sm bg-orange-50 border border-orange-300 rounded-sm p-4 flex items-center justify-between">
-          <div>
-            <span className="text-xs">Clients due soon:</span>
-            <span className="font-semibold ml-1">
-              {clients.filter(isClientDueSoon).length} clients
-            </span>
-            <span className="text-xs ml-1">
-              within the next {settings.noticePeriodWeeks} weeks
-            </span>
-          </div>
-          <Button
-            variant="default"
-            size="sm"
-            onClick={() => {
-              setDueSoonFilter(true);
-              setOverdueFilter(false);
-              setSortBy("due-soon");
-            }}
-            className="flex items-center gap-1 bg-orange-600 hover:bg-orange-700"
-          >
-            <AlertCircle className="h-4 w-4" />
-            View Clients
-          </Button>
-        </div>
-      )}
+      <div className="flex flex-col gap-2">
+        {/* Overdue clients - only show if there are overdue clients */}
+        {clients.filter((client) => {
+          const dates = calculateDates(client);
+          return (
+            (dates &&
+              (dates.renewalCallDate
+                ? isDateOverdue(dates.renewalCallDate)
+                : false)) ||
+            (dates && dates.progressCallDate
+              ? isDateOverdue(dates.progressCallDate)
+              : false) ||
+            (dates && dates.planUpdateDate
+              ? isDateOverdue(dates.planUpdateDate)
+              : false)
+          );
+        }).length > 0 && (
+          <div className="flex gap-2">
+            <div className="text-sm bg-red-50 border border-l-4 border-red-300 rounded-sm px-2.5 py-1.5 flex items-center justify-between w-fit gap-4">
+              <div className="flex gap-1 items-center">
+                <span className="f-hm">
+                  {
+                    clients.filter((client) => {
+                      const dates = calculateDates(client);
+                      return (
+                        (dates &&
+                          (dates.renewalCallDate
+                            ? isDateOverdue(dates.renewalCallDate)
+                            : false)) ||
+                        (dates && dates.progressCallDate
+                          ? isDateOverdue(dates.progressCallDate)
+                          : false) ||
+                        (dates && dates.planUpdateDate
+                          ? isDateOverdue(dates.planUpdateDate)
+                          : false)
+                      );
+                    }).length
+                  }
+                </span>
+                <span>
+                  clients have <span className="f-hm">overdue</span> dates
+                </span>
+              </div>
+            </div>
 
-      {/* Overdue clients - only show if there are overdue clients */}
-      {clients.filter((client) => {
-        const dates = calculateDates(client);
-        return (
-          (dates &&
-            (dates.renewalCallDate
-              ? isDateOverdue(dates.renewalCallDate)
-              : false)) ||
-          (dates && dates.progressCallDate
-            ? isDateOverdue(dates.progressCallDate)
-            : false) ||
-          (dates && dates.planUpdateDate
-            ? isDateOverdue(dates.planUpdateDate)
-            : false)
-        );
-      }).length > 0 && (
-        <div className="mt-4 text-sm bg-red-50 border border-red-300 rounded-sm p-4 flex items-center justify-between">
-          <div>
-            <span className="text-xs">Clients overdue:</span>
-            <span className="font-semibold ml-1">
-              {
-                clients.filter((client) => {
-                  const dates = calculateDates(client);
-                  return (
-                    (dates &&
-                      (dates.renewalCallDate
-                        ? isDateOverdue(dates.renewalCallDate)
-                        : false)) ||
-                    (dates && dates.progressCallDate
-                      ? isDateOverdue(dates.progressCallDate)
-                      : false) ||
-                    (dates && dates.planUpdateDate
-                      ? isDateOverdue(dates.planUpdateDate)
-                      : false)
-                  );
-                }).length
-              }{" "}
-              clients
-            </span>
-            <span className="text-xs ml-1">have overdue dates</span>
+            <div>
+              {overdueFilter ? (
+                <Button
+                  variant="default"
+                  size="xs"
+                  onClick={clearAllFilters}
+                  className="f-hm text-sm text-white hover:opacity-80 cursor-pointer rounded-sm bg-red-600 px-2 py-1 h-full aspect-square"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              ) : (
+                <Button
+                  variant="default"
+                  size="xs"
+                  onClick={() => {
+                    setDueSoonFilter(false);
+                    setOverdueFilter(true);
+                    setSortBy("overdue");
+                    // Clear other filters to show all overdue clients
+                    setSearchTerm("");
+                    setStatusFilter("all");
+                    setCoachFilter("all");
+                    setPackageFilter("all");
+                  }}
+                  className="f-hm text-sm text-white hover:opacity-80 cursor-pointer rounded-sm bg-red-600 px-2 py-1 h-full aspect-square"
+                >
+                  <EyeIcon className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
-          <Button
-            variant="default"
-            size="sm"
-            onClick={() => {
-              setDueSoonFilter(false);
-              setOverdueFilter(true);
-              setSortBy("overdue");
-              // Clear other filters to show all overdue clients
-              setSearchTerm("");
-              setStatusFilter("all");
-              setCoachFilter("all");
-              setPackageFilter("all");
-            }}
-            className="flex items-center gap-1 bg-red-600 hover:bg-red-700"
-          >
-            <AlertCircle className="h-4 w-4" />
-            View Clients
-          </Button>
-        </div>
-      )}
+        )}
+
+        {/* Notice period warnings - only show if there are clients due soon (excluding overdue) */}
+        {clients.filter(isClientDueSoonOnly).length > 0 && (
+          <div className="flex gap-2">
+            <div className="text-sm bg-orange-50 border border-l-4 border-orange-300 rounded-sm px-2.5 py-1.5 flex items-center justify-between w-fit gap-4">
+              <div className="flex gap-1 items-center">
+                <span className="f-hm">
+                  {clients.filter(isClientDueSoonOnly).length}
+                </span>
+                <span>
+                  clients are due within the next{" "}
+                  <span className="f-hm">
+                    {settings.noticePeriodWeeks} weeks
+                  </span>
+                </span>
+              </div>
+            </div>
+
+            <div>
+              {dueSoonFilter ? (
+                <Button
+                  variant="default"
+                  size="xs"
+                  onClick={clearAllFilters}
+                  className="f-hm text-sm text-white hover:opacity-80 cursor-pointer rounded-sm bg-orange-600 px-2 py-1 h-full aspect-square"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              ) : (
+                <Button
+                  variant="default"
+                  size="xs"
+                  onClick={() => {
+                    setDueSoonFilter(true);
+                    setOverdueFilter(false);
+                    setSortBy("due-soon");
+                    // Clear other filters to show all overdue clients
+                    setSearchTerm("");
+                    setStatusFilter("all");
+                    setCoachFilter("all");
+                    setPackageFilter("all");
+                  }}
+                  className="f-hm text-sm text-white hover:opacity-80 cursor-pointer rounded-sm bg-orange-600 px-2 py-1 h-full aspect-square"
+                >
+                  <EyeIcon className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Filters */}
       <div className="flex flex-col md:flex-row gap-4">

@@ -61,14 +61,16 @@ export function TeamActions({
 
   return (
     <div className="flex gap-2">
-      {/* Invite coach CTA */}
-      <CoachInvite teamId={teamId} onInviteSent={onDataUpdated} />
-
+      {/* Toggle Add Package Modal */}
       <TrainingPackages
         packages={packages}
-        teamId={teamId}
+        teamId={team._id}
         onPackagesUpdated={onDataUpdated}
+        hidePackageList
       />
+
+      {/* Invite coach CTA */}
+      <CoachInvite teamId={teamId} onInviteSent={onDataUpdated} />
 
       {isOwner && (
         <TeamSettingsModal team={team} onSettingsUpdated={onDataUpdated} />

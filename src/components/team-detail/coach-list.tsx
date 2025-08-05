@@ -13,7 +13,7 @@ interface CoachListProps {
 
 export function CoachList({ coaches, ownerId }: CoachListProps) {
   return (
-    <div className="text-sm mt-8 mb-4">
+    <div className="text-sm">
       <div className="text-blk-60 mb-1">Coaches</div>
 
       <div className="flex flex-col gap-1">

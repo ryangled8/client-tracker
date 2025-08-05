@@ -121,63 +121,60 @@ export function PendingInvites({
   if (invites.length === 0) return null;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <Mail className="h-5 w-5 mr-2" />
-          Pending Invitations ({invites.length})
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {invites.map((invite) => (
-            <div
-              key={invite._id}
-              className="flex items-center justify-between p-3 border rounded-lg"
-            >
-              <div className="flex-1">
-                <div className="font-medium text-sm">{invite.inviteeEmail}</div>
-                <div className="text-xs text-gray-500">
-                  Invited by {invite.inviter.name} •{" "}
-                  {new Date(invite.createdAt).toLocaleDateString()}
+    <div className="text-sm">
+      <div className="text-blk-60 mb-1">Pending Invites - {invites.length}</div>
+
+      <div className="flex flex-col gap-2">
+        {invites.map((invite) => (
+          <div
+            key={invite._id}
+            className="flex flex-col p-2.5 rounded-sm border"
+          >
+            <div>
+              <div className="f-hr text-sm">{invite.inviteeEmail}</div>
+
+              <div className="text-xs text-gray-500 flex gap-2">
+                <span>Invited by {invite.inviter.name}</span>
+                <span>{new Date(invite.createdAt).toLocaleDateString()}</span>
+              </div>
+
+              {invite.message && (
+                <div className="text-xs text-gray-600 mt-1 italic">
+                  {invite.message}
                 </div>
-                {invite.message && (
-                  <div className="text-xs text-gray-600 mt-1 italic">
-                    {invite.message}
-                  </div>
-                )}
-              </div>
-              <div className="flex items-center space-x-2">
-                <Badge variant="outline" className="text-xs">
-                  <Clock className="h-3 w-3 mr-1" />
-                  {formatTimeLeft(invite.expiresAt)}
-                </Badge>
-                {invite.invitee ? (
-                  <Badge variant="secondary">Registered</Badge>
-                ) : (
-                  <Badge variant="outline">Pending signup</Badge>
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => cancelInvite(invite._id, invite.inviteeEmail)}
-                  disabled={cancelling === invite._id}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                >
-                  {cancelling === invite._id ? (
-                    "Cancelling..."
-                  ) : (
-                    <>
-                      <X className="h-4 w-4" />
-                      <span className="sr-only">Cancel invitation</span>
-                    </>
-                  )}
-                </Button>
-              </div>
+              )}
             </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+
+            <div className="flex items-center space-x-2">
+              <Badge variant="outline" className="text-xs">
+                <Clock className="h-3 w-3 mr-0.5" />
+                {formatTimeLeft(invite.expiresAt)}
+              </Badge>
+              {invite.invitee ? (
+                <Badge variant="secondary">Registered</Badge>
+              ) : (
+                <Badge variant="outline">Pending signup</Badge>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => cancelInvite(invite._id, invite.inviteeEmail)}
+                disabled={cancelling === invite._id}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                {cancelling === invite._id ? (
+                  "Cancelling..."
+                ) : (
+                  <>
+                    <X className="h-4 w-4" />
+                    <span className="sr-only">Cancel invitation</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

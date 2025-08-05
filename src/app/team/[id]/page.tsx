@@ -13,6 +13,7 @@ import type { TeamSettings } from "@/types";
 import { ButtonRounded } from "@/components/custom/buttons/button-rounded";
 import { CoachList } from "@/components/team-detail/coach-list";
 import { PendingInvites } from "@/components/team-detail/pending-invites";
+import { TrainingPackages } from "@/components/team-detail/training-packages";
 
 interface Team {
   _id: string;
@@ -187,19 +188,32 @@ export default function TeamPage() {
           />
         </div>
 
-        <CoachList coaches={team.coaches} ownerId={team.owner._id} />
+        {/* Coach list & Training Package List */}
+        <div className="grid grid-cols-3 gap-4 mt-8">
+          <div className="col-span-1 space-y-6">
+            <CoachList coaches={team.coaches} ownerId={team.owner._id} />
 
-        {/* Pending Invites (Owner Only) */}
-        <PendingInvites
-          teamId={team._id}
-          isOwner={team.owner._id === session?.user?.id}
-          onInvitesCancelled={() => fetchTeam(team._id)}
-        />
+            <PendingInvites
+              teamId={team._id}
+              isOwner={team.owner._id === session?.user?.id}
+              onInvitesCancelled={() => fetchTeam(team._id)}
+            />
+          </div>
+
+          <div className="col-span-2 row-span-2 ">
+            <TrainingPackages
+              packages={team.packages}
+              teamId={team._id}
+              onPackagesUpdated={() => fetchTeam(team._id)}
+              hideCreatePackageButton
+            />
+          </div>
+        </div>
       </header>
 
       {/* Team Clients Table */}
       <div className="mt-10">
-        <div className="flex justify-between mb-4">
+        <div className="flex justify-between">
           <h2 className="f-hm mb-2">Team Clients</h2>
 
           <div className="flex gap-2">

@@ -73,8 +73,8 @@ export function CoachInvite({ teamId, onInviteSent }: CoachInviteProps) {
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline">
-          <UserPlus className="h-4 w-4 mr-1" />
+        <Button variant="outline" size="lg">
+          <UserPlus className="h-4 w-4" />
           Invite Coach
         </Button>
       </DialogTrigger>

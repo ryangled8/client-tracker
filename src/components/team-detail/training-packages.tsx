@@ -25,7 +25,6 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import {
-  Calendar,
   Plus,
   MoreVertical,
   Edit,
@@ -69,6 +68,8 @@ interface TrainingPackagesProps {
   packages: Package[];
   teamId: string;
   onPackagesUpdated: () => void;
+  hidePackageList?: boolean;
+  hideCreatePackageButton?: boolean;
 }
 
 // Color palette with 12 complementing colors
@@ -119,6 +120,8 @@ export function TrainingPackages({
   packages,
   teamId,
   onPackagesUpdated,
+  hidePackageList,
+  hideCreatePackageButton,
 }: TrainingPackagesProps) {
   const [packageDialogOpen, setPackageDialogOpen] = useState(false);
   const [editPackageDialogOpen, setEditPackageDialogOpen] = useState(false);
@@ -524,104 +527,116 @@ export function TrainingPackages({
   ]);
 
   return (
-    <Card className="p-0 rounded-none border-none shadow-none">
-      <CardHeader>
+    <div className="p-0 rounded-none border-none shadow-none">
+      <div>
         <div className="flex items-center justify-between">
-          <div className="text-blk-60 mb-1 text-sm">Training Packages</div>
-          <Dialog open={packageDialogOpen} onOpenChange={setPackageDialogOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" variant="outline">
-                <Plus className="h-4 w-4 mr-1" />
-                Add Package
-              </Button>
-            </DialogTrigger>
-          </Dialog>
+          {!hidePackageList && (
+            <div className="text-blk-60 mb-1 text-sm">Training Packages</div>
+          )}
+
+          {!hideCreatePackageButton && (
+            <Dialog
+              open={packageDialogOpen}
+              onOpenChange={setPackageDialogOpen}
+            >
+              <DialogTrigger asChild>
+                <Button variant="outline" size="lg">
+                  <Plus className="h-4 w-4" />
+                  Create Package
+                </Button>
+              </DialogTrigger>
+            </Dialog>
+          )}
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
-          {packages.length === 0 ? (
-            <p className="text-sm text-gray-500">No packages created</p>
-          ) : (
-            packages.map((pkg, index) => (
-              <div
-                key={`package-${pkg.packageName}-${index}`}
-                className="text-sm border rounded p-2"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <Badge
-                        style={{
-                          backgroundColor: pkg.packageColor || "#3b82f6",
-                          color: "white",
-                          border: "none",
-                        }}
-                      >
-                        {pkg.packageName}
-                      </Badge>
-                      <Badge variant={pkg.isActive ? "default" : "secondary"}>
-                        {pkg.isActive ? "Active" : "Inactive"}
-                      </Badge>
-                    </div>
-                    <div className="text-gray-500 text-xs mt-1">
-                      {pkg.isRecurring ? (
-                        <>
-                          Recurring • Progress: Every{" "}
-                          {pkg.progressIntervalInWeeks} weeks • Plan Updates:
-                          Every {pkg.planUpdateIntervalInWeeks} weeks
-                        </>
-                      ) : (
-                        <>
-                          {pkg.durationInWeeks} weeks • Progress: Every{" "}
-                          {pkg.progressIntervalInWeeks} weeks • Plan Updates:
-                          Every {pkg.planUpdateIntervalInWeeks} weeks • Renewal:{" "}
-                          {pkg.renewalCallWeeksBeforeEnd} weeks before end
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => editPackage(index)}>
-                        <Edit className="h-4 w-4 mr-2" />
-                        Edit Package
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => togglePackageStatus(index)}
-                      >
-                        {pkg.isActive ? (
+      </div>
+
+      {!hidePackageList && (
+        <CardContent className="p-0">
+          <div className="space-y-2">
+            {packages.length === 0 ? (
+              <p className="text-sm text-gray-500">No packages created</p>
+            ) : (
+              packages.map((pkg, index) => (
+                <div
+                  key={`package-${pkg.packageName}-${index}`}
+                  className="text-sm border rounded p-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          style={{
+                            backgroundColor: pkg.packageColor || "#3b82f6",
+                            color: "white",
+                            border: "none",
+                          }}
+                        >
+                          {pkg.packageName}
+                        </Badge>
+                        <Badge variant={pkg.isActive ? "default" : "secondary"}>
+                          {pkg.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                      </div>
+                      <div className="text-gray-500 text-xs mt-1">
+                        {pkg.isRecurring ? (
                           <>
-                            <Archive className="h-4 w-4 mr-2" />
-                            Deactivate
+                            Recurring • Progress: Every{" "}
+                            {pkg.progressIntervalInWeeks} weeks • Plan Updates:
+                            Every {pkg.planUpdateIntervalInWeeks} weeks
                           </>
                         ) : (
                           <>
-                            <ArchiveRestore className="h-4 w-4 mr-2" />
-                            Activate
+                            {pkg.durationInWeeks} weeks • Progress: Every{" "}
+                            {pkg.progressIntervalInWeeks} weeks • Plan Updates:
+                            Every {pkg.planUpdateIntervalInWeeks} weeks •
+                            Renewal: {pkg.renewalCallWeeksBeforeEnd} weeks
+                            before end
                           </>
                         )}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => deletePackage(index)}
-                        className="text-red-600 focus:text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete Package
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                      </div>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => editPackage(index)}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit Package
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => togglePackageStatus(index)}
+                        >
+                          {pkg.isActive ? (
+                            <>
+                              <Archive className="h-4 w-4 mr-2" />
+                              Deactivate
+                            </>
+                          ) : (
+                            <>
+                              <ArchiveRestore className="h-4 w-4 mr-2" />
+                              Activate
+                            </>
+                          )}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => deletePackage(index)}
+                          className="text-red-600 focus:text-red-600"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete Package
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </div>
-              </div>
-            ))
-          )}
-        </div>
-      </CardContent>
+              ))
+            )}
+          </div>
+        </CardContent>
+      )}
 
       {/* Create Package Modal */}
       <PackageModal
@@ -648,7 +663,7 @@ export function TrainingPackages({
         ColorPicker={ColorPicker}
         exampleText={exampleText}
       />
-    </Card>
+    </div>
   );
 }
 
@@ -684,7 +699,7 @@ const PackageModal = ({
     <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle>
-          {isEdit ? "Edit Package" : "Create New Package"}
+          {isEdit ? "Edit Package" : "Create New Training Package"}
         </DialogTitle>
         <p className="text-sm text-gray-600 mt-2">
           Define a custom package with specific duration and call schedules
