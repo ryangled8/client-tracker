@@ -3,9 +3,7 @@
 import type React from "react";
 
 import { useState, useMemo } from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -16,25 +14,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import {
-  Plus,
-  MoreVertical,
-  Edit,
-  Archive,
-  ArchiveRestore,
-  Check,
-  Trash2,
-  Info,
-} from "lucide-react";
+import { Plus, Check, Info } from "lucide-react";
 import { generateExampleDates } from "@/utils/dateCalculations";
+import { TrainingPackageCard } from "./training-package-card";
 
 interface Package {
   packageName: string;
@@ -527,11 +511,11 @@ export function TrainingPackages({
   ]);
 
   return (
-    <div className="p-0 rounded-none border-none shadow-none">
+    <div>
       <div>
         <div className="flex items-center justify-between">
           {!hidePackageList && (
-            <div className="text-blk-60 mb-1 text-sm">Training Packages</div>
+            <div className="text-blk-60 mb-2 text-sm">Training Packages</div>
           )}
 
           {!hideCreatePackageButton && (
@@ -551,91 +535,29 @@ export function TrainingPackages({
       </div>
 
       {!hidePackageList && (
-        <CardContent className="p-0">
-          <div className="space-y-2">
+        <div>
+          <div className="space-y-4">
             {packages.length === 0 ? (
               <p className="text-sm text-gray-500">No packages created</p>
             ) : (
-              packages.map((pkg, index) => (
-                <div
-                  key={`package-${pkg.packageName}-${index}`}
-                  className="text-sm border rounded p-2"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          style={{
-                            backgroundColor: pkg.packageColor || "#3b82f6",
-                            color: "white",
-                            border: "none",
-                          }}
-                        >
-                          {pkg.packageName}
-                        </Badge>
-                        <Badge variant={pkg.isActive ? "default" : "secondary"}>
-                          {pkg.isActive ? "Active" : "Inactive"}
-                        </Badge>
-                      </div>
-                      <div className="text-gray-500 text-xs mt-1">
-                        {pkg.isRecurring ? (
-                          <>
-                            Recurring • Progress: Every{" "}
-                            {pkg.progressIntervalInWeeks} weeks • Plan Updates:
-                            Every {pkg.planUpdateIntervalInWeeks} weeks
-                          </>
-                        ) : (
-                          <>
-                            {pkg.durationInWeeks} weeks • Progress: Every{" "}
-                            {pkg.progressIntervalInWeeks} weeks • Plan Updates:
-                            Every {pkg.planUpdateIntervalInWeeks} weeks •
-                            Renewal: {pkg.renewalCallWeeksBeforeEnd} weeks
-                            before end
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => editPackage(index)}>
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit Package
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => togglePackageStatus(index)}
-                        >
-                          {pkg.isActive ? (
-                            <>
-                              <Archive className="h-4 w-4 mr-2" />
-                              Deactivate
-                            </>
-                          ) : (
-                            <>
-                              <ArchiveRestore className="h-4 w-4 mr-2" />
-                              Activate
-                            </>
-                          )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => deletePackage(index)}
-                          className="text-red-600 focus:text-red-600"
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete Package
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
+              <>
+                {/* Show packages in card layout */}
+                <div className="grid grid-cols-2 gap-4">
+                  {packages.map((pkg, index) => (
+                    <TrainingPackageCard
+                      key={`package-${pkg.packageName}-${index}`}
+                      package={pkg}
+                      packageIndex={index}
+                      onEdit={editPackage}
+                      onToggleStatus={togglePackageStatus}
+                      onDelete={deletePackage}
+                    />
+                  ))}
                 </div>
-              ))
+              </>
             )}
           </div>
-        </CardContent>
+        </div>
       )}
 
       {/* Create Package Modal */}

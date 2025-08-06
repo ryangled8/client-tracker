@@ -1190,7 +1190,7 @@ export function ClientsTable({
                   return (
                     <React.Fragment key={client._id}>
                       <TableRow
-                        className={`${isEvenRow ? "bg-white" : "bg-gray-50"}`}
+                        className={`${isEvenRow ? "bg-white" : "bg-[#F9FAFC]"}`}
                       >
                         <TableCell>
                           <Button

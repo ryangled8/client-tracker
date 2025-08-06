@@ -89,28 +89,34 @@ export default function Navigation({ user }: NavigationProps) {
   };
 
   return (
-    <nav className="flex justify-between items-center m-4">
-      {/* Logo */}
-      <div className="w-1/2 flex gap-8">
-        <Link className="f-hm text-lg" href="/">
-          Clientmap
-        </Link>
+    <>
+      {/* <div className="text-xs py-1.5 w-full text-center bg-blk text-white">
+        Clientmap Beta currently free for coaches
+      </div> */}
 
-        {/* Primary nav */}
-        <ul className="flex gap-6 items-center justify-center">
-          {primaryNavLinks.map(renderLink)}
-        </ul>
-      </div>
+      <nav className="flex justify-between items-center m-4">
+        {/* Logo */}
+        <div className="w-1/2 flex gap-8">
+          <Link className="f-hm text-lg" href="/">
+            Clientmap
+          </Link>
 
-      {/* Right: Secondary nav + user */}
-      <ul className="w-1/3 flex gap-6 items-center justify-end">
-        {secondaryNavLinks.map(renderLink)}
-        <div className="flex items-center gap-2">
-          {user && <span>{user.name}</span>}
-          Users name here
-          <div className="rounded-full size-6 bg-black"></div>
+          {/* Primary nav */}
+          <ul className="flex gap-6 items-center justify-center">
+            {primaryNavLinks.map(renderLink)}
+          </ul>
         </div>
-      </ul>
-    </nav>
+
+        {/* Right: Secondary nav + user */}
+        <ul className="w-1/3 flex gap-6 items-center justify-end">
+          {secondaryNavLinks.map(renderLink)}
+          <div className="flex items-center gap-2">
+            {user && <span>{user.name}</span>}
+            Users name here
+            <div className="rounded-full size-6 bg-black"></div>
+          </div>
+        </ul>
+      </nav>
+    </>
   );
 }

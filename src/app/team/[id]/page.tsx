@@ -189,18 +189,24 @@ export default function TeamPage() {
         </div>
 
         {/* Coach list & Training Package List */}
-        <div className="grid grid-cols-3 gap-4 mt-8">
-          <div className="col-span-1 space-y-6">
-            <CoachList coaches={team.coaches} ownerId={team.owner._id} />
+        <div className="grid grid-cols-4 gap-4 mt-8">
+          <div className="col-span-2 text-sm">
+            <div className="text-blk-60 mb-2">Coaches</div>
 
-            <PendingInvites
-              teamId={team._id}
-              isOwner={team.owner._id === session?.user?.id}
-              onInvitesCancelled={() => fetchTeam(team._id)}
-            />
+            <div className="border rounded-sm p-4 bg-[#F9FAFC]">
+              <CoachList coaches={team.coaches} ownerId={team.owner._id} />
+
+              <div className="mt-4">
+                <PendingInvites
+                  teamId={team._id}
+                  isOwner={team.owner._id === session?.user?.id}
+                  onInvitesCancelled={() => fetchTeam(team._id)}
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="col-span-2 row-span-2 ">
+          <div className="col-span-2">
             <TrainingPackages
               packages={team.packages}
               teamId={team._id}

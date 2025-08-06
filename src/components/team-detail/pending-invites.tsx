@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Mail, Clock, X } from "lucide-react";
+import { Clock, X } from "lucide-react";
 
 interface PendingInvite {
   _id: string;
@@ -100,14 +100,14 @@ export function PendingInvites({
 
     if (diffDays <= 0) return "Expired";
     if (diffDays === 1) return "Expires today";
-    return `${diffDays} days left`;
+    return `Expires in ${diffDays} days`;
   };
 
   if (!isOwner) return null;
 
   if (loading) {
     return (
-      <Card>
+      <Card className="shadow-none rounded-sm">
         <CardHeader>
           <Skeleton className="h-6 w-32" />
         </CardHeader>
@@ -122,39 +122,20 @@ export function PendingInvites({
 
   return (
     <div className="text-sm">
-      <div className="text-blk-60 mb-1">Pending Invites - {invites.length}</div>
+      <div className="text-blk-60 mb-2">Pending Invites ({invites.length})</div>
 
       <div className="flex flex-col gap-2">
         {invites.map((invite) => (
           <div
             key={invite._id}
-            className="flex flex-col p-2.5 rounded-sm border"
+            className="relative border rounded-sm p-4 bg-white"
           >
-            <div>
-              <div className="f-hr text-sm">{invite.inviteeEmail}</div>
-
-              <div className="text-xs text-gray-500 flex gap-2">
-                <span>Invited by {invite.inviter.name}</span>
-                <span>{new Date(invite.createdAt).toLocaleDateString()}</span>
-              </div>
-
-              {invite.message && (
-                <div className="text-xs text-gray-600 mt-1 italic">
-                  {invite.message}
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Badge variant="outline" className="text-xs">
+            <div className="absolute top-2 right-2 flex gap-1 items-center">
+              <div className="text-xs rounded-full px-2 py-0.5 flex items-center gap-0.5 border">
                 <Clock className="h-3 w-3 mr-0.5" />
                 {formatTimeLeft(invite.expiresAt)}
-              </Badge>
-              {invite.invitee ? (
-                <Badge variant="secondary">Registered</Badge>
-              ) : (
-                <Badge variant="outline">Pending signup</Badge>
-              )}
+              </div>
+
               <Button
                 variant="ghost"
                 size="sm"
@@ -172,6 +153,35 @@ export function PendingInvites({
                 )}
               </Button>
             </div>
+
+            <div className="f-hr leading-none text-sm mb-1">
+              {invite.inviteeEmail}
+            </div>
+
+            <div className="text-xs text-blk-60 flex">
+              <span>
+                Invited by {invite.inviter.name} on{" "}
+                {new Date(invite.createdAt).toLocaleDateString()}
+              </span>
+            </div>
+
+            {invite.message && (
+              <div className="text-xs text-blk-60 mt-2 italic pl-2 border-l-2 border-black tracking-wide">
+                {invite.message}
+              </div>
+            )}
+
+            {/* <div className="flex items-center space-x-2">
+              <Badge variant="outline" className="text-xs">
+                <Clock className="h-3 w-3 mr-0.5" />
+                {formatTimeLeft(invite.expiresAt)}
+              </Badge>
+              {invite.invitee ? (
+                <Badge variant="secondary">Registered</Badge>
+              ) : (
+                <Badge variant="outline">Pending signup</Badge>
+              )}
+            </div> */}
           </div>
         ))}
       </div>
