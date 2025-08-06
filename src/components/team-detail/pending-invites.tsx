@@ -1,12 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Clock, X } from "lucide-react";
+import { Clock, X, Mail } from "lucide-react";
 
 interface PendingInvite {
   _id: string;
@@ -29,23 +33,27 @@ interface PendingInvite {
 interface PendingInvitesProps {
   teamId: string;
   isOwner: boolean;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onInvitesCancelled?: () => void;
 }
 
 export function PendingInvites({
   teamId,
   isOwner,
+  open,
+  onOpenChange,
   onInvitesCancelled,
 }: PendingInvitesProps) {
   const [invites, setInvites] = useState<PendingInvite[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [cancelling, setCancelling] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isOwner) {
+    if (open && isOwner) {
       fetchPendingInvites();
     }
-  }, [teamId, isOwner]);
+  }, [open, teamId, isOwner]);
 
   const fetchPendingInvites = async () => {
     try {
@@ -61,6 +69,7 @@ export function PendingInvites({
       }
     } catch (error) {
       console.error("Error fetching pending invites:", error);
+      toast.error("Failed to fetch pending invites");
     } finally {
       setLoading(false);
     }
@@ -105,86 +114,92 @@ export function PendingInvites({
 
   if (!isOwner) return null;
 
-  if (loading) {
-    return (
-      <Card className="shadow-none rounded-sm">
-        <CardHeader>
-          <Skeleton className="h-6 w-32" />
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-16 w-full" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (invites.length === 0) return null;
-
   return (
-    <div className="text-sm">
-      <div className="text-blk-60 mb-2">Pending Invites ({invites.length})</div>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Mail className="h-5 w-5" />
+            Pending Invites
+          </DialogTitle>
+        </DialogHeader>
 
-      <div className="flex flex-col gap-2">
-        {invites.map((invite) => (
-          <div
-            key={invite._id}
-            className="relative border rounded-sm p-4 bg-white"
-          >
-            <div className="absolute top-2 right-2 flex gap-1 items-center">
-              <div className="text-xs rounded-full px-2 py-0.5 flex items-center gap-0.5 border">
-                <Clock className="h-3 w-3 mr-0.5" />
-                {formatTimeLeft(invite.expiresAt)}
+        {loading ? (
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="border rounded-sm p-4">
+                <Skeleton className="h-4 w-48 mb-2" />
+                <Skeleton className="h-3 w-32 mb-2" />
+                <Skeleton className="h-3 w-64" />
               </div>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => cancelInvite(invite._id, invite.inviteeEmail)}
-                disabled={cancelling === invite._id}
-                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-              >
-                {cancelling === invite._id ? (
-                  "Cancelling..."
-                ) : (
-                  <>
-                    <X className="h-4 w-4" />
-                    <span className="sr-only">Cancel invitation</span>
-                  </>
-                )}
-              </Button>
-            </div>
-
-            <div className="f-hr leading-none text-sm mb-1">
-              {invite.inviteeEmail}
-            </div>
-
-            <div className="text-xs text-blk-60 flex">
-              <span>
-                Invited by {invite.inviter.name} on{" "}
-                {new Date(invite.createdAt).toLocaleDateString()}
-              </span>
-            </div>
-
-            {invite.message && (
-              <div className="text-xs text-blk-60 mt-2 italic pl-2 border-l-2 border-black tracking-wide">
-                {invite.message}
-              </div>
-            )}
-
-            {/* <div className="flex items-center space-x-2">
-              <Badge variant="outline" className="text-xs">
-                <Clock className="h-3 w-3 mr-0.5" />
-                {formatTimeLeft(invite.expiresAt)}
-              </Badge>
-              {invite.invitee ? (
-                <Badge variant="secondary">Registered</Badge>
-              ) : (
-                <Badge variant="outline">Pending signup</Badge>
-              )}
-            </div> */}
+            ))}
           </div>
-        ))}
-      </div>
-    </div>
+        ) : invites.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <Mail className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>No pending invites</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {invites.map((invite) => (
+              <div
+                key={invite._id}
+                className="border rounded-sm p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="font-medium text-gray-900">
+                        {invite.inviteeEmail}
+                      </div>
+                      <div className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {formatTimeLeft(invite.expiresAt)}
+                      </div>
+                    </div>
+
+                    <div className="text-sm text-gray-600 mb-2">
+                      Invited by {invite.inviter.name} on{" "}
+                      {new Date(invite.createdAt).toLocaleDateString()}
+                    </div>
+
+                    {invite.message && (
+                      <div className="text-sm text-gray-600 italic pl-3 border-l-2 border-gray-300">
+                        {invite.message}
+                      </div>
+                    )}
+                  </div>
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      cancelInvite(invite._id, invite.inviteeEmail)
+                    }
+                    disabled={cancelling === invite._id}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-4"
+                  >
+                    {cancelling === invite._id ? (
+                      "Cancelling..."
+                    ) : (
+                      <>
+                        <X className="h-4 w-4" />
+                        <span className="sr-only">Cancel invitation</span>
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex justify-end pt-4 border-t">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Close
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

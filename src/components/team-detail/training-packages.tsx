@@ -538,7 +538,7 @@ export function TrainingPackages({
         <div>
           <div className="space-y-4">
             {packages.length === 0 ? (
-              <p className="text-sm text-gray-500">No packages created</p>
+              <p className="text-sm text-blk">No packages created yet.</p>
             ) : (
               <>
                 {/* Show packages in card layout */}

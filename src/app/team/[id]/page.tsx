@@ -72,6 +72,8 @@ export default function TeamPage() {
   const { data: session } = useSession();
   const [team, setTeam] = useState<Team | null>(null);
   const [loading, setLoading] = useState(true);
+  const [pendingInvitesOpen, setPendingInvitesOpen] = useState(false);
+  const [pendingInvitesCount, setPendingInvitesCount] = useState(0);
 
   useEffect(() => {
     if (params.id) {
@@ -124,6 +126,22 @@ export default function TeamPage() {
     }
   };
 
+  const fetchPendingInvitesCount = async () => {
+    try {
+      const response = await fetch(
+        `/api/teams/invites/pending?teamId=${team?._id}`
+      );
+      const data = await response.json();
+      if (response.ok) {
+        setPendingInvitesCount(data.invites?.length || 0);
+      }
+    } catch (error) {
+      console.error("Error fetching pending invites count:", error);
+    }
+  };
+
+  fetchPendingInvitesCount();
+
   if (loading) {
     return (
       <div className="space-y-8">
@@ -162,7 +180,7 @@ export default function TeamPage() {
   return (
     <section>
       {/* Header */}
-      <header className="pb-6 border-b">
+      <header className="pb-8 border-b">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <ButtonRounded
@@ -193,17 +211,30 @@ export default function TeamPage() {
           <div className="col-span-2 text-sm">
             <div className="text-blk-60 mb-2">Coaches</div>
 
-            <div className="border rounded-sm p-4 bg-[#F9FAFC]">
-              <CoachList coaches={team.coaches} ownerId={team.owner._id} />
+            <CoachList coaches={team.coaches} ownerId={team.owner._id} />
 
-              <div className="mt-4">
-                <PendingInvites
-                  teamId={team._id}
-                  isOwner={team.owner._id === session?.user?.id}
-                  onInvitesCancelled={() => fetchTeam(team._id)}
-                />
-              </div>
-            </div>
+            {/* Pending Invites Button - Only show if user is owner and there are invites */}
+            {team.owner._id === session?.user?.id &&
+              pendingInvitesCount > 0 && (
+                <button
+                  onClick={() => setPendingInvitesOpen(true)}
+                  className="mt-3 underline text-blk opacity-60 hover:opacity-100 cursor-pointer transition-all ease-in duration-200"
+                >
+                  View Pending Invites ({pendingInvitesCount})
+                </button>
+              )}
+
+            {/* Pending Invites Modal */}
+            <PendingInvites
+              teamId={team._id}
+              isOwner={team.owner._id === session?.user?.id}
+              open={pendingInvitesOpen}
+              onOpenChange={setPendingInvitesOpen}
+              onInvitesCancelled={() => {
+                fetchTeam(team._id);
+                fetchPendingInvitesCount();
+              }}
+            />
           </div>
 
           <div className="col-span-2">
