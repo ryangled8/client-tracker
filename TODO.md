@@ -11,6 +11,9 @@ UI TIME:
 Modals
 - CSV Modal
 -- Add an 'uploading' state to show user that the upload is acutally happening...
+-- Style error states / empty states
+-- Fix 'add package' modal from the button on the CSV modal
+
 - All Modals
 
 Table

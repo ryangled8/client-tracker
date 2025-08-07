@@ -577,7 +577,7 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
       case 4:
         return "Map CSV to App";
       case 5:
-        return "Assign Coach & Package";
+        return "Assign Coaches & Training Packages";
       default:
         return "Upload Clients";
     }
@@ -791,21 +791,26 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
           {/* Step 2: Upload */}
           {currentStep === 2 && (
             <>
-              <div className="border-2 border-dashed border-gray-300 rounded-sm px-12 py-20 text-center hover:border-blue-400 transition-colors bg-[#F9FAFC]">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".csv"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                />
-                <Button onClick={() => fileInputRef.current?.click()} size="lg">
-                  Choose CSV File
-                </Button>
+              <div className="border-2 border-dashed border-gray-300 rounded-sm px-12 h-64 grid place-items-center text-center hover:border-blue-400 transition-colors bg-[#F9FAFC]">
+                <div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".csv"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                  <Button
+                    onClick={() => fileInputRef.current?.click()}
+                    size="lg"
+                  >
+                    Choose CSV File
+                  </Button>
 
-                <p className="text-xs text-blk-60 mt-2">
-                  Only CSV files are supported
-                </p>
+                  <p className="text-xs text-blk-60 mt-2">
+                    Only CSV files are supported
+                  </p>
+                </div>
               </div>
 
               <div className="text-xs">
@@ -898,14 +903,19 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
                   </div>
                 </>
               ) : (
-                <Alert>
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
-                  <AlertDescription>
-                    Great! No duplicates found. All{" "}
-                    <strong>{csvData.length}</strong> clients will proceed to
-                    the mapping step.
-                  </AlertDescription>
-                </Alert>
+                <div className="p-4 bg-green-50 border border-green-200 rounded-sm">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle2 className="size-4 text-green-600" />
+
+                    <div>
+                      <p className="text-sm">No duplicates found</p>
+                      <p className="text-xs text-blk-60">
+                        All <strong>{csvData.length}</strong> clients will
+                        proceed to the mapping step.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               )}
 
               <div className="flex justify-between pt-4">
@@ -934,13 +944,13 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
           {/* Step 4: Map Columns */}
           {currentStep === 4 && (
             <>
-              {/* Notice of duplicates */}
+              {/* Notice of columns and clients found */}
               <div className="p-4 bg-green-50 border border-green-200 rounded-sm">
                 <div className="flex items-center gap-3">
                   <CheckCircle2 className="size-4 text-green-600" />
                   <div>
                     <p className="text-sm">
-                      Great! We found{" "}
+                      We found{" "}
                       <span className="f-hm">{csvHeaders.length} columns</span>{" "}
                       and{" "}
                       <span className="f-hm">
@@ -971,7 +981,7 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
                   <Link
                     href="/bolt-ons"
                     target="_blank"
-                    className="absolute right-0 top-0 text-right text-xs text-blk-60 underline tracking-wide hover:opacity-40"
+                    className="absolute right-0 top-0 text-right text-xs underline tracking-wide hover:opacity-60 cursor-pointer transition-all ease-in duration-200"
                   >
                     Need a custom mapping field?
                   </Link>
@@ -1057,14 +1067,16 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
 
           {/* Step 5: Assign Coaches & Packages */}
           {currentStep === 5 && (
-            <div className="space-y-4">
-              <div className="text-center">
-                <h3 className="text-lg font-semibold mb-2">
-                  Assign Coach & Training Package
-                </h3>
-                <p className="text-gray-600">
+            <>
+              {/* Notice of columns and clients found */}
+              <div className="p-4 border rounded-sm bg-[#F9FAFC]">
+                <p className="text-sm">
                   Choose which coach and training package to assign to each
                   client
+                </p>
+                <p className="text-xs text-blk-60">
+                  Assign individually or in bulk by using{" "}
+                  <span className="f-hm">select all</span>.
                 </p>
               </div>
 
@@ -1078,19 +1090,23 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
               ) : (
                 <>
                   {/* Bulk Assignment Controls */}
-                  <div className="flex items-center gap-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <Checkbox
-                      checked={
-                        selectedClients.size === nonDuplicateClients.length
-                      }
-                      onCheckedChange={selectAllClients}
-                    />
-                    <span className="text-sm font-medium">
-                      Select All ({selectedClients.size} selected)
-                    </span>
+                  <div className="flex gap-2 items-center h-10">
+                    {/* Toggle checkbox by clicking on label */}
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox
+                        checked={
+                          selectedClients.size === nonDuplicateClients.length
+                        }
+                        onCheckedChange={selectAllClients}
+                      />
+                      <span className="text-sm font-medium">
+                        Select All ({selectedClients.size} selected)
+                      </span>
+                    </label>
 
                     {selectedClients.size > 0 && (
                       <>
+                        {/* Bulk Coach Assignment */}
                         <Select
                           onValueChange={(value) =>
                             handleBulkAssignment("assignedCoach", value)
@@ -1111,6 +1127,7 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
                           </SelectContent>
                         </Select>
 
+                        {/* Bulk Package Assignment */}
                         <Select
                           onValueChange={(value) =>
                             handleBulkAssignment("selectedPackage", value)
@@ -1120,16 +1137,23 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
                             <SelectValue placeholder="Bulk assign package" />
                           </SelectTrigger>
                           <SelectContent>
-                            {currentPackages
-                              .filter((pkg) => pkg.isActive)
-                              .map((pkg, index) => (
-                                <SelectItem
-                                  key={`bulk-package-${pkg.packageName}-${index}`}
-                                  value={pkg.packageName}
-                                >
-                                  {pkg.packageName}
-                                </SelectItem>
-                              ))}
+                            {currentPackages.filter((pkg) => pkg.isActive)
+                              .length === 0 ? (
+                              <SelectItem disabled value="no-packages">
+                                No packages available
+                              </SelectItem>
+                            ) : (
+                              currentPackages
+                                .filter((pkg) => pkg.isActive)
+                                .map((pkg, index) => (
+                                  <SelectItem
+                                    key={`bulk-package-${pkg.packageName}-${index}`}
+                                    value={pkg.packageName}
+                                  >
+                                    {pkg.packageName}
+                                  </SelectItem>
+                                ))
+                            )}
                           </SelectContent>
                         </Select>
                       </>
@@ -1139,45 +1163,49 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
                   {/* Add Package Button */}
                   {currentPackages.filter((pkg) => pkg.isActive).length ===
                     0 && (
-                    <Alert>
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription className="flex items-center justify-between">
-                        No active packages found. You need to create a package
-                        first.
-                        <Button
-                          size="sm"
-                          onClick={() => setShowPackageModal(true)}
-                        >
-                          <Plus className="h-4 w-4 mr-1" />
-                          Add Package
-                        </Button>
-                      </AlertDescription>
-                    </Alert>
+                    <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-sm">
+                      <div className="flex items-center gap-3 w-full">
+                        <AlertCircle className="size-4 text-yellow-600" />
+
+                        <div className="flex justify-between items-center w-full">
+                          <p className="text-sm">
+                            No active training packages found. Create one to
+                            assign to your clients.
+                          </p>
+
+                          <Button
+                            size="md"
+                            onClick={() => setShowPackageModal(true)}
+                          >
+                            <Plus className="size-4" />
+                            Create Package
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
                   )}
 
                   {/* Client Assignment Table */}
-                  <div className="border rounded-lg overflow-hidden">
-                    <div className="max-h-96 overflow-y-auto">
+                  <div className="border rounded-sm max-h-64 overflow-hidden">
+                    <div className="max-h-64 overflow-y-auto">
                       <table className="w-full">
-                        <thead className="bg-gray-50 sticky top-0">
+                        <thead className="bg-[#F9FAFC] sticky top-0 z-50">
                           <tr>
-                            <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            <th className="p-3 text-left text-xs tracking-wide text-blk-60">
                               Select
                             </th>
-                            <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase">
-                              Client Name
+                            <th className="p-3 text-left text-xs tracking-wide text-blk-60">
+                              Client
                             </th>
-                            <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase">
-                              Email
-                            </th>
-                            <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            <th className="p-3 text-left text-xs tracking-wide text-blk-60">
                               Coach
                             </th>
-                            <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            <th className="p-3 text-left text-xs tracking-wide text-blk-60">
                               Package
                             </th>
                           </tr>
                         </thead>
+
                         <tbody className="divide-y divide-gray-200">
                           {nonDuplicateClients.map((client, index) => (
                             <tr key={index} className="hover:bg-gray-50">
@@ -1189,12 +1217,14 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
                                   }
                                 />
                               </td>
-                              <td className="p-3 text-sm font-medium">
+
+                              <td className="p-3 text-sm">
                                 {client.name}
+                                <span className="block text-sm text-blk-60">
+                                  {client.email || "-"}
+                                </span>
                               </td>
-                              <td className="p-3 text-sm text-gray-600">
-                                {client.email || "-"}
-                              </td>
+
                               <td className="p-3">
                                 <Select
                                   value={client.assignedCoach || ""}
@@ -1236,16 +1266,24 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
                                     <SelectValue placeholder="Select package" />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    {currentPackages
-                                      .filter((pkg) => pkg.isActive)
-                                      .map((pkg, pkgIndex) => (
-                                        <SelectItem
-                                          key={`client-${index}-package-${pkg.packageName}-${pkgIndex}`}
-                                          value={pkg.packageName}
-                                        >
-                                          {pkg.packageName}
-                                        </SelectItem>
-                                      ))}
+                                    {currentPackages.filter(
+                                      (pkg) => pkg.isActive
+                                    ).length === 0 ? (
+                                      <SelectItem disabled value="no-packages">
+                                        No packages available
+                                      </SelectItem>
+                                    ) : (
+                                      currentPackages
+                                        .filter((pkg) => pkg.isActive)
+                                        .map((pkg, pkgIndex) => (
+                                          <SelectItem
+                                            key={`client-${index}-package-${pkg.packageName}-${pkgIndex}`}
+                                            value={pkg.packageName}
+                                          >
+                                            {pkg.packageName}
+                                          </SelectItem>
+                                        ))
+                                    )}
                                   </SelectContent>
                                 </Select>
                               </td>
@@ -1263,12 +1301,14 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
                         <span>Importing clients...</span>
                         <span>{Math.round(importProgress)}%</span>
                       </div>
+
                       <Progress value={importProgress} />
                     </div>
                   )}
 
                   <div className="flex justify-between pt-4">
                     <Button
+                      size="md"
                       variant="outline"
                       onClick={() => setCurrentStep(4)}
                       className="flex items-center gap-2"
@@ -1277,9 +1317,9 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
                       Back
                     </Button>
                     <Button
+                      size="md"
                       onClick={handleImport}
                       disabled={!canProceedToImport || isImporting}
-                      size="lg"
                     >
                       {isImporting
                         ? "Importing..."
@@ -1288,7 +1328,7 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
                   </div>
                 </>
               )}
-            </div>
+            </>
           )}
         </DialogContent>
       </Dialog>
