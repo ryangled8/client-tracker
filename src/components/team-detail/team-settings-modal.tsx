@@ -35,6 +35,7 @@ import { toast } from "sonner";
 import { Settings, Sparkles, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface TeamSettings {
   clientFormFields: {
@@ -241,263 +242,282 @@ export function TeamSettingsModal({
       <DialogTrigger asChild>
         <Button variant="outline" size="lg">
           <Settings className="h-4 w-4" />
-          Team Settings
+          Settings
         </Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Team Settings</DialogTitle>
+          <DialogTitle>Settings</DialogTitle>
         </DialogHeader>
-        <div className="space-y-6 pt-4">
-          {/* General Settings */}
-          <div>
-            <h3 className="f-hm mb-2">General</h3>
 
+        <Tabs defaultValue="general">
+          <TabsList className="grid w-full grid-cols-3 rounded-sm mb-4">
+            <TabsTrigger className="rounded-xs cursor-pointer" value="general">
+              General
+            </TabsTrigger>
+            <TabsTrigger
+              className="rounded-xs cursor-pointer"
+              value="formFields"
+            >
+              Client Form Fields
+            </TabsTrigger>
+            <TabsTrigger className="rounded-xs cursor-pointer" value="settings">
+              Settings
+            </TabsTrigger>
+          </TabsList>
+
+          {/* General Tab */}
+          <TabsContent value="general">
             <div>
-              <Label htmlFor="teamName" className="mb-1.5">
-                Team Name
-              </Label>
-              <Input
-                id="teamName"
-                value={teamName}
-                onChange={(e) => setTeamName(e.target.value)}
-                placeholder="Enter team name"
-              />
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Client Form Fields */}
-          <div>
-            <div className="flex flex-col gap-2 mb-4">
-              <h3 className="text-lg leading-none f-hr">Client Form Fields</h3>
-              <p className="text-sm -mt-1 text-blk-60">
-                Select which fields should appear in the add client form and
-                client table.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2">
-              {/* Add custom form field button */}
-              {/* TODO: On click, take to add bolt on section */}
-              {/* If user already has 'custom fields' bolt on, show input field to add custom field */}
-              <Link
-                href="/bolt-ons/custom-field"
-                target="_blank"
-                className="
-                  col-span-1 text-blue-600 flex flex-col justify-between items-start bg-blue-50 border border-blue-200 rounded-sm transition-all duration-300 ease-in p-2
-                  cursor-pointer hover:bg-gray-50
-                "
-              >
-                <div>
-                  <p className="text-sm">Add Custom Field</p>
-
-                  <p className="text-xs text-blk-60 mt-0.5">
-                    Collect additional client info
-                  </p>
-                </div>
-
-                <div className="text-blue-600 text-xs cursor-pointer flex items-center gap-0.5">
-                  <Sparkles className="size-3.5" />
-                  Add Bolt On
-                </div>
-              </Link>
-
-              {/* All form fields */}
-              {Object.entries(fieldLabels).map(([field, label]) => {
-                const isRequired = requiredFields.includes(field);
-                const isEnabled =
-                  settings.clientFormFields[
-                    field as keyof TeamSettings["clientFormFields"]
-                  ];
-                const hasDescription = field in fieldDescriptions;
-
-                return (
-                  <div
-                    key={field}
-                    className={`col-span-1 flex flex-col justify-between items-start border rounded-sm transition-all duration-300 ease-in p-2 ${
-                      isEnabled ? "bg-gray-50" : ""
-                    }`}
-                  >
-                    <div>
-                      <Label htmlFor={field} className="text-sm">
-                        {label}
-                      </Label>
-
-                      {hasDescription && (
-                        <p className="text-xs text-blk-60 -mt-1">
-                          {
-                            fieldDescriptions[
-                              field as keyof typeof fieldDescriptions
-                            ]
-                          }
-                        </p>
-                      )}
-                    </div>
-
-                    <Switch
-                      id={field}
-                      checked={isEnabled}
-                      onCheckedChange={(checked) =>
-                        handleFieldToggle(
-                          field as keyof TeamSettings["clientFormFields"],
-                          checked
-                        )
-                      }
-                      disabled={isRequired}
-                      className="mt-2"
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Settings */}
-          <div>
-            <h3 className="text-lg font-medium mb-4">Settings</h3>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="noticePeriod">Notice Period (weeks)</Label>
-                <Select
-                  value={settings.noticePeriodWeeks.toString()}
-                  onValueChange={handleNoticePeriodChange}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.from({ length: 12 }, (_, i) => i + 1).map((week) => (
-                      <SelectItem key={week} value={week.toString()}>
-                        {week} week{week > 1 ? "s" : ""}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-gray-500 mt-1">
-                  Highlight clients with dates due within this period
+              <div className="flex flex-col gap-2 mb-4">
+                <h3 className="leading-none f-hr">General</h3>
+                <p className="text-sm -mt-1.5 text-blk-60">
+                  Update team namme, notice period and date format
                 </p>
               </div>
 
               <div>
-                <Label htmlFor="dateFormat">Date Format</Label>
-                <Select
-                  value={settings.dateFormat}
-                  onValueChange={handleDateFormatChange}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="dd/mm/yyyy">DD/MM/YYYY</SelectItem>
-                    <SelectItem value="mm/dd/yyyy">MM/DD/YYYY</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="teamName" className="mb-1.5">
+                  Team Name
+                </Label>
+                <Input
+                  id="teamName"
+                  value={teamName}
+                  onChange={(e) => setTeamName(e.target.value)}
+                  placeholder="Enter team name"
+                />
               </div>
-            </div>
-          </div>
 
-          <Separator />
-
-          {/* Danger Zone */}
-          <div>
-            <h3 className="text-lg font-medium mb-2 text-red-600">
-              Danger Zone
-            </h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Permanently delete this team and all associated data. This action
-              cannot be undone.
-            </p>
-            <div className="border border-red-200 rounded-lg p-4 bg-red-50">
-              <div className="flex items-center justify-between">
+              <div className="space-y-4 pt-4">
                 <div>
-                  <h4 className="font-medium text-red-900">Delete Team</h4>
-                  <p className="text-sm text-red-700">
-                    This will permanently delete the team{" "}
-                    <strong>{team.name}</strong> and remove all associated data
-                    including:
+                  <Label htmlFor="noticePeriod">Notice Period (weeks)</Label>
+                  <Select
+                    value={settings.noticePeriodWeeks.toString()}
+                    onValueChange={handleNoticePeriodChange}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 12 }, (_, i) => i + 1).map(
+                        (week) => (
+                          <SelectItem key={week} value={week.toString()}>
+                            {week} week{week > 1 ? "s" : ""}
+                          </SelectItem>
+                        )
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Highlight clients with dates due within this period
                   </p>
                 </div>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button size="md" variant="destructive">
-                      <Trash2 className="h-4 w-4" />
-                      Delete Team
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>
-                        Are you absolutely sure?
-                      </AlertDialogTitle>
-                      <AlertDialogDescription className="space-y-2">
-                        <p>
-                          This action cannot be undone. This will permanently
-                          delete the team <strong>{team.name}</strong> and
-                          remove all associated data including:
-                        </p>
-                        <ul className="list-disc list-inside text-sm space-y-1 mt-2">
-                          <li>All team clients and their progress data</li>
-                          <li>All training packages</li>
-                          <li>All team invitations</li>
-                          <li>All team settings</li>
-                        </ul>
-                        <div className="mt-4">
-                          <Label
-                            htmlFor="deleteConfirmation"
-                            className="text-sm font-medium"
-                          >
-                            Type the team name <strong>{team.name}</strong> to
-                            confirm:
-                          </Label>
-                          <Input
-                            id="deleteConfirmation"
-                            value={deleteConfirmation}
-                            onChange={(e) =>
-                              setDeleteConfirmation(e.target.value)
-                            }
-                            placeholder={team.name}
-                            className="mt-2"
-                          />
-                        </div>
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel
-                        onClick={() => setDeleteConfirmation("")}
-                      >
-                        Cancel
-                      </AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={deleteTeam}
-                        disabled={deleteConfirmation !== team.name || deleting}
-                        className="bg-red-600 hover:bg-red-700"
-                      >
-                        {deleting ? "Deleting..." : "Delete Team"}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+
+                <div>
+                  <Label htmlFor="dateFormat">Date Format</Label>
+                  <Select
+                    value={settings.dateFormat}
+                    onValueChange={handleDateFormatChange}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="dd/mm/yyyy">DD/MM/YYYY</SelectItem>
+                      <SelectItem value="mm/dd/yyyy">MM/DD/YYYY</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
-          </div>
+          </TabsContent>
 
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button
-              size="md"
-              variant="outline"
-              onClick={() => setDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button size="md" onClick={saveSettings} disabled={saving}>
-              {saving ? "Saving..." : "Save Settings"}
-            </Button>
-          </div>
+          {/* Client Form Fields Tab */}
+          <TabsContent value="formFields">
+            <div>
+              <div className="flex flex-col gap-2 mb-4">
+                <h3 className="leading-none f-hr">Client Form Fields</h3>
+                <p className="text-sm -mt-1 text-blk-60">
+                  Select which fields should appear in the add client form and
+                  client table.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <Link
+                  href="/bolt-ons/custom-field"
+                  target="_blank"
+                  className="
+                    col-span-1 text-blue-600 flex flex-col justify-between items-start bg-blue-50 border border-blue-200 rounded-sm transition-all duration-300 ease-in p-2
+                    cursor-pointer hover:bg-gray-50
+                  "
+                >
+                  <div>
+                    <p className="text-sm">Add Custom Field</p>
+                    <p className="text-xs text-blk-60 mt-0.5">
+                      Collect additional client info
+                    </p>
+                  </div>
+                  <div className="text-blue-600 text-xs cursor-pointer flex items-center gap-0.5">
+                    <Sparkles className="size-3.5" />
+                    Add Bolt On
+                  </div>
+                </Link>
+
+                {Object.entries(fieldLabels).map(([field, label]) => {
+                  const isRequired = requiredFields.includes(field);
+                  const isEnabled =
+                    settings.clientFormFields[
+                      field as keyof TeamSettings["clientFormFields"]
+                    ];
+                  const hasDescription = field in fieldDescriptions;
+
+                  return (
+                    <div
+                      key={field}
+                      className={`col-span-1 flex flex-col justify-between items-start border rounded-sm transition-all duration-300 ease-in p-2 ${
+                        isEnabled ? "bg-gray-50" : ""
+                      }`}
+                    >
+                      <div>
+                        <Label htmlFor={field} className="text-sm">
+                          {label}
+                        </Label>
+                        {hasDescription && (
+                          <p className="text-xs text-blk-60 -mt-1">
+                            {
+                              fieldDescriptions[
+                                field as keyof typeof fieldDescriptions
+                              ]
+                            }
+                          </p>
+                        )}
+                      </div>
+
+                      <Switch
+                        id={field}
+                        checked={isEnabled}
+                        onCheckedChange={(checked) =>
+                          handleFieldToggle(
+                            field as keyof TeamSettings["clientFormFields"],
+                            checked
+                          )
+                        }
+                        disabled={isRequired}
+                        className="mt-2"
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Settings / Danger Zone Tab */}
+          <TabsContent value="settings">
+            <div>
+              <div className="flex flex-col gap-2 mb-4">
+                <h3 className="leading-none f-hr text-red-600">Danger Zone</h3>
+                <p className="text-sm -mt-1.5 text-blk-60">
+                  Permanently delete this team and all associated data. This
+                  action cannot be undone.
+                </p>
+              </div>
+
+              <div>
+                <div className="border border-red-200 rounded-sm p-4 bg-red-50">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium text-red-900">Delete Team</h4>
+                      <p className="text-sm text-red-700">
+                        This will permanently delete the team{" "}
+                        <strong>{team.name}</strong> and remove all associated
+                        data including:
+                      </p>
+                    </div>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button size="md" variant="destructive">
+                          <Trash2 className="h-4 w-4" />
+                          Delete Team
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            Are you absolutely sure?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription className="space-y-2">
+                            <p>
+                              This action cannot be undone. This will
+                              permanently delete the team{" "}
+                              <strong>{team.name}</strong> and remove all
+                              associated data including:
+                            </p>
+                            <ul className="list-disc list-inside text-sm space-y-1 mt-2">
+                              <li>All team clients and their progress data</li>
+                              <li>All training packages</li>
+                              <li>All team invitations</li>
+                              <li>All team settings</li>
+                            </ul>
+                            <div className="mt-4">
+                              <Label
+                                htmlFor="deleteConfirmation"
+                                className="text-sm font-medium"
+                              >
+                                Type the team name <strong>{team.name}</strong>{" "}
+                                to confirm:
+                              </Label>
+                              <Input
+                                id="deleteConfirmation"
+                                value={deleteConfirmation}
+                                onChange={(e) =>
+                                  setDeleteConfirmation(e.target.value)
+                                }
+                                placeholder={team.name}
+                                className="mt-2"
+                              />
+                            </div>
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel
+                            onClick={() => setDeleteConfirmation("")}
+                          >
+                            Cancel
+                          </AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={deleteTeam}
+                            disabled={
+                              deleteConfirmation !== team.name || deleting
+                            }
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            {deleting ? "Deleting..." : "Delete Team"}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        {/* Footer Buttons */}
+        <div className="flex justify-end space-x-2 pt-4">
+          <Button
+            size="md"
+            variant="outline"
+            onClick={() => setDialogOpen(false)}
+          >
+            Cancel
+          </Button>
+          <Button size="md" onClick={saveSettings} disabled={saving}>
+            {saving ? "Saving..." : "Save Settings"}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
