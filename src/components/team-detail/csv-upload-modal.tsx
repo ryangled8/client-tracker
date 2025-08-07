@@ -31,6 +31,7 @@ import {
   Settings,
   UserCheck,
   ArrowRight,
+  ArrowLeft,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AddPackageModal } from "./add-package-modal";
@@ -703,12 +704,13 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
 
             {progressStep > 0 && (
               <div className="flex items-center gap-2 mt-2">
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-blk-60">
                   Step {progressStep} of 3
                 </span>
-                <div className="flex-1 bg-gray-200 rounded-full h-2">
+
+                <div className="flex-1 bg-gray-200 rounded-xs h-2">
                   <div
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    className="bg-blue-600 h-2 rounded-xs transition-all duration-300"
                     style={{ width: `${(progressStep / 3) * 100}%` }}
                   />
                 </div>
@@ -719,6 +721,7 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
           {/* Step 1: Overview */}
           {currentStep === 1 && (
             <>
+              {/* Overview Title */}
               <div className="mt-6 mb-6 text-center">
                 <h3 className="text-lg leading-none f-hr">
                   Upload your clients in 3 simple steps
@@ -729,6 +732,7 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
                 </p>
               </div>
 
+              {/* Overview Cards */}
               <div className="flex gap-4">
                 <CSVStepCard
                   title="Upload CSV File"
@@ -750,11 +754,12 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
                 />
               </div>
 
-              <div className="flex justify-between items-end mt-8">
+              {/* Notice Tip + Get Started Button */}
+              <div className="flex justify-between items-end mt-4">
                 <div className="text-xs max-w-2/3">
                   <div className="flex items-center gap-0.5 mb-1">
                     <FileText className="size-3" />
-                    <p className="f-hm">Tip:</p>
+                    <p className="f-hm">Tip</p>
                   </div>
 
                   <div>
@@ -776,7 +781,7 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
                   className="flex items-center gap-2"
                 >
                   Get Started
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="size-4" />
                 </Button>
               </div>
             </>
@@ -784,17 +789,8 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
 
           {/* Step 2: Upload */}
           {currentStep === 2 && (
-            <div className="space-y-4">
-              <div className="text-center">
-                <h3 className="text-lg font-semibold mb-2">
-                  Upload Your CSV File
-                </h3>
-                <p className="text-gray-600">
-                  Select the CSV file containing your client data
-                </p>
-              </div>
-
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-blue-400 transition-colors">
+            <>
+              <div className="border-2 border-dashed border-gray-300 rounded-sm px-12 py-20 text-center hover:border-blue-400 transition-colors">
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -802,44 +798,40 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
                   onChange={handleFileUpload}
                   className="hidden"
                 />
-                <div className="space-y-4">
-                  <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-                    <Upload className="h-8 w-8 text-blue-600" />
-                  </div>
-                  <div>
-                    <Button
-                      onClick={() => fileInputRef.current?.click()}
-                      size="lg"
-                    >
-                      Choose CSV File
-                    </Button>
-                    <p className="text-sm text-gray-500 mt-2">
-                      Only CSV files are supported
-                    </p>
-                  </div>
-                </div>
+                <Button onClick={() => fileInputRef.current?.click()} size="lg">
+                  Choose CSV File
+                </Button>
+
+                <p className="text-xs text-blk-60 mt-2">
+                  Only CSV files are supported
+                </p>
               </div>
 
-              <Alert>
-                <FileText className="h-4 w-4" />
-                <AlertDescription>
-                  Need help?{" "}
-                  {/* <button
-                    onClick={generateExampleCSV}
-                    className="underline text-blue-600 hover:text-blue-800"
-                  >
-                    Download our example CSV file
-                  </button>{" "} */}
-                  to see the correct format.
-                </AlertDescription>
-              </Alert>
+              <div className="text-xs">
+                <div className="flex items-center gap-0.5 mb-1">
+                  <FileText className="size-3" />
+                  <p className="f-hm">Need help?</p>
+                </div>
+                <div
+                  onClick={generateExampleCSV}
+                  className="underline mr-1 inline-block text-blue-600 text-xs cursor-pointer hover:opacity-60 transition-all duration-200 ease-in"
+                >
+                  Download Example CSV
+                </div>
+                for the correct format.
+              </div>
 
               <div className="flex justify-between pt-4">
-                <Button variant="outline" onClick={() => setCurrentStep(1)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentStep(1)}
+                  className="flex items-center gap-2"
+                >
+                  <ArrowLeft className="size-4" />
                   Back
                 </Button>
               </div>
-            </div>
+            </>
           )}
 
           {/* Step 3: Duplicates Found */}
@@ -914,7 +906,12 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
               )}
 
               <div className="flex justify-between pt-4">
-                <Button variant="outline" onClick={() => setCurrentStep(2)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentStep(2)}
+                  className="flex items-center gap-2"
+                >
+                  <ArrowLeft className="size-4" />
                   Back
                 </Button>
                 {csvData.length - duplicates.length > 0 && (
@@ -992,10 +989,10 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  <strong>Tip:</strong> Multiple columns can be mapped to
-                  "Client Name" (like First Name + Last Name) and will be
-                  automatically combined. Set columns you don't need to "Don't
-                  import this column".
+                  <span className="f-hm">Tip:</span> Multiple columns can be
+                  mapped to "Client Name" (like First Name + Last Name) and will
+                  be automatically combined. Set columns you don't need to
+                  "Don't import this column".
                 </AlertDescription>
               </Alert>
 
@@ -1003,7 +1000,9 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
                 <Button
                   variant="outline"
                   onClick={() => setCurrentStep(duplicates.length > 0 ? 3 : 2)}
+                  className="flex items-center gap-2"
                 >
+                  <ArrowLeft className="size-4" />
                   Back
                 </Button>
                 <Button onClick={handleMappingComplete}>
@@ -1226,7 +1225,12 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
                   )}
 
                   <div className="flex justify-between pt-4">
-                    <Button variant="outline" onClick={() => setCurrentStep(4)}>
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentStep(4)}
+                      className="flex items-center gap-2"
+                    >
+                      <ArrowLeft className="size-4" />
                       Back
                     </Button>
                     <Button
