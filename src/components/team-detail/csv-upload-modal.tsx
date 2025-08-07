@@ -37,6 +37,7 @@ import { toast } from "sonner";
 import { AddPackageModal } from "./add-package-modal";
 import type { TeamSettings } from "@/types";
 import { CSVStepCard } from "./csv-step-card";
+import Link from "next/link";
 
 interface Coach {
   _id: string;
@@ -572,7 +573,7 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
       case 2:
         return "Upload CSV File";
       case 3:
-        return "Review Duplicates";
+        return "Reviewing Uploaded CSV";
       case 4:
         return "Map CSV to App";
       case 5:
@@ -790,7 +791,7 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
           {/* Step 2: Upload */}
           {currentStep === 2 && (
             <>
-              <div className="border-2 border-dashed border-gray-300 rounded-sm px-12 py-20 text-center hover:border-blue-400 transition-colors">
+              <div className="border-2 border-dashed border-gray-300 rounded-sm px-12 py-20 text-center hover:border-blue-400 transition-colors bg-[#F9FAFC]">
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -836,40 +837,41 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
 
           {/* Step 3: Duplicates Found */}
           {currentStep === 3 && (
-            <div className="space-y-4">
-              <div className="text-center">
-                <h3 className="text-lg font-semibold mb-2">
-                  Checking for Duplicates
-                </h3>
-                <p className="text-gray-600">
-                  We found some clients that might already exist
-                </p>
-              </div>
-
+            <>
               {duplicates.length > 0 ? (
                 <>
-                  <Alert>
-                    <AlertCircle className="h-4 w-4 text-yellow-600" />
-                    <AlertDescription>
-                      Found <strong>{duplicates.length}</strong> duplicate
-                      email(s). These clients already exist and will be skipped
-                      during import.
-                    </AlertDescription>
-                  </Alert>
-
+                  {/* List of duplicates found */}
                   <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {/* Notice of duplicates */}
+                    <div className="p-4 border rounded-sm bg-[#F9FAFC]">
+                      <div className="flex items-center gap-3">
+                        <AlertCircle className="size-4 text-yellow-600" />
+                        <div>
+                          <p className="text-sm">
+                            We found{" "}
+                            <span className="f-hm">{duplicates.length}</span>{" "}
+                            duplicate{" "}
+                            {duplicates.length > 1 ? "emails" : "email"} in your
+                            CSV file
+                          </p>
+                          <p className="text-xs text-blk-60">
+                            These clients already exist and will be skipped
+                            during import.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
                     {duplicates.map((duplicate, index) => (
                       <div
                         key={index}
-                        className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg"
+                        className="p-4 bg-yellow-50 border border-yellow-200 rounded-sm"
                       >
-                        <div className="flex items-center gap-2">
-                          <AlertCircle className="h-4 w-4 text-yellow-600" />
+                        <div className="flex items-center gap-3">
+                          <AlertCircle className="size-4 text-yellow-600" />
                           <div>
-                            <p className="text-sm font-medium">
-                              {duplicate.email}
-                            </p>
-                            <p className="text-xs text-gray-600">
+                            <p className="text-sm">{duplicate.email}</p>
+                            <p className="text-xs text-blk-60">
                               Matches existing client:{" "}
                               {duplicate.existingClientName}
                             </p>
@@ -879,15 +881,16 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
                     ))}
                   </div>
 
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="h-5 w-5 text-green-600" />
+                  {/* Notice of non-duplicates */}
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-sm">
+                    <div className="flex items-center gap-3">
+                      <CheckCircle2 className="size-4 text-green-600" />
                       <div>
-                        <p className="font-medium text-green-800">
+                        <p className="text-sm">
                           {csvData.length - duplicates.length} clients ready to
                           import
                         </p>
-                        <p className="text-sm text-green-600">
+                        <p className="text-xs text-blk-60">
                           These clients will proceed to the mapping step
                         </p>
                       </div>
@@ -915,78 +918,111 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
                   Back
                 </Button>
                 {csvData.length - duplicates.length > 0 && (
-                  <Button onClick={handleDuplicatesReview}>
+                  <Button
+                    size="md"
+                    onClick={handleDuplicatesReview}
+                    className="flex items-center gap-2"
+                  >
                     Continue to Mapping
+                    <ArrowRight className="size-4" />
                   </Button>
                 )}
               </div>
-            </div>
+            </>
           )}
 
           {/* Step 4: Map Columns */}
           {currentStep === 4 && (
-            <div className="space-y-4">
-              <div className="text-center">
-                <h3 className="text-lg font-semibold mb-2">
-                  Map Your CSV Columns
-                </h3>
-                <p className="text-gray-600">
-                  Tell us which columns in your CSV match which fields in our
-                  app
-                </p>
+            <>
+              {/* Notice of duplicates */}
+              <div className="p-4 bg-green-50 border border-green-200 rounded-sm">
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="size-4 text-green-600" />
+                  <div>
+                    <p className="text-sm">
+                      Great! We found{" "}
+                      <span className="f-hm">{csvHeaders.length} columns</span>{" "}
+                      and{" "}
+                      <span className="f-hm">
+                        {csvData.length - duplicates.length} clients
+                      </span>{" "}
+                      to import from your CSV
+                    </p>
+                    <p className="text-xs text-blk-60">
+                      We've automatically mapped most fields for you but be sure
+                      to review and adjust if needed.
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              <Alert>
-                <CheckCircle2 className="h-4 w-4" />
-                <AlertDescription>
-                  Great! We found <strong>{csvHeaders.length} columns</strong>{" "}
-                  and{" "}
-                  <strong>{csvData.length - duplicates.length} clients</strong>{" "}
-                  to import. We've automatically mapped most fields for you -
-                  just review and adjust if needed.
-                </AlertDescription>
-              </Alert>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {/* Column Headers */}
+                <div className="flex justify-between items-center relative">
+                  <p className="w-1/2 text-xs text-blk-60">
+                    Columns found in CSV
+                  </p>
 
-              <div className="space-y-3 max-h-96 overflow-y-auto">
+                  <p className="w-1/2 text-xs text-blk-60">
+                    Map to value in app
+                    <span className="text-red-600 text-[8px]">tooltip</span>
+                  </p>
+
+                  <Link
+                    href="/bolt-ons"
+                    target="_blank"
+                    className="absolute right-0 top-0 text-right text-xs text-blk-60 underline tracking-wide hover:opacity-40"
+                  >
+                    Need a custom mapping field?
+                  </Link>
+                </div>
+
+                {/* Data to be mapped */}
                 {csvHeaders.map((header, index) => (
                   <div
                     key={index}
-                    className="flex items-center gap-4 p-3 border rounded-lg"
+                    className="flex items-center p-3 border rounded-sm"
                   >
-                    <div className="w-1/3">
-                      <label className="text-sm font-medium">{header}</label>
-                      <p className="text-xs text-gray-500 truncate">
-                        Sample: {csvData[0]?.[header] || "N/A"}
-                      </p>
+                    {/* CSV Headers */}
+                    <div className="w-1/2 flex justify-between items-center">
+                      <div>
+                        <label className="text-sm">{header}</label>
+
+                        <p className="text-xs text-blk-60 truncate">
+                          Sample: {csvData[0]?.[header] || "N/A"}
+                        </p>
+                      </div>
+
+                      <ArrowRight className="h-4 w-4 text-gray-400 mr-4" />
                     </div>
-                    <div className="flex items-center gap-2 flex-1">
-                      <ArrowRight className="h-4 w-4 text-gray-400" />
-                      <Select
-                        value={fieldMapping[header] || "skip"}
-                        onValueChange={(value) =>
-                          setFieldMapping((prev) => ({
-                            ...prev,
-                            [header]: value,
-                          }))
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {FIELD_MAPPING_OPTIONS.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+
+                    {/* App Fields */}
+                    <Select
+                      value={fieldMapping[header] || "skip"}
+                      onValueChange={(value) =>
+                        setFieldMapping((prev) => ({
+                          ...prev,
+                          [header]: value,
+                        }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        {FIELD_MAPPING_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 ))}
               </div>
 
-              <Alert>
+              {/* <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
                   <span className="f-hm">Tip:</span> Multiple columns can be
@@ -994,10 +1030,11 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
                   be automatically combined. Set columns you don't need to
                   "Don't import this column".
                 </AlertDescription>
-              </Alert>
+              </Alert> */}
 
               <div className="flex justify-between pt-4">
                 <Button
+                  size="md"
                   variant="outline"
                   onClick={() => setCurrentStep(duplicates.length > 0 ? 3 : 2)}
                   className="flex items-center gap-2"
@@ -1005,11 +1042,17 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
                   <ArrowLeft className="size-4" />
                   Back
                 </Button>
-                <Button onClick={handleMappingComplete}>
+
+                <Button
+                  size="md"
+                  onClick={handleMappingComplete}
+                  className="flex items-center gap-2"
+                >
                   Continue to Assignment
+                  <ArrowRight className="size-4" />
                 </Button>
               </div>
-            </div>
+            </>
           )}
 
           {/* Step 5: Assign Coaches & Packages */}

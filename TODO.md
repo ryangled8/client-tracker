@@ -10,6 +10,7 @@ Date calcs & Mapping - Done but need to thoroughly test and check:
 UI TIME:
 Modals
 - CSV Modal
+-- Add an 'uploading' state to show user that the upload is acutally happening...
 - All Modals
 
 Table
