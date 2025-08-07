@@ -537,10 +537,14 @@ export function AddClientModal({
           )}
 
           <div className="flex justify-end space-x-2 pt-4">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+            <Button
+              size="md"
+              variant="outline"
+              onClick={() => setDialogOpen(false)}
+            >
               Cancel
             </Button>
-            <Button onClick={handleSubmit} disabled={saving}>
+            <Button size="md" onClick={handleSubmit} disabled={saving}>
               {saving ? "Adding..." : "Add Client"}
             </Button>
           </div>

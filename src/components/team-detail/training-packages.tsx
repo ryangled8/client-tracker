@@ -467,14 +467,14 @@ export function TrainingPackages({
   }) => (
     <div>
       <Label>Package Color</Label>
-      <div className="grid grid-cols-6 gap-2 mt-2">
+      <div className="grid grid-cols-12 gap-2 mt-2">
         {COLOR_PALETTE.map((color) => (
           <button
             key={color.value}
             type="button"
-            className={`w-8 h-8 rounded-full border-2 transition-all hover:scale-110 ${
+            className={`aspect-square col-span-1 rounded-sm cursor-pointer transition-all duration-200 hover:scale-110 ${
               selectedColor === color.value
-                ? "border-gray-900 ring-2 ring-gray-300"
+                ? "border-gray-900 "
                 : "border-gray-300"
             }`}
             style={{ backgroundColor: color.value }}
@@ -482,7 +482,7 @@ export function TrainingPackages({
             title={color.name}
           >
             {selectedColor === color.value && (
-              <Check className="w-4 h-4 text-white mx-auto" />
+              <Check className="size-4 text-white mx-auto" />
             )}
           </button>
         ))}
@@ -623,10 +623,11 @@ const PackageModal = ({
         <DialogTitle>
           {isEdit ? "Edit Package" : "Create New Training Package"}
         </DialogTitle>
-        <p className="text-sm text-gray-600 mt-2">
+        <p className="text-sm -mt-1 text-blk-60">
           Define a custom package with specific duration and call schedules
         </p>
       </DialogHeader>
+
       <div className="space-y-6 pt-4">
         <div>
           <Label htmlFor={`${isEdit ? "edit" : "add"}-packageName`}>
@@ -646,8 +647,8 @@ const PackageModal = ({
         </div>
 
         {/* Recurring Package Toggle - moved under package name */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
+        <div>
+          <div className="space-y-0.5 mb-2">
             <Label htmlFor={`${isEdit ? "edit" : "add"}-isRecurring`}>
               Recurring Package
             </Label>
@@ -686,6 +687,9 @@ const PackageModal = ({
               }
               placeholder="e.g., 12"
             />
+            <p className="text-xs text-gray-500 mt-1">
+              How many weeks this package runs for
+            </p>
           </div>
         )}
 
@@ -776,38 +780,43 @@ const PackageModal = ({
         {exampleText && !packageForm.isRecurring && (
           <>
             <Separator />
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <div className="flex items-start space-x-2">
-                <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                <div className="space-y-2">
-                  <h4 className="font-medium text-blue-900">
-                    Example Schedule
-                  </h4>
-                  <p className="text-sm text-blue-800">
-                    A {packageForm.durationInWeeks} Week Package with progress
-                    calls every {packageForm.progressIntervalInWeeks} weeks and
-                    plan updates every {packageForm.planUpdateIntervalInWeeks}{" "}
-                    weeks will generate:
-                  </p>
-                  <div className="space-y-1 text-sm text-blue-700">
-                    {exampleText.progressCallWeeks.length > 0 && (
-                      <p>
-                        <strong>Progress calls at weeks:</strong>{" "}
-                        {exampleText.progressCallWeeks.join(", ")}...
-                      </p>
-                    )}
-                    {exampleText.planUpdateWeeks.length > 0 && (
-                      <p>
-                        <strong>Plan updates at weeks:</strong>{" "}
-                        {exampleText.planUpdateWeeks.join(", ")}...
-                      </p>
-                    )}
-                    <p>
-                      <strong>Renewal call at week:</strong>{" "}
-                      {exampleText.renewalCallWeek}
-                    </p>
-                  </div>
-                </div>
+
+            <div className="bg-blue-50 p-4 rounded-sm">
+              <div className="flex items-center gap-1">
+                <Info className="size-3 text-blue-900 -mt-0.5" />
+
+                <h4 className="f-hm text-sm text-blue-900">
+                  This package will generate:
+                </h4>
+              </div>
+
+              <div className="text-sm text-blue-800">
+                <ul className="space-y-2.5 mt-2">
+                  {exampleText.progressCallWeeks.length > 0 && (
+                    <li className="leading-none">
+                      Progress calls at{" "}
+                      <span className="f-hm">
+                        weeks {exampleText.progressCallWeeks.join(", ")}
+                      </span>
+                    </li>
+                  )}
+
+                  {exampleText.planUpdateWeeks.length > 0 && (
+                    <li className="leading-none">
+                      Plan updates at{" "}
+                      <span className="f-hm">
+                        weeks {exampleText.planUpdateWeeks.join(", ")}
+                      </span>
+                    </li>
+                  )}
+
+                  <li className="leading-none">
+                    Renewal call at week{" "}
+                    <span className="f-hm">{exampleText.renewalCallWeek}</span>
+                  </li>
+                </ul>
+
+                <p className="mt-6 text-xs">*Based on the client start date.</p>
               </div>
             </div>
           </>
@@ -817,31 +826,57 @@ const PackageModal = ({
         {packageForm.isRecurring && (
           <>
             <Separator />
-            <div className="bg-green-50 p-4 rounded-lg">
-              <div className="flex items-start space-x-2">
-                <Info className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                <div className="space-y-2">
-                  <h4 className="font-medium text-green-900">
-                    Recurring Package
-                  </h4>
-                  <p className="text-sm text-green-800">
-                    This recurring package will generate progress calls every{" "}
-                    {packageForm.progressIntervalInWeeks} weeks and plan updates
-                    every {packageForm.planUpdateIntervalInWeeks} weeks
-                    indefinitely. No renewal calls will be scheduled as the
-                    package automatically continues.
-                  </p>
-                </div>
+
+            <div className="bg-green-50 p-4 rounded-sm">
+              <div className="flex items-center gap-1">
+                <Info className="size-3 text-green-900 -mt-0.5" />
+
+                <h4 className="f-hm text-sm text-green-900">
+                  This recurring package will:
+                </h4>
+              </div>
+
+              <div className="text-sm text-green-800">
+                <ul className="space-y-2.5 mt-2">
+                  <li className="leading-none">
+                    Generate progress calls every{" "}
+                    <span className="f-hm">
+                      {packageForm.progressIntervalInWeeks} weeks
+                    </span>
+                  </li>
+
+                  <li className="leading-none">
+                    Generate plan updates every{" "}
+                    <span className="f-hm">
+                      {packageForm.planUpdateIntervalInWeeks} weeks
+                    </span>{" "}
+                    indefinitely.
+                  </li>
+
+                  <li className="leading-none">
+                    <span className="f-hm">
+                      No renewal calls will be scheduled
+                    </span>{" "}
+                    as the package automatically continues.
+                  </li>
+                </ul>
+
+                <p className="mt-6 text-xs">*Based on the client start date.</p>
               </div>
             </div>
           </>
         )}
 
-        <div className="flex justify-end space-x-2 pt-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <div className="flex justify-end space-x-2 mt-4">
+          <Button
+            size="md"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
             Cancel
           </Button>
           <Button
+            size="md"
             onClick={isEdit ? updatePackage : createPackage}
             disabled={isEdit ? updatingPackage : creatingPackage}
           >

@@ -114,12 +114,16 @@ export function CoachInvite({
               rows={3}
             />
           </div>
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+          <div className="flex justify-end space-x-2 mt-4">
+            <Button
+              size="md"
+              variant="outline"
+              onClick={() => setDialogOpen(false)}
+            >
               Cancel
             </Button>
 
-            <Button onClick={sendInvite} disabled={inviting}>
+            <Button size="md" onClick={sendInvite} disabled={inviting}>
               {inviting ? "Sending..." : "Send Invitation"}
             </Button>
           </div>
