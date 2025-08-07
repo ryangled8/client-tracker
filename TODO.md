@@ -11,7 +11,6 @@ UI TIME:
 Modals
 - CSV Modal
 -- Add an 'uploading' state to show user that the upload is acutally happening...
--- Style error states / empty states
 -- Fix 'add package' modal from the button on the CSV modal
 
 - All Modals
@@ -38,7 +37,7 @@ Cleanup / Fixes:
   - Remove invites from TeamInvites in the database if they're accepted, declined or expired
 
 - Fix descendent html errors in confrim delete team 
-- fix all any types
+- fix all any types`
 - on edit/delete client just refresh the clienttable component not the entire page.
 - Errors for API endpoints when they timeout currently show a window popup but need to gracefully show a toast ui saying 'X action (like adding a team/client) has timed out due to poor connection) (error encountered on a train with poor wifi).
 Add team error: [MongooseError: Operation `teams.insertOne()` buffering timed out after 10000ms]

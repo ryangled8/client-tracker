@@ -32,8 +32,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { Settings, Trash2 } from "lucide-react";
+import { Settings, Sparkles, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface TeamSettings {
   clientFormFields: {
@@ -73,22 +74,22 @@ interface TeamSettingsModalProps {
 
 const fieldLabels = {
   name: "Client Name*",
-  email: "Email",
-  phone: "Phone",
-  paymentDate: "Payment Date",
-  age: "Age",
-  gender: "Gender",
   startDate: "Start Date*",
   assignedCoach: "Assigned Coach*",
   trainingPackage: "Training Package*",
+  paymentDate: "Payment Date",
+  email: "Email",
+  phone: "Phone",
+  age: "Age",
+  gender: "Gender",
+  membershipType: "Membership Type",
+  status: "Status",
   renewalCallDate: "Next Renewal Call Date",
   progressCallDate: "Next Progress Call Date",
-  planUpdateDate: "Next Training Plan Update Date",
+  planUpdateDate: "Next Plan Update Date",
   currentWeight: "Current Weight",
   targetWeight: "Target Weight",
   height: "Height",
-  membershipType: "Membership Type",
-  status: "Status",
   notes: "Notes",
 };
 
@@ -100,23 +101,24 @@ const requiredFields = [
 ];
 
 const fieldDescriptions = {
-  name: "The name of the client",
-  email: "The email address of the client",
-  phone: "The phone number of the client",
+  name: "First and last name of the client",
+  startDate: "The date the client started",
+  email: "Client email address",
   paymentDate: "The date the client made payment",
-  age: "The age of the client",
-  gender: "The gender of the client",
+  phone: "Client phone number",
+  age: "Client age",
+  gender: "Client gender",
   assignedCoach: "The coach assigned to the client",
-  trainingPackage: "The training package selected for the client",
+  trainingPackage: "Client training package",
   renewalCallDate: "The date for the next renewal call with the client",
   progressCallDate: "The date for the next progress call with the client",
   planUpdateDate: "The date for the next training plan update with the client",
-  currentWeight: "The current weight of the client",
-  targetWeight: "The target weight of the client",
-  height: "The height of the client",
-  membershipType: "The type of membership the client has",
-  status: "The status of the client",
-  notes: "Any additional notes about the client",
+  currentWeight: "Client current weight",
+  targetWeight: "Client target weight",
+  height: "Client height",
+  membershipType: "Membership type of client",
+  status: "Client is active / inactive / paused",
+  notes: "Additional client notes",
 };
 
 export function TeamSettingsModal({
@@ -269,12 +271,41 @@ export function TeamSettingsModal({
 
           {/* Client Form Fields */}
           <div>
-            <h3 className="text-lg font-medium mb-2">Client Form Fields</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Select which fields should appear in the add client form and
-              client table.
-            </p>
-            <div className="grid grid-cols-1 gap-4">
+            <div className="flex flex-col gap-2 mb-4">
+              <h3 className="text-lg leading-none f-hr">Client Form Fields</h3>
+              <p className="text-sm -mt-1 text-blk-60">
+                Select which fields should appear in the add client form and
+                client table.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              {/* Add custom form field button */}
+              {/* TODO: On click, take to add bolt on section */}
+              {/* If user already has 'custom fields' bolt on, show input field to add custom field */}
+              <Link
+                href="/bolt-ons/custom-field"
+                target="_blank"
+                className="
+                  col-span-1 text-blue-600 flex flex-col justify-between items-start bg-blue-50 border border-blue-200 rounded-sm transition-all duration-300 ease-in p-2
+                  cursor-pointer hover:bg-gray-50
+                "
+              >
+                <div>
+                  <p className="text-sm">Add Custom Field</p>
+
+                  <p className="text-xs text-blk-60 mt-0.5">
+                    Collect additional client info
+                  </p>
+                </div>
+
+                <div className="text-blue-600 text-xs cursor-pointer flex items-center gap-0.5">
+                  <Sparkles className="size-3.5" />
+                  Add Bolt On
+                </div>
+              </Link>
+
+              {/* All form fields */}
               {Object.entries(fieldLabels).map(([field, label]) => {
                 const isRequired = requiredFields.includes(field);
                 const isEnabled =
@@ -284,7 +315,28 @@ export function TeamSettingsModal({
                 const hasDescription = field in fieldDescriptions;
 
                 return (
-                  <div key={field} className="flex items-start space-x-2">
+                  <div
+                    key={field}
+                    className={`col-span-1 flex flex-col justify-between items-start border rounded-sm transition-all duration-300 ease-in p-2 ${
+                      isEnabled ? "bg-gray-50" : ""
+                    }`}
+                  >
+                    <div>
+                      <Label htmlFor={field} className="text-sm">
+                        {label}
+                      </Label>
+
+                      {hasDescription && (
+                        <p className="text-xs text-blk-60 -mt-1">
+                          {
+                            fieldDescriptions[
+                              field as keyof typeof fieldDescriptions
+                            ]
+                          }
+                        </p>
+                      )}
+                    </div>
+
                     <Switch
                       id={field}
                       checked={isEnabled}
@@ -295,25 +347,8 @@ export function TeamSettingsModal({
                         )
                       }
                       disabled={isRequired}
-                      className="mt-1"
+                      className="mt-2"
                     />
-                    <div className="flex-1">
-                      <Label
-                        htmlFor={field}
-                        className={`text-sm ${isRequired ? "font-medium" : ""}`}
-                      >
-                        {label}
-                      </Label>
-                      {hasDescription && (
-                        <p className="text-xs text-gray-500 mt-1">
-                          {
-                            fieldDescriptions[
-                              field as keyof typeof fieldDescriptions
-                            ]
-                          }
-                        </p>
-                      )}
-                    </div>
                   </div>
                 );
               })}
@@ -389,8 +424,8 @@ export function TeamSettingsModal({
                 </div>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive" size="sm">
-                      <Trash2 className="h-4 w-4 mr-2" />
+                    <Button size="md" variant="destructive">
+                      <Trash2 className="h-4 w-4" />
                       Delete Team
                     </Button>
                   </AlertDialogTrigger>
@@ -452,10 +487,14 @@ export function TeamSettingsModal({
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+            <Button
+              size="md"
+              variant="outline"
+              onClick={() => setDialogOpen(false)}
+            >
               Cancel
             </Button>
-            <Button onClick={saveSettings} disabled={saving}>
+            <Button size="md" onClick={saveSettings} disabled={saving}>
               {saving ? "Saving..." : "Save Settings"}
             </Button>
           </div>
