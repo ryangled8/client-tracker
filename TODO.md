@@ -7,12 +7,25 @@ Date calcs & Mapping - Done but need to thoroughly test and check:
 
 --
 
-UI TIME!
+UI TIME:
+Modals
+- CSV Modal
+- All Modals
+
+Table
+- Coach Colour
+- Table spacing on RHS
 
 --
 
-Then:
-- Add a 'coach colour' section in team settings and style the coach name in the table to the chosen colour and same tag style as the plan name - use the same colour pallete options from the training-plans modal.
+Payment Plan Schema:
+Free
+Basic
+Pro
+Team
+Etc
+
+--
 
 
 Cleanup / Fixes:

@@ -35,6 +35,7 @@ import {
 import { toast } from "sonner";
 import { AddPackageModal } from "./add-package-modal";
 import type { TeamSettings } from "@/types";
+import { CSVStepCard } from "./csv-step-card";
 
 interface Coach {
   _id: string;
@@ -176,24 +177,6 @@ const parseGender = (genderStr: string): string | undefined => {
     return "prefer-not-to-say";
 
   return undefined;
-};
-
-// Helper function to generate example CSV
-const generateExampleCSV = () => {
-  const csvContent = `Name,Email,Phone,Age,Gender,Start Date,Current Weight,Target Weight,Height,Notes
-John Smith,john.smith@email.com,555-0123,28,Male,2024-01-15,180,165,5'10",Wants to lose weight for wedding
-Sarah Johnson,sarah.j@email.com,555-0456,32,Female,2024-01-20,140,130,5'6",Marathon training goal
-Mike Davis,mike.davis@email.com,555-0789,45,Male,2024-01-25,200,175,6'0",Doctor recommended fitness program`;
-
-  const blob = new Blob([csvContent], { type: "text/csv" });
-  const url = window.URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "example-clients.csv";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  window.URL.revokeObjectURL(url);
 };
 
 export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
@@ -584,7 +567,7 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
   const getStepTitle = () => {
     switch (currentStep) {
       case 1:
-        return "Upload Your Clients";
+        return null;
       case 2:
         return "Upload CSV File";
       case 3:
@@ -678,6 +661,24 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
     autoMapFields();
   }
 
+  // Helper function to generate example CSV
+  const generateExampleCSV = () => {
+    const csvContent = `Name,Email,Phone,Age,Gender,Start Date,Current Weight,Target Weight,Height,Notes
+  John Smith,john.smith@email.com,555-0123,28,Male,2024-01-15,180,165,5'10",Wants to lose weight for wedding
+  Sarah Johnson,sarah.j@email.com,555-0456,32,Female,2024-01-20,140,130,5'6",Marathon training goal
+  Mike Davis,mike.davis@email.com,555-0789,45,Male,2024-01-25,200,175,6'0",Doctor recommended fitness program`;
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "example-clients.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
     <>
       <Dialog
@@ -693,12 +694,13 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
             Upload via CSV
           </Button>
         </DialogTrigger>
+
         <DialogContent className="sm:max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Upload className="h-5 w-5" />
               {getStepTitle()}
             </DialogTitle>
+
             {progressStep > 0 && (
               <div className="flex items-center gap-2 mt-2">
                 <span className="text-sm text-gray-500">
@@ -716,94 +718,60 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
 
           {/* Step 1: Overview */}
           {currentStep === 1 && (
-            <div className="space-y-6">
-              <div className="text-center py-4">
-                <h3 className="text-lg font-semibold mb-2">
+            <>
+              <div className="mt-6 mb-6 text-center">
+                <h3 className="text-lg leading-none f-hr">
                   Upload your clients in 3 simple steps
                 </h3>
-                <p className="text-gray-600">
+
+                <p className="text-sm text-blk-60 mt-1">
                   We'll guide you through each step to make it easy
                 </p>
               </div>
 
-              <div className="grid gap-4">
-                {/* Step 1 */}
-                <div className="flex items-start gap-4 p-4 border rounded-lg bg-blue-50">
-                  <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold">
-                    1
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Upload className="h-5 w-5 text-blue-600" />
-                      <h4 className="font-semibold">Upload CSV File</h4>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-3">
-                      Upload your CSV file of clients. We'll automatically check
-                      for duplicates to save you time.
-                    </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={generateExampleCSV}
-                      className="text-blue-600 border-blue-600 hover:bg-blue-50"
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Download Example CSV
-                    </Button>
-                  </div>
-                </div>
+              <div className="flex gap-4">
+                <CSVStepCard
+                  title="Upload CSV File"
+                  description="Upload your CSV file of clients. We'll automatically check for duplicates to save you time."
+                  hasButton
+                  stepCount={1}
+                />
 
-                {/* Step 2 */}
-                <div className="flex items-start gap-4 p-4 border rounded-lg">
-                  <div className="flex-shrink-0 w-8 h-8 bg-gray-300 text-white rounded-full flex items-center justify-center font-semibold">
-                    2
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Settings className="h-5 w-5 text-gray-500" />
-                      <h4 className="font-semibold text-gray-700">
-                        Map Your CSV to the App
-                      </h4>
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      Tell us which columns in your CSV match which fields in
-                      our app. We'll auto-detect most of them for you.
-                    </p>
-                  </div>
-                </div>
+                <CSVStepCard
+                  title="Map CSV to App"
+                  description="Tell us which columns in your CSV match which fields in our app. We'll auto-detect most of them for you."
+                  stepCount={2}
+                />
 
-                {/* Step 3 */}
-                <div className="flex items-start gap-4 p-4 border rounded-lg">
-                  <div className="flex-shrink-0 w-8 h-8 bg-gray-300 text-white rounded-full flex items-center justify-center font-semibold">
-                    3
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <UserCheck className="h-5 w-5 text-gray-500" />
-                      <h4 className="font-semibold text-gray-700">
-                        Assign Coach and Training Package
-                      </h4>
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      Choose which coach and training package to assign to each
-                      client. You can assign them individually or in bulk.
-                    </p>
-                  </div>
-                </div>
+                <CSVStepCard
+                  title="Assign Coaches & Training Packages"
+                  description="Choose which coach and training package to assign to each client. You can assign them individually or in bulk."
+                  stepCount={3}
+                />
               </div>
 
-              <Alert>
-                <FileText className="h-4 w-4" />
-                <AlertDescription>
-                  <strong>Tip:</strong> Your CSV should have column headers in
-                  the first row. Common columns include: Name, Email, Phone,
-                  Age, Gender, Start Date, Current Weight, Target Weight,
-                  Height, Notes.
-                </AlertDescription>
-              </Alert>
+              <div className="flex justify-between items-end mt-8">
+                <div className="text-xs max-w-2/3">
+                  <div className="flex items-center gap-0.5 mb-1">
+                    <FileText className="size-3" />
+                    <p className="f-hm">Tip:</p>
+                  </div>
 
-              <div className="flex justify-end pt-4">
+                  <div>
+                    Your CSV should have column headers in the first row. Common
+                    columns include: Name, Email, Phone, Age, Gender, Start
+                    Date, Current Weight, Target Weight, Height, Notes.
+                    <div
+                      onClick={generateExampleCSV}
+                      className="underline ml-1 inline-block text-blue-600 text-xs cursor-pointer hover:opacity-60 transition-all duration-200 ease-in"
+                    >
+                      Download Example CSV
+                    </div>
+                  </div>
+                </div>
+
                 <Button
+                  size="md"
                   onClick={() => setCurrentStep(2)}
                   className="flex items-center gap-2"
                 >
@@ -811,7 +779,7 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>
-            </div>
+            </>
           )}
 
           {/* Step 2: Upload */}
@@ -856,12 +824,12 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
                 <FileText className="h-4 w-4" />
                 <AlertDescription>
                   Need help?{" "}
-                  <button
+                  {/* <button
                     onClick={generateExampleCSV}
                     className="underline text-blue-600 hover:text-blue-800"
                   >
                     Download our example CSV file
-                  </button>{" "}
+                  </button>{" "} */}
                   to see the correct format.
                 </AlertDescription>
               </Alert>

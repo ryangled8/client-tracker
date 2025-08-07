@@ -173,6 +173,8 @@ body {
   @apply text-lg md:text-xl opacity-70;
 }
 
+p { @apply tracking-wide; }
+
 /* Colours */
 /* Black */
 .bg-blk {
