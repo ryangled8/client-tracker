@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,7 +27,10 @@ interface TeamInvite {
 export default function InvitesPage() {
   const [invites, setInvites] = useState<TeamInvite[]>([]);
   const [loading, setLoading] = useState(true);
-  const [responding, setResponding] = useState<string | null>(null);
+  const [responding, setResponding] = useState<{
+    id: string;
+    action: "accept" | "decline";
+  } | null>(null);
 
   useEffect(() => {
     fetchInvites();
@@ -56,9 +59,8 @@ export default function InvitesPage() {
     inviteId: string,
     action: "accept" | "decline"
   ) => {
-    setResponding(inviteId);
+    setResponding({ id: inviteId, action });
     try {
-      console.log(`🎯 ${action}ing invite:`, inviteId);
       const response = await fetch("/api/teams/invites/respond", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -69,10 +71,7 @@ export default function InvitesPage() {
 
       if (response.ok) {
         toast.success(data.message);
-        await fetchInvites(); // Refresh the list
-
-        // Trigger sidebar refresh by dispatching a custom event
-        console.log("📡 Dispatching invitesUpdated event");
+        await fetchInvites();
         window.dispatchEvent(new CustomEvent("invitesUpdated"));
       } else {
         toast.error(data.error || `Failed to ${action} invitation`);
@@ -108,7 +107,7 @@ export default function InvitesPage() {
         </div>
         <div className="space-y-4">
           {Array.from({ length: 3 }).map((_, i) => (
-            <Card key={i}>
+            <Card key={i} className="rounded-sm shadow-none">
               <CardHeader>
                 <Skeleton className="h-6 w-48" />
               </CardHeader>
@@ -125,35 +124,31 @@ export default function InvitesPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Team Invitations</h1>
-        <p className="text-gray-600 mt-2">
-          Manage your pending team invitations.
-        </p>
+        <h1 className="h2 f-hr">Team Invitations</h1>
       </div>
 
       {invites.length === 0 ? (
-        <Card className="text-center py-12">
-          <CardContent>
-            <Mail className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No pending invitations
-            </h3>
-            <p className="text-gray-600">
+        <div className="rounded-sm border p-10">
+          <div className="text-center">
+            <Mail className="size-5 mx-auto text-blk-60 mb-4" />
+            <h3 className="text-lg text-blk mb-1">No pending invitations</h3>
+
+            <p className="text-blk-60">
               You do not have any pending team invitations at the moment.
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       ) : (
         <div className="space-y-4">
-          {invites.map((invite) => {
+          {invites.map((invite, idx) => {
             const expired = isExpired(invite.expiresAt);
             return (
-              <Card key={invite._id} className={expired ? "opacity-60" : ""}>
-                <CardHeader>
+              <div key={idx} className="rounded-sm border p-4">
+                <div>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">
+                    <h1 className="text-lg mb-1">
                       Invitation to join {invite.team.name}
-                    </CardTitle>
+                    </h1>
                     <div className="flex items-center space-x-2">
                       <Badge variant={expired ? "secondary" : "default"}>
                         <Clock className="h-3 w-3 mr-1" />
@@ -161,44 +156,56 @@ export default function InvitesPage() {
                       </Badge>
                     </div>
                   </div>
-                </CardHeader>
-                <CardContent>
+                </div>
+
+                <div>
                   <div className="space-y-4">
                     <div>
-                      <p className="text-sm text-gray-600">
-                        <strong>{invite.inviter.name}</strong> (
+                      <p className="text-sm text-blk">
+                        <span className="f-hm">{invite.inviter.name}</span> (
                         {invite.inviter.email}) has invited you to join their
                         coaching team.
                       </p>
                       {invite.message && (
-                        <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                        <div className="mt-2 p-3 bg-gray-50 rounded-sm border-l-3">
                           <p className="text-sm italic">{invite.message}</p>
                         </div>
                       )}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-blk-60">
                       Invited {new Date(invite.createdAt).toLocaleDateString()}
                     </div>
                     {!expired && (
                       <div className="flex space-x-2">
                         <Button
                           onClick={() => respondToInvite(invite._id, "accept")}
-                          disabled={responding === invite._id}
+                          disabled={
+                            responding?.id === invite._id &&
+                            responding?.action === "accept"
+                          }
                           size="sm"
                         >
                           <Check className="h-4 w-4 mr-1" />
-                          {responding === invite._id
+                          {responding?.id === invite._id &&
+                          responding?.action === "accept"
                             ? "Accepting..."
                             : "Accept"}
                         </Button>
+
                         <Button
                           variant="outline"
                           onClick={() => respondToInvite(invite._id, "decline")}
-                          disabled={responding === invite._id}
+                          disabled={
+                            responding?.id === invite._id &&
+                            responding?.action === "decline"
+                          }
                           size="sm"
                         >
                           <X className="h-4 w-4 mr-1" />
-                          Decline
+                          {responding?.id === invite._id &&
+                          responding?.action === "decline"
+                            ? "Declining..."
+                            : "Decline"}
                         </Button>
                       </div>
                     )}
@@ -208,8 +215,8 @@ export default function InvitesPage() {
                       </Badge>
                     )}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             );
           })}
         </div>

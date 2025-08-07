@@ -69,8 +69,7 @@ export function TeamActions({
         hidePackageList
       />
 
-      {/* Invite coach CTA */}
-      <CoachInvite teamId={teamId} onInviteSent={onDataUpdated} />
+      {isOwner && <CoachInvite teamId={teamId} onInviteSent={onDataUpdated} />}
 
       {isOwner && (
         <TeamSettingsModal team={team} onSettingsUpdated={onDataUpdated} />

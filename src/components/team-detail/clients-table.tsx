@@ -610,7 +610,7 @@ export function ClientsTable({
           Expanded for: <span className="font-bold">{client.name}</span>
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="flex gap-12">
           {/* Progress Calls */}
           <div>
             <h4 className="font-medium text-xs mb-0.5 text-gray-900">

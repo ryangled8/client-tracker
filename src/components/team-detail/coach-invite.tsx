@@ -17,10 +17,17 @@ import { UserPlus } from "lucide-react";
 
 interface CoachInviteProps {
   teamId: string;
+  buttonSize?: "sm" | "md" | "lg";
+  buttonVariant?: "default" | "outline";
   onInviteSent: () => void;
 }
 
-export function CoachInvite({ teamId, onInviteSent }: CoachInviteProps) {
+export function CoachInvite({
+  teamId,
+  onInviteSent,
+  buttonSize = "lg",
+  buttonVariant = "outline",
+}: CoachInviteProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [inviting, setInviting] = useState(false);
   const [inviteForm, setInviteForm] = useState({
@@ -73,7 +80,7 @@ export function CoachInvite({ teamId, onInviteSent }: CoachInviteProps) {
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="lg">
+        <Button variant={buttonVariant} size={buttonSize}>
           <UserPlus className="h-4 w-4" />
           Invite Coach
         </Button>
@@ -111,6 +118,7 @@ export function CoachInvite({ teamId, onInviteSent }: CoachInviteProps) {
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
               Cancel
             </Button>
+
             <Button onClick={sendInvite} disabled={inviting}>
               {inviting ? "Sending..." : "Send Invitation"}
             </Button>

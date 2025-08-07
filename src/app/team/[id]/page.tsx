@@ -229,6 +229,7 @@ export default function TeamPage() {
               teamId={team._id}
               isOwner={team.owner._id === session?.user?.id}
               open={pendingInvitesOpen}
+              onDataUpdated={() => fetchTeam(team._id)}
               onOpenChange={setPendingInvitesOpen}
               onInvitesCancelled={() => {
                 fetchTeam(team._id);
