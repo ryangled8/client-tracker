@@ -367,8 +367,15 @@ export function TeamSettingsModal({
 
                   return (
                     <div
+                      onClick={() =>
+                        !isRequired &&
+                        handleFieldToggle(
+                          field as keyof TeamSettings["clientFormFields"],
+                          !isEnabled
+                        )
+                      }
                       key={field}
-                      className={`col-span-1 flex flex-col justify-between items-start border rounded-sm transition-all duration-300 ease-in p-2 ${
+                      className={`cursor-pointer col-span-1 flex flex-col justify-between items-start border rounded-sm transition-all duration-300 ease-in p-2 hover:bg-gray-50 ${
                         isEnabled ? "bg-gray-50" : ""
                       }`}
                     >
