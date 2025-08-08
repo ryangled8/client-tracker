@@ -91,7 +91,7 @@ export function CoachInvite({
         </DialogHeader>
         <div className="space-y-4 pt-4">
           <div>
-            <Label htmlFor="inviteEmail">Email Address *</Label>
+            <Label htmlFor="inviteEmail">Email Address*</Label>
             <Input
               id="inviteEmail"
               type="email"

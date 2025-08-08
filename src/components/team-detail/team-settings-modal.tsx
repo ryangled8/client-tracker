@@ -19,20 +19,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Separator } from "@/components/ui/separator";
+
 import { toast } from "sonner";
-import { Settings, Sparkles, Trash2 } from "lucide-react";
+import { Settings, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -133,6 +122,7 @@ export function TeamSettingsModal({
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [teamName, setTeamName] = useState(team.name);
   const [settings, setSettings] = useState<TeamSettings>(team.settings);
+  const [activeTab, setActiveTab] = useState("general");
 
   const handleFieldToggle = (
     field: keyof TeamSettings["clientFormFields"],
@@ -251,7 +241,11 @@ export function TeamSettingsModal({
           <DialogTitle>Settings</DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="general">
+        <Tabs
+          value={activeTab}
+          onValueChange={(val) => setActiveTab(val)}
+          defaultValue="general"
+        >
           <TabsList className="grid w-full grid-cols-3 rounded-sm mb-4">
             <TabsTrigger className="rounded-xs cursor-pointer" value="general">
               General
@@ -269,18 +263,13 @@ export function TeamSettingsModal({
 
           {/* General Tab */}
           <TabsContent value="general">
-            <div>
-              <div className="flex flex-col gap-2 mb-4">
-                <h3 className="leading-none f-hr">General</h3>
-                <p className="text-sm -mt-1.5 text-blk-60">
-                  Update team namme, notice period and date format
-                </p>
-              </div>
+            <>
+              <p className="text-sm text-blk-60 border-l-4 border-l-blue-600 p-2 mb-6">
+                Update team name, notice period and date format.
+              </p>
 
               <div>
-                <Label htmlFor="teamName" className="mb-1.5">
-                  Team Name
-                </Label>
+                <Label htmlFor="teamName">Team Name</Label>
                 <Input
                   id="teamName"
                   value={teamName}
@@ -289,9 +278,14 @@ export function TeamSettingsModal({
                 />
               </div>
 
-              <div className="space-y-4 pt-4">
-                <div>
+              <div className="flex gap-6 items-start mt-6">
+                <div className="w-1/2">
                   <Label htmlFor="noticePeriod">Notice Period (weeks)</Label>
+
+                  <p className="text-xs text-gray-500 -mt-0.5 mb-2">
+                    Highlight clients with dates due within this period.
+                  </p>
+
                   <Select
                     value={settings.noticePeriodWeeks.toString()}
                     onValueChange={handleNoticePeriodChange}
@@ -309,13 +303,15 @@ export function TeamSettingsModal({
                       )}
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Highlight clients with dates due within this period
-                  </p>
                 </div>
 
-                <div>
+                <div className="w-1/2">
                   <Label htmlFor="dateFormat">Date Format</Label>
+
+                  <p className="text-xs text-gray-500 -mt-0.5 mb-2">
+                    Select preferred date format.
+                  </p>
+
                   <Select
                     value={settings.dateFormat}
                     onValueChange={handleDateFormatChange}
@@ -330,19 +326,15 @@ export function TeamSettingsModal({
                   </Select>
                 </div>
               </div>
-            </div>
+            </>
           </TabsContent>
 
           {/* Client Form Fields Tab */}
           <TabsContent value="formFields">
-            <div>
-              <div className="flex flex-col gap-2 mb-4">
-                <h3 className="leading-none f-hr">Client Form Fields</h3>
-                <p className="text-sm -mt-1 text-blk-60">
-                  Select which fields should appear in the add client form and
-                  client table.
-                </p>
-              </div>
+            <>
+              <p className="text-sm text-blk-60 border-l-4 border-l-blue-600 p-2 mb-6">
+                Select which fields you want to track for clients.
+              </p>
 
               <div className="grid grid-cols-3 gap-2">
                 <Link
@@ -411,113 +403,69 @@ export function TeamSettingsModal({
                   );
                 })}
               </div>
-            </div>
+            </>
           </TabsContent>
 
           {/* Settings / Danger Zone Tab */}
           <TabsContent value="settings">
-            <div>
-              <div className="flex flex-col gap-2 mb-4">
-                <h3 className="leading-none f-hr text-red-600">Danger Zone</h3>
-                <p className="text-sm -mt-1.5 text-blk-60">
-                  Permanently delete this team and all associated data. This
-                  action cannot be undone.
-                </p>
-              </div>
+            <>
+              <p className="text-sm text-blk-60 border-l-4 border-l-red-600 p-2 mb-6">
+                Permanently delete this team and all associated data.
+              </p>
 
-              <div>
-                <div className="border border-red-200 rounded-sm p-4 bg-red-50">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium text-red-900">Delete Team</h4>
-                      <p className="text-sm text-red-700">
-                        This will permanently delete the team{" "}
-                        <strong>{team.name}</strong> and remove all associated
-                        data including:
-                      </p>
-                    </div>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button size="md" variant="destructive">
-                          <Trash2 className="h-4 w-4" />
-                          Delete Team
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            Are you absolutely sure?
-                          </AlertDialogTitle>
-                          <AlertDialogDescription className="space-y-2">
-                            <p>
-                              This action cannot be undone. This will
-                              permanently delete the team{" "}
-                              <strong>{team.name}</strong> and remove all
-                              associated data including:
-                            </p>
-                            <ul className="list-disc list-inside text-sm space-y-1 mt-2">
-                              <li>All team clients and their progress data</li>
-                              <li>All training packages</li>
-                              <li>All team invitations</li>
-                              <li>All team settings</li>
-                            </ul>
-                            <div className="mt-4">
-                              <Label
-                                htmlFor="deleteConfirmation"
-                                className="text-sm font-medium"
-                              >
-                                Type the team name <strong>{team.name}</strong>{" "}
-                                to confirm:
-                              </Label>
-                              <Input
-                                id="deleteConfirmation"
-                                value={deleteConfirmation}
-                                onChange={(e) =>
-                                  setDeleteConfirmation(e.target.value)
-                                }
-                                placeholder={team.name}
-                                className="mt-2"
-                              />
-                            </div>
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel
-                            onClick={() => setDeleteConfirmation("")}
-                          >
-                            Cancel
-                          </AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={deleteTeam}
-                            disabled={
-                              deleteConfirmation !== team.name || deleting
-                            }
-                            className="bg-red-600 hover:bg-red-700"
-                          >
-                            {deleting ? "Deleting..." : "Delete Team"}
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
+              <div className="border border-red-200 rounded-sm p-4 bg-red-50">
+                <p className="text-xs text-red-700">
+                  <span className="text-sm f-hm block mb-0.5">
+                    This action cannot be undone.
+                  </span>
+                  Type the team name <strong>"{team.name}"</strong> to confirm
+                  deletion.
+                </p>
+
+                <div className="flex gap-2 items-center mt-4">
+                  <Input
+                    id="deleteConfirmation"
+                    value={deleteConfirmation}
+                    onChange={(e) => setDeleteConfirmation(e.target.value)}
+                    placeholder="Type team name to confirm"
+                  />
+
+                  <Button
+                    size="md"
+                    variant="destructive"
+                    onClick={deleteTeam}
+                    disabled={deleteConfirmation !== team.name || deleting}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    {deleting ? "Deleting..." : "Delete Team"}
+                  </Button>
                 </div>
               </div>
-            </div>
+            </>
           </TabsContent>
         </Tabs>
 
         {/* Footer Buttons */}
         <div className="flex justify-end space-x-2 pt-4">
           <Button
+            className="transition-none"
             size="md"
             variant="outline"
             onClick={() => setDialogOpen(false)}
           >
-            Cancel
+            Close
           </Button>
-          <Button size="md" onClick={saveSettings} disabled={saving}>
-            {saving ? "Saving..." : "Save Settings"}
-          </Button>
+
+          {activeTab !== "settings" && (
+            <Button
+              className="transition-none"
+              size="md"
+              onClick={saveSettings}
+              disabled={saving}
+            >
+              {saving ? "Saving..." : "Save Settings"}
+            </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>
