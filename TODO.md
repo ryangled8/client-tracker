@@ -13,7 +13,7 @@ Modals
 -- Add an 'uploading' state to show user that the upload is acutally happening...
 -- Fix 'add package' modal from the button on the CSV modal
 
-- All Modals
+- TSM > General: Add metrics (kg/lbs/cm/inch/feet)
 
 Table
 - Coach Colour

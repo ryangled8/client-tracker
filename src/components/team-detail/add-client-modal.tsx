@@ -61,14 +61,14 @@ export function AddClientModal({
   const [notYetPaid, setNotYetPaid] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
+    startDate: new Date(),
+    assignedCoach: "",
     email: "",
     phone: "",
     paymentDate: new Date(),
     age: "",
     gender: "",
-    assignedCoach: "",
     selectedPackage: "",
-    startDate: new Date(),
     currentWeight: "",
     targetWeight: "",
     height: "",
@@ -229,12 +229,18 @@ export function AddClientModal({
           Add Client
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+
+      <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Client</DialogTitle>
         </DialogHeader>
-        <div className="space-y-6 pt-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div>
+          <p className="text-sm text-blk-60 border-l-4 border-l-blue-600 p-2 mb-6">
+            Input fields can be customised via settings.
+          </p>
+
+          <div className="grid grid-cols-1 gap-5 mt-4">
             {/* Name - Always required */}
             <div>
               <Label htmlFor="name" className="font-medium">
@@ -248,107 +254,24 @@ export function AddClientModal({
               />
             </div>
 
-            {/* Email - Optional */}
-            {settings.clientFormFields.email && (
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
-                  placeholder="client@example.com"
-                />
-              </div>
-            )}
-
-            {/* Phone */}
-            {settings.clientFormFields.phone && (
-              <div>
-                <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange("phone", e.target.value)}
-                  placeholder="Phone number"
-                />
-              </div>
-            )}
-
-            {/* Payment Date */}
-            {settings.clientFormFields.paymentDate && (
-              <div>
-                <Label htmlFor="paymentDate">Payment Date</Label>
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="notYetPaid"
-                      checked={notYetPaid}
-                      onCheckedChange={setNotYetPaid}
-                    />
-                    <Label htmlFor="notYetPaid" className="text-sm">
-                      Not yet paid
-                    </Label>
-                  </div>
-                  {!notYetPaid && (
-                    <Input
-                      id="paymentDate"
-                      type="date"
-                      value={
-                        formData.paymentDate instanceof Date
-                          ? formData.paymentDate.toISOString().split("T")[0]
-                          : formData.paymentDate
-                      }
-                      onChange={(e) =>
-                        handleInputChange(
-                          "paymentDate",
-                          new Date(e.target.value)
-                        )
-                      }
-                    />
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Age */}
-            {settings.clientFormFields.age && (
-              <div>
-                <Label htmlFor="age">Age</Label>
-                <Input
-                  id="age"
-                  type="number"
-                  min="1"
-                  max="120"
-                  value={formData.age}
-                  onChange={(e) => handleInputChange("age", e.target.value)}
-                  placeholder="Age"
-                />
-              </div>
-            )}
-
-            {/* Gender */}
-            {settings.clientFormFields.gender && (
-              <div>
-                <Label htmlFor="gender">Gender</Label>
-                <Select
-                  value={formData.gender}
-                  onValueChange={(value) => handleInputChange("gender", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select gender" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                    <SelectItem value="prefer-not-to-say">
-                      Prefer not to say
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+            {/* Start Date - Always required */}
+            <div>
+              <Label htmlFor="startDate" className="font-medium">
+                Start Date *
+              </Label>
+              <Input
+                id="startDate"
+                type="date"
+                value={
+                  formData.startDate instanceof Date
+                    ? formData.startDate.toISOString().split("T")[0]
+                    : formData.startDate
+                }
+                onChange={(e) =>
+                  handleInputChange("startDate", new Date(e.target.value))
+                }
+              />
+            </div>
 
             {/* Assigned Coach - Always required */}
             <div>
@@ -415,24 +338,142 @@ export function AddClientModal({
               )}
             </div>
 
-            {/* Start Date - Always required */}
-            <div>
-              <Label htmlFor="startDate" className="font-medium">
-                Start Date *
-              </Label>
-              <Input
-                id="startDate"
-                type="date"
-                value={
-                  formData.startDate instanceof Date
-                    ? formData.startDate.toISOString().split("T")[0]
-                    : formData.startDate
-                }
-                onChange={(e) =>
-                  handleInputChange("startDate", new Date(e.target.value))
-                }
-              />
-            </div>
+            {/* Payment Date */}
+            {settings.clientFormFields.paymentDate && (
+              <div>
+                <Label htmlFor="paymentDate">Payment Date</Label>
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="notYetPaid"
+                      checked={notYetPaid}
+                      onCheckedChange={setNotYetPaid}
+                    />
+                    <Label htmlFor="notYetPaid" className="text-sm">
+                      Not yet paid
+                    </Label>
+                  </div>
+                  {!notYetPaid && (
+                    <Input
+                      id="paymentDate"
+                      type="date"
+                      value={
+                        formData.paymentDate instanceof Date
+                          ? formData.paymentDate.toISOString().split("T")[0]
+                          : formData.paymentDate
+                      }
+                      onChange={(e) =>
+                        handleInputChange(
+                          "paymentDate",
+                          new Date(e.target.value)
+                        )
+                      }
+                    />
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Email - Optional */}
+            {settings.clientFormFields.email && (
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  placeholder="client@example.com"
+                />
+              </div>
+            )}
+
+            {/* Phone */}
+            {settings.clientFormFields.phone && (
+              <div>
+                <Label htmlFor="phone">Phone</Label>
+                <Input
+                  id="phone"
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange("phone", e.target.value)}
+                  placeholder="Phone number"
+                />
+              </div>
+            )}
+
+            {/* Age */}
+            {settings.clientFormFields.age && (
+              <div>
+                <Label htmlFor="age">Age</Label>
+                <Input
+                  id="age"
+                  type="number"
+                  min="1"
+                  max="120"
+                  value={formData.age}
+                  onChange={(e) => handleInputChange("age", e.target.value)}
+                  placeholder="Age"
+                />
+              </div>
+            )}
+
+            {/* Gender */}
+            {settings.clientFormFields.gender && (
+              <div>
+                <Label htmlFor="gender">Gender</Label>
+                <Select
+                  value={formData.gender}
+                  onValueChange={(value) => handleInputChange("gender", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                    <SelectItem value="prefer-not-to-say">
+                      Prefer not to say
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {/* Membership Type */}
+            {settings.clientFormFields.membershipType && (
+              <div>
+                <Label htmlFor="membershipType">Membership Type</Label>
+                <Input
+                  id="membershipType"
+                  value={formData.membershipType}
+                  onChange={(e) =>
+                    handleInputChange("membershipType", e.target.value)
+                  }
+                  placeholder="e.g., Premium, Standard"
+                />
+              </div>
+            )}
+
+            {/* Status */}
+            {settings.clientFormFields.status && (
+              <div>
+                <Label htmlFor="status">Status</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) => handleInputChange("status", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                    <SelectItem value="paused">Paused</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             {/* Current Weight */}
             {settings.clientFormFields.currentWeight && (
@@ -486,63 +527,29 @@ export function AddClientModal({
               </div>
             )}
 
-            {/* Status */}
-            {settings.clientFormFields.status && (
+            {/* Notes - */}
+            {settings.clientFormFields.notes && (
               <div>
-                <Label htmlFor="status">Status</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) => handleInputChange("status", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                    <SelectItem value="paused">Paused</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {/* Membership Type */}
-            {settings.clientFormFields.membershipType && (
-              <div>
-                <Label htmlFor="membershipType">Membership Type</Label>
-                <Input
-                  id="membershipType"
-                  value={formData.membershipType}
-                  onChange={(e) =>
-                    handleInputChange("membershipType", e.target.value)
-                  }
-                  placeholder="e.g., Premium, Standard"
+                <Label htmlFor="notes">Notes</Label>
+                <Textarea
+                  id="notes"
+                  value={formData.notes}
+                  onChange={(e) => handleInputChange("notes", e.target.value)}
+                  placeholder="Additional notes about the client"
+                  rows={3}
                 />
               </div>
             )}
           </div>
 
-          {/* Notes - Full width */}
-          {settings.clientFormFields.notes && (
-            <div>
-              <Label htmlFor="notes">Notes</Label>
-              <Textarea
-                id="notes"
-                value={formData.notes}
-                onChange={(e) => handleInputChange("notes", e.target.value)}
-                placeholder="Additional notes about the client"
-                rows={3}
-              />
-            </div>
-          )}
-
+          {/* Save / Close buttons */}
           <div className="flex justify-end space-x-2 pt-4">
             <Button
               size="md"
               variant="outline"
               onClick={() => setDialogOpen(false)}
             >
-              Cancel
+              Close
             </Button>
             <Button size="md" onClick={handleSubmit} disabled={saving}>
               {saving ? "Adding..." : "Add Client"}

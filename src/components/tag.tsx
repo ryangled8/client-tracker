@@ -12,14 +12,14 @@ interface TagProps {
 
 const sizeClasses = {
   withIcon: {
-    small: "pl-0.5 pr-2 py-0.5 text-xs rounded-full f-hm",
-    medium: "px-3.5 py-1 text-sm rounded-full f-hm",
-    large: "px-4.5 py-1.5 text-base rounded-full f-hm",
+    small: "pl-0.5 pr-2 py-0.5 text-xs rounded-full tracking-wide",
+    medium: "px-3.5 py-1 text-sm rounded-full tracking-wide",
+    large: "px-4.5 py-1.5 text-base rounded-full tracking-wide",
   },
   withoutIcon: {
-    small: "px-2 py-0.5 text-xs rounded-full f-hm",
-    medium: "px-3 py-1 text-sm rounded-full f-hm",
-    large: "px-4 py-1.5 text-base rounded-full f-hm",
+    small: "px-2 py-0.5 text-xs rounded-full tracking-wide",
+    medium: "px-3 py-1 text-sm rounded-full tracking-wide",
+    large: "px-4 py-1.5 text-base rounded-full tracking-wide",
   },
 };
 

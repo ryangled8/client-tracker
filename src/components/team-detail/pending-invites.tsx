@@ -121,10 +121,7 @@ export function PendingInvites({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="rounded-sm p-4 max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 h4">
-            <Mail className="size-4.5" />
-            Pending Invites
-          </DialogTitle>
+          <DialogTitle>Pending Invites</DialogTitle>
         </DialogHeader>
 
         {loading ? (
@@ -151,7 +148,7 @@ export function PendingInvites({
               >
                 <div className="flex items-start justify-between relative">
                   <div className="absolute -top-2 -right-2 flex items-center gap-1">
-                    <div className="text-xs bg-orange-200 text-orange-800 px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                    <div className="text-xs bg-orange-200 text-orange-900 px-2 py-1 rounded-full flex items-center gap-1">
                       <Clock className="h-3 w-3" />
                       {formatTimeLeft(invite.expiresAt)}
                     </div>
@@ -163,13 +160,13 @@ export function PendingInvites({
                         cancelInvite(invite._id, invite.inviteeEmail)
                       }
                       disabled={cancelling === invite._id}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-100"
                     >
                       {cancelling === invite._id ? (
                         "Cancelling..."
                       ) : (
                         <>
-                          <X className="h-4 w-4" />
+                          <X className="size-4" />
                           <span className="sr-only">Cancel invitation</span>
                         </>
                       )}
@@ -177,15 +174,17 @@ export function PendingInvites({
                   </div>
 
                   <div>
-                    <div className="text-blk">{invite.inviteeEmail}</div>
+                    <div className="text-blk text-sm">
+                      {invite.inviteeEmail}
+                    </div>
 
-                    <div className="text-sm text-gray-600 mb-2">
+                    <div className="text-xs text-blk-60 mb-2">
                       Invited by {invite.inviter.name} on{" "}
                       {new Date(invite.createdAt).toLocaleDateString()}
                     </div>
 
                     {invite.message && (
-                      <div className="text-sm text-gray-600 italic pl-3 border-l-2 border-gray-300">
+                      <div className="text-xs text-blk-60 italic pl-3 border-l-2 border-gray-300">
                         {invite.message}
                       </div>
                     )}
@@ -196,15 +195,7 @@ export function PendingInvites({
           </div>
         )}
 
-        <div className="flex justify-end pt-4 border-t gap-2">
-          {/* Invite coach CTA */}
-          <CoachInvite
-            buttonSize="md"
-            buttonVariant="default"
-            teamId={teamId}
-            onInviteSent={onDataUpdated}
-          />
-
+        <div className="flex justify-end gap-2">
           <Button
             variant="outline"
             size="md"
@@ -212,6 +203,14 @@ export function PendingInvites({
           >
             Close
           </Button>
+
+          {/* Invite coach CTA */}
+          <CoachInvite
+            buttonSize="md"
+            buttonVariant="default"
+            teamId={teamId}
+            onInviteSent={onDataUpdated}
+          />
         </div>
       </DialogContent>
     </Dialog>
