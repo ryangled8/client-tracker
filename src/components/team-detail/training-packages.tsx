@@ -57,7 +57,7 @@ interface TrainingPackagesProps {
 }
 
 // Color palette with 12 complementing colors
-const COLOR_PALETTE = [
+export const COLOR_PALETTE = [
   { name: "Blue", value: "#3b82f6" },
   { name: "Green", value: "#10b981" },
   { name: "Purple", value: "#8b5cf6" },

@@ -66,3 +66,15 @@ export interface TeamSettings {
   noticePeriodWeeks: number
   dateFormat: "dd/mm/yyyy" | "mm/dd/yyyy"
 }
+
+interface CoachUser {
+  _id: string;
+  name: string;
+  email: string;
+}
+
+export interface Coach {
+  _id: string;
+  coachColor: string;
+  user: CoachUser;
+}

@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { AddClientModal } from "@/components/team-detail/add-client-modal";
 import { CSVUploadModal } from "@/components/team-detail/csv-upload-modal";
 import { ClientsTable } from "@/components/team-detail/clients-table";
-import type { TeamSettings } from "@/types";
+import type { Coach, TeamSettings } from "@/types";
 import { ButtonRounded } from "@/components/custom/buttons/button-rounded";
 import { CoachList } from "@/components/team-detail/coach-list";
 import { PendingInvites } from "@/components/team-detail/pending-invites";
@@ -23,11 +23,7 @@ interface Team {
     name: string;
     email: string;
   };
-  coaches: Array<{
-    _id: string;
-    name: string;
-    email: string;
-  }>;
+  coaches: Coach[];
   packages: Array<{
     packageName: string;
     packageDuration: number;
@@ -196,7 +192,6 @@ export default function TeamPage() {
           {/* Main CTAs */}
           <TeamActions
             team={team}
-            coaches={team.coaches}
             packages={team.packages}
             clients={team.clients}
             ownerId={team.owner._id}

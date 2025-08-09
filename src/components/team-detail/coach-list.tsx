@@ -1,10 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-
-interface Coach {
-  _id: string;
-  name: string;
-  email: string;
-}
+import { Coach } from "@/types";
 
 interface CoachListProps {
   coaches: Coach[];
@@ -15,13 +10,30 @@ export function CoachList({ coaches, ownerId }: CoachListProps) {
   return (
     <div className="flex flex-col gap-1">
       {coaches.map((coach) => (
-        <div key={coach._id} className="space-x-1.5">
-          <span>{coach.name}</span>
+        <div key={coach._id} className="space-x-1.5 flex items-center">
+          <span>{coach.user.name}</span>
 
-          {coach._id === ownerId && (
-            <Badge variant="secondary">Head Coach</Badge>
+          {coach.user._id === ownerId && (
+            <Badge
+              variant="secondary"
+              style={{ backgroundColor: coach.coachColor, color: "#fff" }}
+            >
+              Head Coach
+            </Badge>
           )}
-          {coach._id !== ownerId && <Badge variant="outline">Coach</Badge>}
+
+          {coach.user._id !== ownerId && (
+            <Badge
+              variant="outline"
+              style={{
+                backgroundColor: coach.coachColor,
+                color: "#fff",
+                borderColor: coach.coachColor,
+              }}
+            >
+              Coach
+            </Badge>
+          )}
         </div>
       ))}
     </div>

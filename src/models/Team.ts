@@ -1,9 +1,14 @@
 import mongoose, { Schema, type Document, type ObjectId } from "mongoose"
 
+export interface ITeamCoach {
+  user: ObjectId
+  coachColor?: string
+}
+
 export interface ITeam extends Document {
   name: string
   owner: ObjectId // User who created the team
-  coaches: ObjectId[] // All team coaches including owner
+  coaches: ITeamCoach[] // All team coaches including owner
   clients: ObjectId[] // All clients added to team
   packages: {
     packageName: string // name of package (e.g., "12 Week Transformation Package")
@@ -59,8 +64,15 @@ const teamSchema = new Schema<ITeam>(
     },
     coaches: [
       {
-        type: Schema.Types.ObjectId,
-        ref: "User",
+        user: {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        coachColor: {
+          type: String,
+          default: "#F9FAFC",
+        },
       },
     ],
     clients: [
@@ -151,12 +163,18 @@ teamSchema.index({ coaches: 1 })
 teamSchema.index({ name: 1, owner: 1 })
 teamSchema.index({ clients: 1 })
 
-// Ensure owner is always in coaches array
+// Ensure owner is always in coaches array (without duplicates)
 teamSchema.pre("save", function (next) {
-  if (!this.coaches.includes(this.owner)) {
-    this.coaches.push(this.owner)
+  const hasOwner = this.coaches.some(
+    (c) => c.user.toString() === this.owner.toString()
+  )
+
+  if (!hasOwner) {
+    this.coaches.push({ user: this.owner })
   }
+
   next()
 })
+
 
 export default mongoose.models.Team || mongoose.model<ITeam>("Team", teamSchema)

@@ -1,12 +1,7 @@
 import { TrainingPackages } from "./training-packages";
 import { TeamSettingsModal } from "./team-settings-modal";
 import { CoachInvite } from "./coach-invite";
-
-interface Coach {
-  _id: string;
-  name: string;
-  email: string;
-}
+import { Coach } from "@/types";
 
 interface Package {
   packageName: string;
@@ -36,11 +31,11 @@ interface Team {
     email: string;
   };
   settings: any;
+  coaches: Coach[];
 }
 
 interface TeamActionsProps {
   team: Team;
-  coaches: Coach[];
   packages: Package[];
   clients: Client[];
   ownerId: string;

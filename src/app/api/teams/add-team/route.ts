@@ -24,7 +24,12 @@ export async function POST(req: Request) {
     const team = new Team({
       name,
       owner: session.user.id,
-      coaches: [session.user.id], // Owner is automatically a coach
+      coaches: [
+        {
+          user: session.user.id,
+          coachColor: "#3b82f6", // optional, will use default if omitted
+        },
+      ],      
     })
 
     await team.save()

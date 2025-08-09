@@ -15,11 +15,15 @@ export async function GET() {
 
     // Get teams where user is owner or coach
     const teams = await Team.find({
-      $or: [{ owner: session.user.id }, { coaches: session.user.id }],
+      $or: [
+        { owner: session.user.id },
+        { "coaches.user": session.user.id }
+      ],
     })
       .populate("owner", "name email")
-      .populate("coaches", "name email")
+      .populate("coaches.user", "name email") // populate user inside coaches
       .sort({ createdAt: -1 })
+      .lean() // optional, returns plain objects for easier mapping    
 
     return NextResponse.json({ teams }, { status: 200 })
   } catch (error) {

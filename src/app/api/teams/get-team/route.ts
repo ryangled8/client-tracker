@@ -30,14 +30,18 @@ export async function GET(req: Request) {
 
     const team = await Team.findById(teamId)
       .populate("owner", "name email")
-      .populate("coaches", "name email")
+      .populate({
+        path: "coaches.user",
+        select: "name email"
+      })
       .populate({
         path: "clients",
         populate: {
           path: "assignedCoach",
-          select: "name email",
-        },
+          select: "name email"
+        }
       })
+
 
     if (!team) {
       return NextResponse.json({ error: "Team not found" }, { status: 404 })
@@ -46,7 +50,7 @@ export async function GET(req: Request) {
     // Check if user has access to this team
     const hasAccess =
       team.owner._id.toString() === session.user.id ||
-      team.coaches.some((coach: any) => coach._id.toString() === session.user.id)
+      team.coaches.some((coach: any) => coach.user._id.toString() === session.user.id)
 
     if (!hasAccess) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 })

@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,40 +22,23 @@ import {
 } from "@/components/ui/dialog";
 
 import { toast } from "sonner";
-import { Settings, Sparkles } from "lucide-react";
+import { Check, Settings, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-interface TeamSettings {
-  clientFormFields: {
-    name: boolean;
-    email: boolean;
-    phone: boolean;
-    age: boolean;
-    gender: boolean;
-    assignedCoach: boolean;
-    trainingPackage: boolean;
-    renewalCallDate: boolean;
-    progressCallDate: boolean;
-    planUpdateDate: boolean;
-    currentWeight: boolean;
-    targetWeight: boolean;
-    height: boolean;
-    status: boolean;
-    membershipType: boolean;
-    startDate: boolean;
-    notes: boolean;
-    paymentDate: boolean;
-  };
-  noticePeriodWeeks: number;
-  dateFormat: "dd/mm/yyyy" | "mm/dd/yyyy";
-}
+import { Coach, TeamSettings } from "@/types";
+import { COLOR_PALETTE } from "./training-packages";
 
 interface Team {
   _id: string;
   name: string;
   settings: TeamSettings;
+  coaches: Coach[];
+  owner: {
+    _id: string;
+    name: string;
+    email: string;
+  };
 }
 
 interface TeamSettingsModalProps {
@@ -123,6 +107,9 @@ export function TeamSettingsModal({
   const [teamName, setTeamName] = useState(team.name);
   const [settings, setSettings] = useState<TeamSettings>(team.settings);
   const [activeTab, setActiveTab] = useState("general");
+  const [pendingRemovalIds, setPendingRemovalIds] = React.useState<string[]>(
+    []
+  );
 
   const handleFieldToggle = (
     field: keyof TeamSettings["clientFormFields"],
@@ -161,6 +148,8 @@ export function TeamSettingsModal({
     }
 
     setSaving(true);
+    const removeCoachIds = pendingRemovalIds;
+
     try {
       const response = await fetch("/api/teams/update-settings", {
         method: "PUT",
@@ -169,6 +158,8 @@ export function TeamSettingsModal({
           teamId: team._id,
           name: teamName,
           settings,
+          coaches: localCoaches,
+          removeCoachIds,
         }),
       });
 
@@ -177,6 +168,7 @@ export function TeamSettingsModal({
       if (response.ok) {
         setDialogOpen(false);
         onSettingsUpdated();
+        setPendingRemovalIds([]);
         toast.success("Team settings updated successfully");
       } else {
         toast.error(data.error || "Failed to update team settings");
@@ -221,6 +213,61 @@ export function TeamSettingsModal({
     setDeleteConfirmation("");
   };
 
+  // Manage coach removal in local state
+  const [localCoaches, setLocalCoaches] = useState(team.coaches);
+
+  React.useEffect(() => {
+    setLocalCoaches(team.coaches);
+  }, [dialogOpen, team.coaches]);
+
+  // Update Specific Coach Color
+  const updateCoachColor = (coachId: string, color: string) => {
+    setLocalCoaches((prev) =>
+      prev.map((c) => (c._id === coachId ? { ...c, coachColor: color } : c))
+    );
+  };
+
+  // Remove Coach
+  function removeCoach(coachId: string) {
+    setPendingRemovalIds((prev) => [...prev, coachId]);
+  }
+
+  // Coach Color picker
+  const ColorPicker = ({
+    selectedColor,
+    onColorChange,
+  }: {
+    selectedColor: string;
+    onColorChange: (color: string) => void;
+  }) => (
+    <div>
+      <Label>Package Color</Label>
+      <div className="grid grid-cols-12 gap-2 mt-2">
+        {COLOR_PALETTE.map((color) => (
+          <button
+            key={color.value}
+            type="button"
+            className={`aspect-square col-span-1 rounded-sm cursor-pointer transition-all duration-200 hover:scale-110 ${
+              selectedColor === color.value
+                ? "border-gray-900 "
+                : "border-gray-300"
+            }`}
+            style={{ backgroundColor: color.value }}
+            onClick={() => onColorChange(color.value)}
+            title={color.name}
+          >
+            {selectedColor === color.value && (
+              <Check className="size-4 text-white mx-auto" />
+            )}
+          </button>
+        ))}
+      </div>
+      <p className="text-xs text-gray-500 mt-2">
+        Choose a color to identify this package
+      </p>
+    </div>
+  );
+
   return (
     <Dialog
       open={dialogOpen}
@@ -264,10 +311,11 @@ export function TeamSettingsModal({
           {/* General Tab */}
           <TabsContent value="general">
             <>
-              <p className="text-sm text-blk-60 border-l-4 border-l-blue-600 p-2 mb-6">
-                Update team name, notice period and date format.
+              <p className="text-sm text-blk-60 border-l-4 border-l-blue-600 px-2 py-1 mb-6">
+                Manage your team and coaches
               </p>
 
+              {/* Manage team */}
               <div>
                 <Label htmlFor="teamName">Team Name</Label>
                 <Input
@@ -326,13 +374,69 @@ export function TeamSettingsModal({
                   </Select>
                 </div>
               </div>
+
+              {/* Manage Coaches */}
+              {localCoaches.map((coach) => {
+                const isPendingRemoval = pendingRemovalIds.includes(coach._id);
+                const isOwner = coach.user._id === team.owner._id; // adjust based on your data shape
+
+                return (
+                  <div
+                    key={coach._id}
+                    className={`texs-sm space-y-2 border-t pt-4 mt-4 flex items-center justify-between ${
+                      isPendingRemoval ? "opacity-50" : ""
+                    }`}
+                  >
+                    <div>
+                      <p>{coach.user.name}</p>
+                      <p>{coach.user.email}</p>
+                    </div>
+
+                    <ColorPicker
+                      selectedColor={coach.coachColor}
+                      onColorChange={(color) =>
+                        updateCoachColor(coach._id, color)
+                      }
+                      disabled={isPendingRemoval}
+                    />
+
+                    {isOwner ? (
+                      <Button variant="secondary" size="sm" disabled>
+                        Owner
+                      </Button>
+                    ) : isPendingRemoval ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setPendingRemovalIds((ids) =>
+                            ids.filter((id) => id !== coach._id)
+                          )
+                        }
+                      >
+                        Undo
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() =>
+                          setPendingRemovalIds((ids) => [...ids, coach._id])
+                        }
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+                );
+              })}
             </>
           </TabsContent>
 
           {/* Client Form Fields Tab */}
           <TabsContent value="formFields">
             <>
-              <p className="text-sm text-blk-60 border-l-4 border-l-blue-600 p-2 mb-6">
+              <p className="text-sm text-blk-60 border-l-4 border-l-blue-600 px-2 py-1 mb-6">
                 Select which fields you want to track for clients.
               </p>
 
@@ -416,7 +520,7 @@ export function TeamSettingsModal({
           {/* Settings / Danger Zone Tab */}
           <TabsContent value="settings">
             <>
-              <p className="text-sm text-blk-60 border-l-4 border-l-red-600 p-2 mb-6">
+              <p className="text-sm text-blk-60 border-l-4 border-l-red-600 px-2 py-1 mb-6">
                 Permanently delete this team and all associated data.
               </p>
 

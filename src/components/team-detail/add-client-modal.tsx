@@ -22,13 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
-import type { TeamSettings } from "@/types";
-
-interface Coach {
-  _id: string;
-  name: string;
-  email: string;
-}
+import type { Coach, TeamSettings } from "@/types";
 
 interface Package {
   packageName: string;
@@ -236,7 +230,7 @@ export function AddClientModal({
         </DialogHeader>
 
         <div>
-          <p className="text-sm text-blk-60 border-l-4 border-l-blue-600 p-2 mb-6">
+          <p className="text-sm text-blk-60 border-l-4 border-l-blue-600 px-2 py-1 mb-6">
             Input fields can be customised via settings.
           </p>
 

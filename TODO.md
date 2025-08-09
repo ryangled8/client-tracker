@@ -16,7 +16,7 @@ Modals
 - TSM > General: Add metrics (kg/lbs/cm/inch/feet)
 
 Table
-- Coach Colour
+- Coach Colour - pass colour to clienttable.tsx
 - Table spacing on RHS
 
 --
@@ -43,6 +43,7 @@ Cleanup / Fixes:
 Add team error: [MongooseError: Operation `teams.insertOne()` buffering timed out after 10000ms]
  POST /api/teams/add-team 500 in 10996ms
 Code that needs to change to toast: 'alert("Error creating team");'
+- Might be calling /invites/pending api twice - once in the [id]/page.ts parent and once in the pendingInvites.tsx component.
 
 ---
 

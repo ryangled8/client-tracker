@@ -45,23 +45,25 @@ export async function PUT(req: Request) {
     }
 
     if (action === "accept") {
-      // Add user to team using Team model
+      // Add user to team coaches array with default coachColor
       await Team.findByIdAndUpdate(invite.team._id, {
-        $addToSet: { coaches: session.user.id },
+        $addToSet: {
+          coaches: { user: session.user.id, coachColor: "#3b82f6" }
+        },
       })
-
+    
       // Update user's memberTeams using User model
       await User.findByIdAndUpdate(session.user.id, {
         $addToSet: { memberTeams: invite.team._id },
       })
-
+    
       // Update invite status
       await TeamInvite.findByIdAndUpdate(inviteId, {
         status: "accepted",
         respondedAt: new Date(),
         invitee: session.user.id,
       })
-
+    
       return NextResponse.json({ message: "Invitation accepted successfully" }, { status: 200 })
     } else {
       // Decline invitation
