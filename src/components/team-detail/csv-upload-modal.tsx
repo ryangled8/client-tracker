@@ -22,28 +22,17 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import {
   Plus,
-  Upload,
   FileText,
   AlertCircle,
   CheckCircle2,
-  Download,
-  Users,
-  Settings,
-  UserCheck,
   ArrowRight,
   ArrowLeft,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AddPackageModal } from "./add-package-modal";
-import type { TeamSettings } from "@/types";
+import type { Coach, TeamSettings } from "@/types";
 import { CSVStepCard } from "./csv-step-card";
 import Link from "next/link";
-
-interface Coach {
-  _id: string;
-  name: string;
-  email: string;
-}
 
 interface Package {
   packageName: string;
@@ -1121,7 +1110,7 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
                                 key={`bulk-coach-${coach._id}-${index}`}
                                 value={coach._id}
                               >
-                                {coach.name}
+                                {coach.user.name}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -1245,7 +1234,7 @@ export const CSVUploadModal: React.FC<CSVUploadModalProps> = ({
                                         key={`client-${index}-coach-${coach._id}-${coachIndex}`}
                                         value={coach._id}
                                       >
-                                        {coach.name}
+                                        {coach.user.name}
                                       </SelectItem>
                                     ))}
                                   </SelectContent>

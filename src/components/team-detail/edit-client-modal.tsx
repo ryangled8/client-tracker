@@ -22,13 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import type { TeamSettings } from "@/types";
-
-interface Coach {
-  _id: string;
-  name: string;
-  email: string;
-}
+import type { Coach, TeamSettings } from "@/types";
 
 interface Package {
   packageName: string;
@@ -371,7 +365,7 @@ export function EditClientModal({
                       key={`edit-coach-${coach._id}-${index}`}
                       value={coach._id}
                     >
-                      {coach.name}
+                      {coach.user.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
