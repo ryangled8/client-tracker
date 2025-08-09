@@ -9,7 +9,7 @@ Date calcs & Mapping - Done but need to thoroughly test and check:
 
 UI TIME:
 Table
-- Coach Colour - pass coachColour to badges on clienttable.tsx
+- Check if expanded is infact showing the next future date after the upcoming one
 - Table spacing on RHS
 
 Modals

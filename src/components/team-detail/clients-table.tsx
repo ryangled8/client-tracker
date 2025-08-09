@@ -42,13 +42,14 @@ import {
   X,
   EyeIcon,
 } from "lucide-react";
-import type { TeamSettings } from "@/types";
+import type { Coach, TeamSettings } from "@/types";
 import {
   calculateClientDates,
   formatDateForDisplay,
 } from "@/utils/dateCalculations";
 import { EditClientModal } from "./edit-client-modal";
 import { Tag } from "@/components/tag";
+import { Badge } from "../ui/badge";
 
 // Remove the existing helper functions and replace with:
 const isAfter = (date1: Date, date2: Date): boolean => {
@@ -70,12 +71,6 @@ const addWeeks = (date: Date, weeks: number): Date => {
   result.setDate(result.getDate() + weeks * 7);
   return result;
 };
-
-interface Coach {
-  _id: string;
-  name: string;
-  email: string;
-}
 
 interface Package {
   packageName: string;
@@ -244,6 +239,7 @@ export function ClientsTable({
     sortBy !== "newest" ||
     dueSoonFilter ||
     overdueFilter;
+
   // Save filters to localStorage whenever they change
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -496,6 +492,9 @@ export function ClientsTable({
         (client) => client.assignedCoach._id === coachFilter
       );
     }
+
+    console.log("Coaches:", coaches);
+    console.log("Clients:", clients);
 
     // Package filter
     if (packageFilter !== "all") {
@@ -794,7 +793,6 @@ export function ClientsTable({
 
   const isCompact = tableView === "compact";
   const cellPadding = isCompact ? "px-3 py-1.5" : "px-4 py-3";
-
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-2">
@@ -968,7 +966,7 @@ export function ClientsTable({
                   key={`filter-coach-${coach._id}-${index}`}
                   value={coach._id}
                 >
-                  {coach.name}
+                  {coach.user.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -1221,8 +1219,27 @@ export function ClientsTable({
                         </TableCell>
 
                         <TableCell className={`border-l ${cellPadding}`}>
-                          {client.assignedCoach && client.assignedCoach.name
-                            ? client.assignedCoach.name
+                          {client.assignedCoach && client.assignedCoach._id
+                            ? (() => {
+                                const coach = coaches.find(
+                                  (c) => c.user._id === client.assignedCoach._id
+                                );
+
+                                return coach ? (
+                                  <Badge
+                                    className="rounded-full tracking-wide"
+                                    style={{
+                                      backgroundColor: coach.coachColor,
+                                      color: "#ffffff",
+                                      borderColor: coach.coachColor,
+                                    }}
+                                  >
+                                    {client.assignedCoach.name}
+                                  </Badge>
+                                ) : (
+                                  <>{client.assignedCoach.name}</>
+                                );
+                              })()
                             : "Unassigned"}
                         </TableCell>
 

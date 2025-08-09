@@ -30,28 +30,34 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "Team not found" }, { status: 404 });
     }
 
-    const hasAccess = team.owner.toString() === session.user.id || team.coaches.includes(session.user.id);
+    const hasAccess =
+      team.owner.toString() === session.user.id || team.coaches.some((c: any) => c.user.equals(session.user.id));
+
     if (!hasAccess) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
-    // If assignedCoach is being updated, replace with full coach object including coachColor
     if (updateData.assignedCoach) {
-      const coach = team.coaches.find(
-        (c) => c._id.toString() === (updateData.assignedCoach._id ? updateData.assignedCoach._id.toString() : updateData.assignedCoach.toString())
-      );
+    const coach = team.coaches.find(
+      (c) =>
+        c.user.toString() ===
+        (updateData.assignedCoach._id
+          ? updateData.assignedCoach._id.toString()
+          : updateData.assignedCoach.toString())
+    );
 
-      if (!coach) {
-        return NextResponse.json({ error: "Assigned coach not found in team" }, { status: 400 });
-      }
-
-      updateData.assignedCoach = {
-        _id: coach._id,
-        name: coach.user.name,
-        email: coach.user.email,
-        coachColor: coach.coachColor,
-      };
+    if (!coach) {
+      return NextResponse.json({ error: "Assigned coach not found in team" }, { status: 400 });
     }
+
+    updateData.assignedCoach = {
+      _id: coach.user._id || coach.user, // just in case it's an ObjectId or populated object
+      name: coach.user.name,
+      email: coach.user.email,
+      coachColor: coach.coachColor,
+    };
+    }
+
 
     const updatedClient = await Client.findByIdAndUpdate(
       clientId,
