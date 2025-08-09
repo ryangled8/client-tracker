@@ -357,14 +357,11 @@ export function EditClientModal({
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a coach" />
+                  <SelectValue placeholder="Select coach" />
                 </SelectTrigger>
                 <SelectContent>
-                  {coaches.map((coach, index) => (
-                    <SelectItem
-                      key={`edit-coach-${coach._id}-${index}`}
-                      value={coach._id}
-                    >
+                  {coaches.map((coach) => (
+                    <SelectItem key={coach.user._id} value={coach.user._id}>
                       {coach.user.name}
                     </SelectItem>
                   ))}

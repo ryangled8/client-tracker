@@ -8,16 +8,16 @@ Date calcs & Mapping - Done but need to thoroughly test and check:
 --
 
 UI TIME:
+Table
+- Coach Colour - pass coachColour to badges on clienttable.tsx
+- Table spacing on RHS
+
 Modals
 - CSV Modal
 -- Add an 'uploading' state to show user that the upload is acutally happening...
 -- Fix 'add package' modal from the button on the CSV modal
 
 - TSM > General: Add metrics (kg/lbs/cm/inch/feet)
-
-Table
-- Coach Colour - pass colour to clienttable.tsx
-- Table spacing on RHS
 
 --
 

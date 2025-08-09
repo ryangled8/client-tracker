@@ -81,7 +81,7 @@ export function AddClientModal({
         paymentDate: new Date(),
         age: "",
         gender: "",
-        assignedCoach: coaches.length > 0 ? coaches[0]._id : "",
+        assignedCoach: coaches.map((c) => c.user._id)[0] || "", // map over coaches and set the first coach as default if available
         selectedPackage:
           packages.filter((p) => p.isActive).length > 0
             ? packages.filter((p) => p.isActive)[0].packageName
@@ -270,7 +270,7 @@ export function AddClientModal({
             {/* Assigned Coach - Always required */}
             <div>
               <Label htmlFor="assignedCoach" className="font-medium">
-                Assigned Coach *
+                Assigned Coach*
               </Label>
               <Select
                 value={formData.assignedCoach}
@@ -282,12 +282,9 @@ export function AddClientModal({
                   <SelectValue placeholder="Select coach" />
                 </SelectTrigger>
                 <SelectContent>
-                  {coaches.map((coach, index) => (
-                    <SelectItem
-                      key={`add-coach-${coach._id}-${index}`}
-                      value={coach._id}
-                    >
-                      {coach.name}
+                  {coaches.map((coach) => (
+                    <SelectItem key={coach.user._id} value={coach.user._id}>
+                      {coach.user.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
