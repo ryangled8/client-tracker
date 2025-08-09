@@ -14,13 +14,17 @@ export function CoachList({ coaches, ownerId }: CoachListProps) {
           <span>{coach.user.name}</span>
 
           {coach.user._id === ownerId && (
-            <Badge style={{ backgroundColor: coach.coachColor, color: "#fff" }}>
+            <Badge
+              className="rounded-full"
+              style={{ backgroundColor: coach.coachColor, color: "#fff" }}
+            >
               Head Coach
             </Badge>
           )}
 
           {coach.user._id !== ownerId && (
             <Badge
+              className="rounded-full"
               style={{
                 backgroundColor: coach.coachColor,
                 color: "#fff",

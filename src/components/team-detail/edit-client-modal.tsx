@@ -228,17 +228,17 @@ export function EditClientModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Client: {client.name}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-5 mt-4">
             {/* Name - Always required */}
             <div>
-              <Label htmlFor="edit-name">
-                Name <span className="text-red-500">*</span>
+              <Label htmlFor="edit-name" className="gap-1">
+                Name<span className="text-red-500">*</span>
               </Label>
               <Input
                 id="edit-name"
@@ -248,6 +248,97 @@ export function EditClientModal({
                 required
               />
             </div>
+
+            {/* Assigned Coach - Required */}
+            <div>
+              <Label htmlFor="edit-assignedCoach" className="gap-1">
+                Assigned Coach <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={formData.assignedCoach}
+                onValueChange={(value) =>
+                  handleInputChange("assignedCoach", value)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select coach" />
+                </SelectTrigger>
+                <SelectContent>
+                  {coaches.map((coach) => (
+                    <SelectItem key={coach.user._id} value={coach.user._id}>
+                      {coach.user.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Training Package - Required */}
+            <div>
+              <Label htmlFor="edit-selectedPackage" className="gap-1">
+                Training Package <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={formData.selectedPackage}
+                onValueChange={(value) =>
+                  handleInputChange("selectedPackage", value)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a package" />
+                </SelectTrigger>
+                <SelectContent>
+                  {packages
+                    .filter((pkg) => pkg.isActive)
+                    .map((pkg, index) => (
+                      <SelectItem
+                        key={`edit-package-${pkg.packageName}-${index}`}
+                        value={pkg.packageName}
+                      >
+                        {pkg.packageName}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Start Date - Required */}
+            {settings.clientFormFields.startDate && (
+              <div>
+                <Label htmlFor="edit-startDate" className="gap-1">
+                  Start Date <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="edit-startDate"
+                  type="date"
+                  value={formData.startDate}
+                  onChange={(e) =>
+                    handleInputChange("startDate", e.target.value)
+                  }
+                  required
+                />
+              </div>
+            )}
+
+            {/* Status - Required */}
+            {settings.clientFormFields.status && (
+              <div>
+                <Label htmlFor="edit-status">Status</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) => handleInputChange("status", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                    <SelectItem value="paused">Paused</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             {/* Email - Optional */}
             {settings.clientFormFields.email && (
@@ -340,97 +431,6 @@ export function EditClientModal({
                     <SelectItem value="prefer-not-to-say">
                       Prefer not to say
                     </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {/* Assigned Coach - Required */}
-            <div>
-              <Label htmlFor="edit-assignedCoach">
-                Assigned Coach <span className="text-red-500">*</span>
-              </Label>
-              <Select
-                value={formData.assignedCoach}
-                onValueChange={(value) =>
-                  handleInputChange("assignedCoach", value)
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select coach" />
-                </SelectTrigger>
-                <SelectContent>
-                  {coaches.map((coach) => (
-                    <SelectItem key={coach.user._id} value={coach.user._id}>
-                      {coach.user.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Training Package - Required */}
-            <div>
-              <Label htmlFor="edit-selectedPackage">
-                Training Package <span className="text-red-500">*</span>
-              </Label>
-              <Select
-                value={formData.selectedPackage}
-                onValueChange={(value) =>
-                  handleInputChange("selectedPackage", value)
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a package" />
-                </SelectTrigger>
-                <SelectContent>
-                  {packages
-                    .filter((pkg) => pkg.isActive)
-                    .map((pkg, index) => (
-                      <SelectItem
-                        key={`edit-package-${pkg.packageName}-${index}`}
-                        value={pkg.packageName}
-                      >
-                        {pkg.packageName}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Start Date - Required */}
-            {settings.clientFormFields.startDate && (
-              <div>
-                <Label htmlFor="edit-startDate">
-                  Start Date <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="edit-startDate"
-                  type="date"
-                  value={formData.startDate}
-                  onChange={(e) =>
-                    handleInputChange("startDate", e.target.value)
-                  }
-                  required
-                />
-              </div>
-            )}
-
-            {/* Status - Required */}
-            {settings.clientFormFields.status && (
-              <div>
-                <Label htmlFor="edit-status">Status</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) => handleInputChange("status", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                    <SelectItem value="paused">Paused</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

@@ -8,7 +8,9 @@ Date calcs & Mapping - Done but need to thoroughly test and check:
 --
 
 UI TIME:
-Table
+1. Settings > General > Coaches UI
+
+2. Table
 - Check if expanded is infact showing the next future date after the upcoming one
 - Table spacing on RHS
 

@@ -234,7 +234,7 @@ export function AddClientModal({
             Input fields can be customised via settings.
           </p>
 
-          <div className="grid grid-cols-1 gap-5 mt-4">
+          <div className="space-y-5 mt-4">
             {/* Name - Always required */}
             <div>
               <Label htmlFor="name" className="font-medium">

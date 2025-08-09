@@ -1025,7 +1025,7 @@ export function ClientsTable({
       </div>
 
       {/* Table */}
-      <div className={`rounded-sm border ${isCompact ? "" : "border-2"}`}>
+      <div className="rounded-sm border">
         <Table>
           <TableHeader>
             <TableRow>
