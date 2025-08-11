@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth"
 import Team from "@/models/Team"
 import User from "@/models/User"
 import connectMongoDB from "@/lib/mongodb"
+import { checkUserLimit } from "@/lib/subscription"
 
 export async function POST(req: Request) {
   try {
@@ -11,6 +12,16 @@ export async function POST(req: Request) {
     if (!session || !session.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
+
+    // --- Subscription Limit Check ---
+    const { allowed, limit } = await checkUserLimit(session.user.id, "teams")
+    if (!allowed) {
+      return NextResponse.json(
+        { error: `Team limit of ${limit} reached. Please upgrade your plan.` },
+        { status: 403 }, // 403 Forbidden is appropriate for plan limits
+      )
+    }
+    // --- End of Check ---
 
     const { name } = await req.json()
 
@@ -24,12 +35,7 @@ export async function POST(req: Request) {
     const team = new Team({
       name,
       owner: session.user.id,
-      coaches: [
-        {
-          user: session.user.id,
-          coachColor: "#3b82f6", // optional, will use default if omitted
-        },
-      ],      
+      coaches: [session.user.id], // Owner is automatically a coach
     })
 
     await team.save()
@@ -42,6 +48,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ team }, { status: 201 })
   } catch (error) {
     console.error("Add team error:", error)
+    // Handle potential errors from checkUserLimit
+    if (error instanceof Error) {
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
     return NextResponse.json({ error: "Error creating team" }, { status: 500 })
   }
 }

@@ -6,6 +6,7 @@ import User from "@/models/User"
 import TeamInvite from "@/models/TeamInvite"
 import connectMongoDB from "@/lib/mongodb"
 import { randomBytes } from "crypto"
+import { checkUserLimit } from "@/lib/subscription" // Import the utility
 
 export async function POST(req: Request) {
   try {
@@ -22,7 +23,6 @@ export async function POST(req: Request) {
 
     await connectMongoDB()
 
-    // Verify user has permission to invite to this team
     const team = await Team.findById(teamId)
     if (!team) {
       return NextResponse.json({ error: "Team not found" }, { status: 404 })
@@ -33,13 +33,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "You don't have permission to invite to this team" }, { status: 403 })
     }
 
-    // Check if user is already a team member
+    // --- Subscription Limit Check (only applies to the team owner) ---
+    if (team.owner.toString() === session.user.id) {
+      const { allowed, limit } = await checkUserLimit(session.user.id, "teamMembers")
+      if (!allowed) {
+        return NextResponse.json(
+          { error: `Team member invite limit of ${limit} reached. Please upgrade your plan.` },
+          { status: 403 },
+        )
+      }
+    }
+    // --- End of Check ---
+
     const existingUser = await User.findOne({ email: email.toLowerCase() })
     if (existingUser && team.coaches.includes(existingUser._id)) {
       return NextResponse.json({ error: "User is already a member of this team" }, { status: 400 })
     }
 
-    // Check for existing invite (any status)
     const existingInvite = await TeamInvite.findOne({
       team: teamId,
       inviteeEmail: email.toLowerCase(),
@@ -53,7 +63,6 @@ export async function POST(req: Request) {
         existingInvite.status === "expired" ||
         existingInvite.status === "accepted"
       ) {
-        // Allow re-inviting users who have declined, expired invites, or even previously accepted but may have left
         const token = randomBytes(32).toString("hex")
         existingInvite.status = "pending"
         existingInvite.message = message || ""
@@ -63,11 +72,10 @@ export async function POST(req: Request) {
         existingInvite.respondedAt = undefined
 
         await existingInvite.save()
-        return NextResponse.json({ message: "Invitation sent successfully" }, { status: 201 })
+        return NextResponse.json({ message: "Invitation re-sent successfully" }, { status: 200 })
       }
     }
 
-    // Create new invitation if none exists
     const token = randomBytes(32).toString("hex")
     const invite = new TeamInvite({
       team: teamId,
@@ -84,7 +92,10 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ message: "Invitation sent successfully" }, { status: 201 })
   } catch (error) {
-    console.error("Invite coach error:", error)
+    console.error("Invite send error:", error)
+    if (error instanceof Error) {
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
     return NextResponse.json({ error: "Error sending invitation" }, { status: 500 })
   }
 }

@@ -41,8 +41,8 @@ const secondaryNavLinks = [
     iconOnly: true,
   },
   {
-    href: "/settings",
-    label: "Settings",
+    href: "/account",
+    label: "Account",
     icon: "Settings",
     iconOnly: true,
   },

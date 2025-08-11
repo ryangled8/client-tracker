@@ -1,3 +1,5 @@
+stripe listen --forward-to localhost:3000/api/stripe/webhook
+
 TODO:
 
 Date calcs & Mapping - Done but need to thoroughly test and check:
@@ -24,11 +26,10 @@ Modals
 --
 
 Payment Plan Schema:
-Free
-Basic
-Pro
-Team
-Etc
+Free - up tp 5 clients, no team members, add one bolt on of choice, can create/join one team
+Basic - up to 25 clients, one team member, add two bolt ons of choice, can create/join one team
+Pro - up tp 50 clients, two team members, add three bolt ons of choice, can create/join up to two teams
+Pro Plus - unlimited clients, unlimited team members, unlimited bolt ons, can create/join unlimited team
 
 --
 

@@ -1,10 +1,10 @@
-
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import Client from "@/models/Client"
 import Team from "@/models/Team"
 import connectMongoDB from "@/lib/mongodb"
+import { checkUserLimit } from "@/lib/subscription" // Import the new utility
 
 export async function POST(req: Request) {
   try {
@@ -15,8 +15,6 @@ export async function POST(req: Request) {
 
     const clientData = await req.json()
     const { name, team: teamId, assignedCoach, selectedPackage, startDate } = clientData
-
-    console.log("Received client data:", clientData)
 
     if (!name || !teamId || !assignedCoach || !selectedPackage) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
@@ -30,22 +28,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Team not found" }, { status: 404 })
     }
 
-    const hasAccess =
-      team.owner.toString() === session.user.id || team.coaches.some((c: any) => c.user.equals(session.user.id))
+    // --- Subscription Limit Check ---
+    // The limit is checked against the team owner's subscription
+    const { allowed, limit } = await checkUserLimit(team.owner.toString(), "clients")
+    if (!allowed) {
+      return NextResponse.json(
+        { error: `Client limit of ${limit} reached for this team's owner. Please ask them to upgrade.` },
+        { status: 403 },
+      )
+    }
+    // --- End of Check ---
+
+    const hasAccess = team.owner.toString() === session.user.id || team.coaches.includes(session.user.id)
 
     if (!hasAccess) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 })
     }
 
-    // Verify the assigned coach is part of the team
-    const isCoachInTeam = team.coaches.some((c: any) => c.user.equals(assignedCoach))
-
-    if (!isCoachInTeam) {
-      return NextResponse.json({ error: "Assigned coach is not a member of this team." }, { status: 400 })
-    }
-
     // Verify the selected package exists in the team
-    const packageExists = team.packages.some((pkg: any) => pkg.packageName === selectedPackage && pkg.isActive)
+    const packageExists = team.packages.some((pkg) => pkg.packageName === selectedPackage && pkg.isActive)
     if (!packageExists) {
       return NextResponse.json({ error: "Selected training package not found or inactive" }, { status: 400 })
     }
@@ -103,6 +104,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ client }, { status: 201 })
   } catch (error) {
     console.error("Add client error:", error)
+    if (error instanceof Error) {
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
     return NextResponse.json({ error: "Error creating client" }, { status: 500 })
   }
 }

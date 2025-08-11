@@ -16,13 +16,47 @@ export interface IUser extends Document {
     tableView: "compact" | "relaxed"
   }
 
+  // Subscription details
+  subscription: {
+    planId: "free" | "basic" | "pro" | "team"
+    stripeCustomerId?: string
+    stripeSubscriptionId?: string
+    stripePriceId?: string
+    status: "active" | "canceled" | "past_due" | "incomplete" | "incomplete_expired" | "trialing"
+    currentPeriodEnd?: Date
+  }
+
+  // Store IDs of purchased bolt-ons
+  activeBoltOnIds: string[]
+
   // Metadata
   lastLoginAt?: Date
   createdAt: Date
   updatedAt: Date
 }
 
-const userSchema = new Schema<IUser>(
+const SubscriptionSchema = new mongoose.Schema(
+  {
+    planId: {
+      type: String,
+      required: true,
+      default: "free",
+      enum: ["free", "basic", "pro", "team"],
+    },
+    stripeCustomerId: String,
+    stripeSubscriptionId: String,
+    stripePriceId: String,
+    status: {
+      type: String,
+      enum: ["active", "canceled", "past_due", "incomplete", "incomplete_expired", "trialing"],
+      default: "active",
+    },
+    currentPeriodEnd: Date,
+  },
+  { _id: false },
+)
+
+const UserSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -69,6 +103,19 @@ const userSchema = new Schema<IUser>(
       },
     },
 
+    // Add subscription details
+    subscription: {
+      type: SubscriptionSchema,
+      // Set default subscription for new users
+      default: () => ({ planId: "free", status: "active" }),
+    },
+
+    // Store IDs of purchased bolt-ons
+    activeBoltOnIds: {
+      type: [String],
+      default: [],
+    },
+
     // Metadata
     lastLoginAt: Date,
   },
@@ -78,7 +125,9 @@ const userSchema = new Schema<IUser>(
 )
 
 // Indexes for performance
-userSchema.index({ createdTeams: 1 })
-userSchema.index({ memberTeams: 1 })
+UserSchema.index({ createdTeams: 1 })
+UserSchema.index({ memberTeams: 1 })
 
-export default mongoose.models.User || mongoose.model<IUser>("User", userSchema)
+export const User = mongoose.models.User || mongoose.model<IUser>("User", UserSchema)
+
+export default User
