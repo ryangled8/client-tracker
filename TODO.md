@@ -9,6 +9,16 @@ Date calcs & Mapping - Done but need to thoroughly test and check:
 
 --
 
+Payment Plan Schema:
+Free - up tp 5 clients, no team members, add one bolt on of choice, can create/join one team
+Basic - up to 25 clients, one team member, add two bolt ons of choice, can create/join one team
+Pro - up tp 50 clients, two team members, add three bolt ons of choice, can create/join up to two teams
+Team - unlimited clients, unlimited team members, unlimited bolt ons, can create/join unlimited team
+
+- If we upload via CSV and reach the limit, allow the addition of all clients until the limit is reached and show a new step in the CSV saying limit reached, the following clients weren't added. Upgrade to add more clients.
+
+--
+
 UI TIME:
 1. Settings > General > Coaches UI
 
@@ -22,14 +32,6 @@ Modals
 -- Fix 'add package' modal from the button on the CSV modal
 
 - TSM > General: Add metrics (kg/lbs/cm/inch/feet)
-
---
-
-Payment Plan Schema:
-Free - up tp 5 clients, no team members, add one bolt on of choice, can create/join one team
-Basic - up to 25 clients, one team member, add two bolt ons of choice, can create/join one team
-Pro - up tp 50 clients, two team members, add three bolt ons of choice, can create/join up to two teams
-Pro Plus - unlimited clients, unlimited team members, unlimited bolt ons, can create/join unlimited team
 
 --
 

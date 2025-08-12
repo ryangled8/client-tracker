@@ -2,9 +2,9 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import Team from "@/models/Team"
-import User from "@/models/User"
 import connectMongoDB from "@/lib/mongodb"
 import { checkUserLimit } from "@/lib/subscription"
+import mongoose from "mongoose"
 
 export async function POST(req: Request) {
   try {
@@ -17,8 +17,8 @@ export async function POST(req: Request) {
     const { allowed, limit } = await checkUserLimit(session.user.id, "teams")
     if (!allowed) {
       return NextResponse.json(
-        { error: `Team limit of ${limit} reached. Please upgrade your plan.` },
-        { status: 403 }, // 403 Forbidden is appropriate for plan limits
+        { error: `Team creation limit of ${limit} reached. Please upgrade your plan.` },
+        { status: 403 },
       )
     }
     // --- End of Check ---
@@ -31,21 +31,22 @@ export async function POST(req: Request) {
 
     await connectMongoDB()
 
-    // Create the team
-    const team = new Team({
+    const ownerId = new mongoose.Types.ObjectId(session.user.id)
+
+    const newTeam = new Team({
       name,
-      owner: session.user.id,
-      coaches: [session.user.id], // Owner is automatically a coach
+      owner: ownerId,
+      coaches: [], // The pre-save hook will add the owner to coaches
+      clients: [],
     })
 
-    await team.save()
+    await newTeam.save()
 
-    // Add team to user's createdTeams
-    await User.findByIdAndUpdate(session.user.id, {
-      $addToSet: { createdTeams: team._id },
-    })
+    const populatedTeam = await Team.findById(newTeam._id)
+      .populate("owner", "name email")
+      .populate("coaches.user", "name email")
 
-    return NextResponse.json({ team }, { status: 201 })
+    return NextResponse.json({ team: populatedTeam }, { status: 201 })
   } catch (error) {
     console.error("Add team error:", error)
     // Handle potential errors from checkUserLimit
