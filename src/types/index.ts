@@ -68,13 +68,17 @@ export interface TeamSettings {
 }
 
 interface CoachUser {
-  _id: string;
-  name: string;
-  email: string;
+  _id: string
+  name: string
+  email: string
 }
 
 export interface Coach {
-  _id: string;
-  coachColor: string;
-  user: CoachUser;
+  _id: string
+  coachColor: string
+  user: CoachUser
 }
+
+export type PlanId = "free" | "basic" | "pro" | "team"
+export type BoltOnId = "advanced-analytics" | "priority-support" | "custom-branding"
+export type LimitType = "teams" | "clients" | "teamMembers"

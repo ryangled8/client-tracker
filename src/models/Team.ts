@@ -71,7 +71,7 @@ const teamSchema = new Schema<ITeam>(
         },
         coachColor: {
           type: String,
-          default: "#F9FAFC",
+          default: "#1c1d22",
         },
       },
     ],

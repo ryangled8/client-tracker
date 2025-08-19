@@ -25,8 +25,10 @@ export interface Plan {
   }
 }
 
-export const plans: Plan[] = [
-  {
+type PlanId = Plan["id"]
+
+export const plansMap: Record<PlanId, Plan> = {
+  free: {
     id: "free",
     name: "Free",
     description: "For individuals just getting started.",
@@ -41,7 +43,7 @@ export const plans: Plan[] = [
       boltOns: 0,
     },
   },
-  {
+  basic: {
     id: "basic",
     name: "Basic",
     description: "For small coaches growing their business.",
@@ -57,7 +59,7 @@ export const plans: Plan[] = [
       boltOns: 1,
     },
   },
-  {
+  pro: {
     id: "pro",
     name: "Pro",
     description: "For established coaches and small teams.",
@@ -73,7 +75,7 @@ export const plans: Plan[] = [
       boltOns: 2,
     },
   },
-  {
+  team: {
     id: "team",
     name: "Team",
     description: "For larger teams and agencies.",
@@ -83,13 +85,19 @@ export const plans: Plan[] = [
     },
     features: ["Unlimited clients", "Create up to 2 teams", "Invite up to 2 team members", "Unlimited bolt-ons"],
     limits: {
-      clients: Number.POSITIVE_INFINITY,
+      clients: -1, // Use -1 for unlimited instead of Number.POSITIVE_INFINITY
       teams: 2,
       teamMembers: 2,
-      boltOns: Number.POSITIVE_INFINITY,
+      boltOns: -1, // Use -1 for unlimited instead of Number.POSITIVE_INFINITY
     },
   },
-]
+}
+
+const plans: Plan[] = Object.values(plansMap)
+export default plans
+
+// Also export as named export for backward compatibility
+export { plans }
 
 export interface BoltOn {
   id: string
@@ -113,9 +121,11 @@ export interface BoltOn {
   featureKey?: "clientCheckIn" | "calendarIntegration" | "advancedAnalytics"
 }
 
+type BoltOnId = BoltOn["id"]
+
 // Example bolt-ons updated with new pricing structure
-export const boltOns: BoltOn[] = [
-  {
+export const boltOns: Record<BoltOnId, BoltOn> = {
+  bolt_clients_5: {
     id: "bolt_clients_5",
     name: "+5 Clients",
     description: "Increase your client limit by 5.",
@@ -125,7 +135,7 @@ export const boltOns: BoltOn[] = [
     type: "limit",
     limit: { key: "clients", increase: 5 },
   },
-  {
+  bolt_team_member_1: {
     id: "bolt_team_member_1",
     name: "+1 Team Member",
     description: "Increase your team member invite limit by 1.",
@@ -135,7 +145,7 @@ export const boltOns: BoltOn[] = [
     type: "limit",
     limit: { key: "teamMembers", increase: 1 },
   },
-  {
+  bolt_feature_checkin: {
     id: "bolt_feature_checkin",
     name: "Client Check-in Feature",
     description: "Unlock the client check-in feature.",
@@ -145,4 +155,6 @@ export const boltOns: BoltOn[] = [
     type: "feature",
     featureKey: "clientCheckIn",
   },
-]
+}
+
+export const boltOnsArray: BoltOn[] = Object.values(boltOns)
