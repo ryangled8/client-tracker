@@ -2,18 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  Users,
-  Bell,
-  Settings,
-  HelpCircle,
-} from "lucide-react";
+import { Users, Bell, Settings, HelpCircle } from "lucide-react";
 import React from "react";
 
 // Icon mapping
 const iconMap = {
-  LayoutDashboard,
   Users,
   Bell,
   Settings,
@@ -21,11 +14,6 @@ const iconMap = {
 };
 
 const primaryNavLinks = [
-  {
-    href: "/",
-    label: "Dashboard",
-    icon: "LayoutDashboard",
-  },
   {
     href: "/teams",
     label: "Teams",
@@ -70,7 +58,9 @@ export default function Navigation({ user }: NavigationProps) {
     idx: number
   ) => {
     const Icon = iconMap[link.icon as keyof typeof iconMap];
-    const isActive = pathname === link.href;
+    const isActive =
+      pathname === link.href ||
+      (link.href === "/teams" && pathname.startsWith("/team/"));
 
     return (
       <li key={idx}>
@@ -81,42 +71,60 @@ export default function Navigation({ user }: NavigationProps) {
           } hover:opacity-100`}
         >
           {Icon && <Icon size={16} />}
-
           {!link.iconOnly && <>{link.label}</>}
         </Link>
       </li>
     );
   };
 
+  // Object of authenticated routes
+  const authenticatedRoutes = {
+    "/teams": true,
+    "/team/[id]": true, // use Next.js convention
+    "/invites": true,
+    "/account": true,
+  };
+
+  function pathToRegex(route: string) {
+    // convert Next.js style dynamic segments to regex
+    return new RegExp("^" + route.replace(/\[.*?\]/g, "[^/]+") + "$");
+  }
+
+  function isAuthenticatedRoute(path: string) {
+    return Object.keys(authenticatedRoutes).some((route) =>
+      pathToRegex(route).test(path)
+    );
+  }
+
   return (
     <>
-      {/* <div className="text-xs py-1.5 w-full text-center bg-blk text-white">
-        Clientmap Beta currently free for coaches
-      </div> */}
+      {isAuthenticatedRoute(pathname) ? (
+        <nav className="flex justify-between items-center m-4">
+          {/* Logo */}
+          <div className="w-1/2 flex gap-8">
+            <Link className="f-hm text-lg" href="/">
+              Clientmap
+            </Link>
 
-      <nav className="flex justify-between items-center m-4">
-        {/* Logo */}
-        <div className="w-1/2 flex gap-8">
-          <Link className="f-hm text-lg" href="/">
-            Clientmap
-          </Link>
-
-          {/* Primary nav */}
-          <ul className="flex gap-6 items-center justify-center">
-            {primaryNavLinks.map(renderLink)}
-          </ul>
-        </div>
-
-        {/* Right: Secondary nav + user */}
-        <ul className="w-1/3 flex gap-6 items-center justify-end">
-          {secondaryNavLinks.map(renderLink)}
-          <div className="flex items-center gap-2">
-            {user && <span>{user.name}</span>}
-            Users name here
-            <div className="rounded-full size-6 bg-black"></div>
+            {/* Primary nav */}
+            <ul className="flex gap-6 items-center justify-center">
+              {primaryNavLinks.map(renderLink)}
+            </ul>
           </div>
-        </ul>
-      </nav>
+
+          {/* Right: Secondary nav + user */}
+          <ul className="w-1/3 flex gap-6 items-center justify-end">
+            {secondaryNavLinks.map(renderLink)}
+            <div className="flex items-center gap-2">
+              {user && <span>{user.name}</span>}
+              Users name here
+              <div className="rounded-full size-6 bg-black"></div>
+            </div>
+          </ul>
+        </nav>
+      ) : (
+        <nav>Non-authenticated navigation</nav>
+      )}
     </>
   );
 }

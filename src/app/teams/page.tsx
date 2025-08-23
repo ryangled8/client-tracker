@@ -95,7 +95,7 @@ export default function TeamsPage() {
   }
 
   return (
-    <section className="section-body">
+    <main>
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Teams</h1>
@@ -169,6 +169,6 @@ export default function TeamsPage() {
           ))}
         </div>
       )}
-    </section>
+    </main>
   );
 }

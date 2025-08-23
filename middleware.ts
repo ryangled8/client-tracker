@@ -16,7 +16,7 @@ export default withAuth(
     if (isAuthPage) {
       if (isAuthenticated) {
         // If user is authenticated and tries to access auth pages, redirect to home
-        return NextResponse.redirect(new URL("/", req.url))
+        return NextResponse.redirect(new URL("/teams", req.url))
       }
       // If user is not authenticated and tries to access auth pages, allow access
       return null

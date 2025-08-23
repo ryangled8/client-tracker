@@ -4,6 +4,7 @@ import connectMongoDB from "@/lib/mongodb";
 import { User } from "@/models/User";
 import { SubscriptionClient } from "./subscription-client";
 import { redirect } from "next/navigation";
+import LogoutButton from "@/components/logout-button";
 
 async function getUserSubscription() {
   const session = await getServerSession(authOptions);
@@ -48,6 +49,8 @@ export default async function AccountPage() {
 
   return (
     <div className="container mx-auto py-8">
+      <LogoutButton />
+
       <SubscriptionClient
         currentPlanId={subscription.planId as "free" | "basic" | "pro" | "team"}
         cancelAtPeriodEnd={subscription.cancelAtPeriodEnd}

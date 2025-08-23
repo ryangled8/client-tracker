@@ -56,7 +56,7 @@ export default function RegisterPage() {
 
         if (result?.ok) {
           // Redirect to home page
-          router.push("/");
+          router.push("/teams");
           router.refresh();
         } else {
           // If auto-login fails, redirect to login page with success message

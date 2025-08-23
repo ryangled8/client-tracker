@@ -38,7 +38,7 @@ export default function LoginPage() {
       if (result?.error) {
         setError("Invalid credentials");
       } else if (result?.ok) {
-        router.push("/");
+        router.push("/teams");
         router.refresh();
       }
     } catch (error) {
