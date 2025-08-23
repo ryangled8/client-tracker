@@ -48,7 +48,7 @@ export default async function AccountPage() {
   }
 
   return (
-    <div className="container mx-auto py-8">
+    <section className="container mx-auto py-8">
       <LogoutButton />
 
       <SubscriptionClient
@@ -57,6 +57,6 @@ export default async function AccountPage() {
         scheduledPlanChange={subscription.scheduledPlanChange}
         currentPeriodEnd={subscription.currentPeriodEnd}
       />
-    </div>
+    </section>
   );
 }

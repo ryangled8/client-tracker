@@ -174,7 +174,7 @@ export default function TeamPage() {
   }
 
   return (
-    <main>
+    <section>
       {/* Header */}
       <header className="pb-8 border-b">
         <div className="flex items-center justify-between">
@@ -277,6 +277,6 @@ export default function TeamPage() {
           onClientDeleted={() => fetchTeam(team._id)}
         />
       </div>
-    </main>
+    </section>
   );
 }
