@@ -1,7 +1,9 @@
 import React from "react";
 
-interface VideoDemoProps {}
-
-export const VideoDemo: React.FC<VideoDemoProps> = ({}) => {
-  return <section>Video Demo</section>;
-};
+export default function VideoDemo() {
+  return (
+    <section className="h-[80vh] bg-gray-100">
+      <pre>VideoDemo</pre>
+    </section>
+  );
+}
