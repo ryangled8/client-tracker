@@ -71,7 +71,7 @@ const Card: React.FC<CardProps> = ({ title, description, imgUrl, imgAlt }) => {
 
 export default function Benefits() {
   return (
-    <section className="my-48">
+    <section className="my-24">
       <div>
         <span>+ Benefits</span>
 

@@ -60,7 +60,7 @@ const Card: React.FC<CardProps> = ({ title, description }) => {
 
 export default function TitleWithThreeCards() {
   return (
-    <section className="my-24">
+    <section className="my-48">
       <div>
         <span>+ The Reality</span>
         <h2>
