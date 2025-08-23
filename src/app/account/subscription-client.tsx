@@ -26,9 +26,30 @@ import { manageSubscription, upgradePlan } from "./actions";
 
 type SubscriptionClientProps = {
   currentPlanId: string | null | undefined;
+  cancelAtPeriodEnd?: boolean;
+  scheduledPlanChange?: {
+    newPlanId: string;
+    effectiveDate: Date;
+  };
+  currentPeriodEnd?: Date;
 };
 
-export function SubscriptionClient({ currentPlanId }: SubscriptionClientProps) {
+export function SubscriptionClient({
+  currentPlanId,
+  cancelAtPeriodEnd,
+  scheduledPlanChange,
+  currentPeriodEnd,
+}: SubscriptionClientProps) {
+  console.log("[v0] === SUBSCRIPTION CLIENT PROPS DEBUG ===");
+  console.log("[v0] currentPlanId:", currentPlanId);
+  console.log("[v0] cancelAtPeriodEnd:", cancelAtPeriodEnd);
+  console.log("[v0] scheduledPlanChange:", scheduledPlanChange);
+  console.log(
+    "[v0] scheduledPlanChange?.effectiveDate:",
+    scheduledPlanChange?.effectiveDate
+  );
+  console.log("[v0] currentPeriodEnd:", currentPeriodEnd);
+
   const [billingInterval, setBillingInterval] = useState<
     "monthly" | "annually"
   >("monthly");
@@ -94,16 +115,30 @@ export function SubscriptionClient({ currentPlanId }: SubscriptionClientProps) {
     }
   };
 
+  const isDowngrade = (targetPlanId: string) => {
+    const currentLevel =
+      planHierarchy[currentPlanId as keyof typeof planHierarchy] ?? 0;
+    const targetLevel =
+      planHierarchy[targetPlanId as keyof typeof planHierarchy] ?? 0;
+    return targetLevel < currentLevel;
+  };
+
   const canDowngradeTo = (targetPlanId: string) => {
     if (!userUsage) return true; // Allow if no usage data
 
     const targetPlan = plans.find((p) => p.id === targetPlanId);
     if (!targetPlan) return false;
 
-    return (
-      userUsage.teams <= targetPlan.limits.teams &&
-      userUsage.clients <= targetPlan.limits.clients
-    );
+    const teamLimit =
+      targetPlan.limits.teams === -1
+        ? Number.POSITIVE_INFINITY
+        : targetPlan.limits.teams;
+    const clientLimit =
+      targetPlan.limits.clients === -1
+        ? Number.POSITIVE_INFINITY
+        : targetPlan.limits.clients;
+
+    return userUsage.teams <= teamLimit && userUsage.clients <= clientLimit;
   };
 
   const getDowngradeMessage = (targetPlanId: string) => {
@@ -112,14 +147,26 @@ export function SubscriptionClient({ currentPlanId }: SubscriptionClientProps) {
     const targetPlan = plans.find((p) => p.id === targetPlanId);
     if (!targetPlan) return "";
 
-    const excessTeams = Math.max(0, userUsage.teams - targetPlan.limits.teams);
-    const excessClients = Math.max(
-      0,
-      userUsage.clients - targetPlan.limits.clients
-    );
+    const teamLimit =
+      targetPlan.limits.teams === -1
+        ? "unlimited"
+        : targetPlan.limits.teams.toString();
+    const clientLimit =
+      targetPlan.limits.clients === -1
+        ? "unlimited"
+        : targetPlan.limits.clients.toString();
+
+    const excessTeams =
+      targetPlan.limits.teams === -1
+        ? 0
+        : Math.max(0, userUsage.teams - targetPlan.limits.teams);
+    const excessClients =
+      targetPlan.limits.clients === -1
+        ? 0
+        : Math.max(0, userUsage.clients - targetPlan.limits.clients);
 
     if (excessTeams > 0 || excessClients > 0) {
-      let message = `${targetPlan.name} allows ${targetPlan.limits.teams} teams and ${targetPlan.limits.clients} clients. You have ${userUsage.teams} teams and ${userUsage.clients} clients. `;
+      let message = `${targetPlan.name} allows ${teamLimit} teams and ${clientLimit} clients. You have ${userUsage.teams} teams and ${userUsage.clients} clients. `;
 
       if (excessTeams > 0 && excessClients > 0) {
         message += `Remove ${excessTeams} teams and ${excessClients} clients to downgrade.`;
@@ -138,7 +185,11 @@ export function SubscriptionClient({ currentPlanId }: SubscriptionClientProps) {
   const handlePlanAction = async (priceId: string, targetPlanId: string) => {
     const action = getPlanAction(targetPlanId);
 
-    if (action === "Change" && !canDowngradeTo(targetPlanId)) {
+    if (
+      action === "Change" &&
+      isDowngrade(targetPlanId) &&
+      !canDowngradeTo(targetPlanId)
+    ) {
       const message = getDowngradeMessage(targetPlanId);
       setDowngradeMessage(message);
       setShowDowngradeModal(true);
@@ -176,6 +227,24 @@ export function SubscriptionClient({ currentPlanId }: SubscriptionClientProps) {
     ? "Free"
     : plans.find((p) => p.id === currentPlanId)?.name;
 
+  const currentPlan = plans.find((p) => p.id === currentPlanId);
+  const scheduledPlan = scheduledPlanChange
+    ? plans.find((p) => p.id === scheduledPlanChange.newPlanId)
+    : null;
+
+  console.log("[v0] === PLAN DATA DEBUG ===");
+  console.log("[v0] currentPlan:", currentPlan);
+  console.log("[v0] scheduledPlan:", scheduledPlan);
+  console.log("[v0] scheduledPlan pricing:", scheduledPlan?.pricing);
+  console.log(
+    "[v0] scheduledPlan monthly price:",
+    scheduledPlan?.pricing.monthly.price
+  );
+  console.log(
+    "[v0] scheduledPlan annually price:",
+    scheduledPlan?.pricing.annually?.price
+  );
+
   if (isLoadingUsage) {
     return (
       <div className="w-full max-w-5xl mx-auto py-8 px-4">
@@ -210,7 +279,178 @@ export function SubscriptionClient({ currentPlanId }: SubscriptionClientProps) {
         <CardHeader>
           <CardTitle>Subscription</CardTitle>
           <CardDescription>
-            You are currently on the <strong>{currentPlanName}</strong> plan.
+            <div className="space-y-3">
+              <div>
+                You are currently on the <strong>{currentPlanName}</strong>{" "}
+                plan.
+              </div>
+
+              {/* Usage display */}
+              {userUsage && !isFreePlan && (
+                <div className="flex gap-4 text-sm">
+                  <span>
+                    Teams: <strong>{userUsage.teams}</strong>
+                    {currentPlan && currentPlan.limits.teams !== -1 && (
+                      <span className="text-muted-foreground">
+                        {" "}
+                        / {currentPlan.limits.teams}
+                      </span>
+                    )}
+                    {currentPlan && currentPlan.limits.teams === -1 && (
+                      <span className="text-muted-foreground">
+                        {" "}
+                        / unlimited
+                      </span>
+                    )}
+                  </span>
+                  <span>
+                    Clients: <strong>{userUsage.clients}</strong>
+                    {currentPlan && currentPlan.limits.clients !== -1 && (
+                      <span className="text-muted-foreground">
+                        {" "}
+                        / {currentPlan.limits.clients}
+                      </span>
+                    )}
+                    {currentPlan && currentPlan.limits.clients === -1 && (
+                      <span className="text-muted-foreground">
+                        {" "}
+                        / unlimited
+                      </span>
+                    )}
+                  </span>
+                </div>
+              )}
+
+              {/* Current billing period and pricing */}
+              {!isFreePlan && currentPeriodEnd && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  <div className="text-sm text-blue-800 space-y-1">
+                    <pre className="mb-2">
+                      Come back to this and ensure we show all relevant and
+                      accurate billing information + renewall, end and downgrate
+                      dates
+                    </pre>
+                    {currentPlan && (
+                      <div>
+                        Current billing:{" "}
+                        <strong>
+                          $
+                          {billingInterval === "monthly"
+                            ? currentPlan.pricing.monthly.price
+                            : currentPlan.pricing.annually?.price ||
+                              currentPlan.pricing.monthly.price}
+                          /{billingInterval}
+                        </strong>
+                      </div>
+                    )}
+                    <div>
+                      Your subscription renews on{" "}
+                      <strong>
+                        {new Date(currentPeriodEnd).toLocaleDateString()}
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Scheduled plan changes */}
+              {scheduledPlanChange && (
+                <div className="p-3 bg-orange-50 border border-orange-200 rounded-md">
+                  {console.log(
+                    "[v0] === RENDERING SCHEDULED PLAN CHANGES SECTION ==="
+                  )}
+                  <div className="text-sm text-orange-800 space-y-2">
+                    <div>
+                      <strong>
+                        Your subscription will be changed on{" "}
+                        {new Date(
+                          scheduledPlanChange.effectiveDate
+                        ).toLocaleDateString()}
+                      </strong>
+                    </div>
+
+                    {scheduledPlan && (
+                      <div className="space-y-1">
+                        <div>
+                          Your next estimated payment will be{" "}
+                          <strong>
+                            $
+                            {billingInterval === "monthly"
+                              ? scheduledPlan.pricing.monthly.price
+                              : scheduledPlan.pricing.annually?.price ||
+                                scheduledPlan.pricing.monthly.price}
+                          </strong>
+                        </div>
+
+                        <div className="pt-2 border-t border-orange-200">
+                          <div className="font-medium text-orange-900 mb-1">
+                            Billing Details:
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span>
+                              {new Date(
+                                scheduledPlanChange.effectiveDate
+                              ).toLocaleDateString()}{" "}
+                              -{" "}
+                              {new Date(
+                                new Date(
+                                  scheduledPlanChange.effectiveDate
+                                ).setMonth(
+                                  new Date(
+                                    scheduledPlanChange.effectiveDate
+                                  ).getMonth() +
+                                    (billingInterval === "monthly" ? 1 : 12)
+                                )
+                              ).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span>{scheduledPlan.name}</span>
+                            <span>
+                              $
+                              {billingInterval === "monthly"
+                                ? scheduledPlan.pricing.monthly.price
+                                : scheduledPlan.pricing.annually?.price ||
+                                  scheduledPlan.pricing.monthly.price}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center font-medium pt-1 border-t border-orange-200">
+                            <span>Total</span>
+                            <span>
+                              $
+                              {billingInterval === "monthly"
+                                ? scheduledPlan.pricing.monthly.price
+                                : scheduledPlan.pricing.annually?.price ||
+                                  scheduledPlan.pricing.monthly.price}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Cancellation notice */}
+              {cancelAtPeriodEnd &&
+                currentPeriodEnd &&
+                !scheduledPlanChange && (
+                  <div className="p-3 bg-orange-50 border border-orange-200 rounded-md">
+                    <div className="text-sm text-orange-800 space-y-1">
+                      <div>
+                        Your plan will switch to Free on{" "}
+                        <strong>
+                          {new Date(currentPeriodEnd).toLocaleDateString()}
+                        </strong>{" "}
+                        unless you resubscribe.
+                      </div>
+                      <div className="text-xs text-orange-600 mt-1">
+                        You'll maintain full access until this date.
+                      </div>
+                    </div>
+                  </div>
+                )}
+            </div>
           </CardDescription>
         </CardHeader>
         <CardContent>

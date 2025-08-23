@@ -24,6 +24,11 @@ export interface IUser extends Document {
     stripePriceId?: string
     status: "active" | "canceled" | "past_due" | "incomplete" | "incomplete_expired" | "trialing"
     currentPeriodEnd?: Date
+    cancelAtPeriodEnd?: boolean
+    scheduledPlanChange?: {
+      newPlanId: "free" | "basic" | "pro" | "team"
+      effectiveDate: Date
+    }
   }
 
   // Store IDs of purchased bolt-ons
@@ -52,6 +57,17 @@ const SubscriptionSchema = new mongoose.Schema(
       default: "active",
     },
     currentPeriodEnd: Date,
+    cancelAtPeriodEnd: {
+      type: Boolean,
+      default: false,
+    },
+    scheduledPlanChange: {
+      newPlanId: {
+        type: String,
+        enum: ["free", "basic", "pro", "team"],
+      },
+      effectiveDate: Date,
+    },
   },
   { _id: false },
 )

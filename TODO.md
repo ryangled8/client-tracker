@@ -6,16 +6,12 @@ Date calcs & Mapping - Done but need to thoroughly test and check:
 - Thoroughly check date calculations - with a fresh head* - seems to be working (as of checking 27/07/25).
 - CSV uploads and mapping - thoroughly check
 
-
 --
 
-Payment Plan Schema:
-Free - up tp 5 clients, no team members, add one bolt on of choice, can create/join one team
-Basic - up to 25 clients, one team member, add two bolt ons of choice, can create/join one team
-Pro - up tp 50 clients, two team members, add three bolt ons of choice, can create/join up to two teams
-Team - unlimited clients, unlimited team members, unlimited bolt ons, can create/join unlimited team
-
-- If we upload via CSV and reach the limit, allow the addition of all clients until the limit is reached and show a new step in the CSV saying limit reached, the following clients weren't added. Upgrade to add more clients.
+STRIPE:
+- If I downgrade, show in the UI when the downgrade will occur - keep the user on their current plan until the billing cycle ends from stripe (also show this date in the UI).
+- Changing to 'Free' shows manage subscription but there's no free option there since we don't have a free product in stripe. Maybe instead we handle this in the cancellation of plan?
+- Integrate cancellations. If user has cancelled, return them to FREE plan and hide all clients and teams after the free plan limit. Consider how we do this for free users that haven't cancelled but are on the free plan.
 
 --
 
@@ -30,8 +26,8 @@ Modals
 - CSV Modal
 -- Add an 'uploading' state to show user that the upload is acutally happening...
 -- Fix 'add package' modal from the button on the CSV modal
-
-- TSM > General: Add metrics (kg/lbs/cm/inch/feet)
+- If we upload via CSV and detect more clients than the current plan allows, show this warning that only X number will be added due to plan limitations.
+- There's an issue with uploaded via CSV not being assigned the coach in the table - may be a clients-table problem tho as the coach is assigned in the logged data.
 
 --
 
@@ -41,7 +37,6 @@ Cleanup / Fixes:
 - Invite notification not showing anymore - may be due to the below?...:
   - Remove invites from TeamInvites in the database if they're accepted, declined or expired
 
-- Fix descendent html errors in confrim delete team 
 - fix all any types`
 - on edit/delete client just refresh the clienttable component not the entire page.
 - Errors for API endpoints when they timeout currently show a window popup but need to gracefully show a toast ui saying 'X action (like adding a team/client) has timed out due to poor connection) (error encountered on a train with poor wifi).
@@ -57,4 +52,5 @@ Next:
 - add reorder columns logic & ensure it persists for the team.
 - Add timezone field
 - Add custom field for paying users
+- TeamSettingsModal > General: Add metrics (kg/lbs/cm/inch/feet)
 - From the client-detail page, add a feature to 'move onto new phase' and that is then shown in the client table that they're on a new phase - talk to sophia re what this might entail content and feature wise.
