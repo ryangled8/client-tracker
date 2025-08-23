@@ -5,9 +5,9 @@ import Benefits from "@/components/landing/Benefits";
 import TwoCardSplit from "@/components/landing/TwoCardSplit";
 import Testimonials from "@/components/landing/Testimonials";
 import Features from "@/components/landing/Features";
-import { CtaBanner } from "@/components/landing/CtaBanner";
-import { FAQs } from "@/components/landing/FAQs";
-import { Pricing } from "@/components/landing/Pricing";
+import Pricing from "@/components/landing/Pricing";
+import FAQs from "@/components/landing/FAQs";
+import CtaBanner from "@/components/landing/CtaBanner";
 
 export default async function HomePage() {
   return (

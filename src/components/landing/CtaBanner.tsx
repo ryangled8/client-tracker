@@ -1,7 +1,28 @@
+import Link from "next/link";
 import React from "react";
 
-interface CtaBannerProps {}
+export default function CtaBanner() {
+  return (
+    <section className="my-48">
+      <div>
+        <span>Tag</span>
 
-export const CtaBanner: React.FC<CtaBannerProps> = ({}) => {
-  return <section>Cta Banner</section>;
-};
+        <div>
+          <h3>
+            Make your tracking
+            <span>As great as your coaching.</span>
+          </h3>
+
+          <p>
+            Stay organised, keep every date in check. Never lose a client to
+            chaos again.
+          </p>
+        </div>
+
+        <Link href="/register" className="/register">
+          Start Free Today
+        </Link>
+      </div>
+    </section>
+  );
+}

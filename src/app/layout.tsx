@@ -5,6 +5,7 @@ import AuthSessionProvider from "@/components/providers/session-provider";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import Navigation from "@/components/custom/navigation/navigation";
+import Footer from "@/components/custom/Footer";
 // import NavigationServerComponentWrapper from "@/components/custom/navigation/navigation-server-component-wrapper";
 
 export const metadata: Metadata = {
@@ -32,6 +33,8 @@ export default function RootLayout({
             <main className="bg-white rounded-md p-8 mx-4 mb-4 overflow-y-scroll h-full">
               {children}
             </main>
+
+            <Footer />
           </div>
 
           <Toaster />
