@@ -27,12 +27,8 @@ export default function Footer() {
 
   return (
     <>
-      {isAuthenticatedRoute(pathname) ? (
-        <footer>
-          <p>© {new Date().getFullYear()} Clientmap. All rights reserved.</p>
-          <p>App</p>
-        </footer>
-      ) : (
+      {/* Only render footer on landing page (non-app pages) */}
+      {!isAuthenticatedRoute(pathname) && (
         <footer>
           <p>© {new Date().getFullYear()} Clientmap. All rights reserved.</p>
           <p>Landing page</p>

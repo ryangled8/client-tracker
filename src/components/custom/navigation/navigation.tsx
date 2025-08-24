@@ -1,9 +1,9 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Users, Bell, Settings, HelpCircle } from "lucide-react";
-import React from "react";
 
 // Icon mapping
 const iconMap = {
@@ -123,7 +123,31 @@ export default function Navigation({ user }: NavigationProps) {
           </ul>
         </nav>
       ) : (
-        <nav>Non-authenticated navigation</nav>
+        <nav className="flex justify-between items-center m-4">
+          {/* Logo */}
+          <div className="w-1/3 flex gap-8">
+            <Link className="f-hm text-lg" href="/">
+              Clientmap
+            </Link>
+          </div>
+
+          <div className="w-1/3">
+            {/* Primary nav */}
+            <ul className="flex gap-12 items-center justify-center f-hm">
+              <Link href="#benefits">Benefits</Link>
+              <Link href="#features">Features</Link>
+              <Link href="#pricing">Pricing</Link>
+              <Link href="#faqs">FAQs</Link>
+            </ul>
+          </div>
+
+          {/* Right: Secondary nav + user */}
+          <ul className="w-1/3 flex justify-end">
+            <button className="h-10 bg-blk text-white rounded-sm px-4 f-hm">
+              Get Started Free
+            </button>
+          </ul>
+        </nav>
       )}
     </>
   );

@@ -30,9 +30,7 @@ export default function RootLayout({
           <div className="flex flex-col h-screen">
             <Navigation />
 
-            <main className="bg-white rounded-md p-8 mx-4 mb-4 overflow-y-scroll h-full">
-              {children}
-            </main>
+            <main className="overflow-y-scroll h-full">{children}</main>
 
             <Footer />
           </div>

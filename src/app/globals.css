@@ -190,6 +190,10 @@ p, ::placeholder { @apply tracking-wide; }
   @apply text-[#1C1D22] opacity-60;
 }
 
+.text-grey {
+  color: #A1A1A2;
+}
+
 /* Light Blue BG */
 .bg-lb {
   @apply bg-[#F9FAFC];

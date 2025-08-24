@@ -174,7 +174,7 @@ export default function TeamPage() {
   }
 
   return (
-    <section>
+    <section className="bg-white rounded-md p-8 mx-4 mb-4">
       {/* Header */}
       <header className="pb-8 border-b">
         <div className="flex items-center justify-between">
