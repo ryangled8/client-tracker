@@ -1,4 +1,5 @@
 import React from "react";
+import { LandingPageTag } from "./LandingPageTag";
 
 // Card Data
 const cardsData = [
@@ -6,8 +7,9 @@ const cardsData = [
     tag: "Team Collaboration",
     title: (
       <span>
-        Invite your team. Assign their clients.
-        <span>Stay aligned.</span>
+        <span className="text-grey block">Invite your team.</span>
+        <span className="text-grey block">Assign their clients.</span>
+        Stay aligned.
       </span>
     ),
     description:
@@ -17,8 +19,9 @@ const cardsData = [
     tag: "Smart Automated Tracking",
     title: (
       <span>
-        Every package. Every date.
-        <span>Auto tracked.</span>
+        <span className="text-grey block">Every package.</span>
+        <span className="text-grey block">Every date.</span>
+        Auto tracked.
       </span>
     ),
     description:
@@ -28,16 +31,23 @@ const cardsData = [
 
 export default function TwoCardSplit() {
   return (
-    <section className="my-48">
-      <div>
-        {cardsData.map((card, index) => (
-          <div key={index}>
-            <h3>{card.tag}</h3>
-            <h4>{card.title}</h4>
-            <p>{card.description}</p>
+    <section className="my-24 mx-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+      {cardsData.map((card, index) => (
+        <div
+          key={index}
+          className="aspect-square bg-white rounded-lg col-span-1 p-5 flex flex-col justify-between"
+        >
+          <LandingPageTag label={card.tag} />
+
+          <div>
+            <h3 className="text-3xl md:text-4xl mt-4 mb-4 leading-9 md:leading-11">
+              {card.title}
+            </h3>
+
+            <p className="max-w-[80%] text-black/80">{card.description}</p>
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </section>
   );
 }
