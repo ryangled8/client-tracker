@@ -30,9 +30,11 @@ export default function RootLayout({
           <div className="flex flex-col h-screen">
             <Navigation />
 
-            <main className="overflow-y-scroll h-full">{children}</main>
+            <div className="overflow-y-scroll h-full">
+              <main>{children}</main>
 
-            <Footer />
+              <Footer />
+            </div>
           </div>
 
           <Toaster />

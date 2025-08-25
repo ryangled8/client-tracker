@@ -5,7 +5,7 @@ export default function Hero() {
   return (
     <header className="h-[80vh] grid place-items-center text-center">
       <div className="max-w-3xl px-4">
-        <h2 className="text-[15px] rounded-full border border-green-600 bg-green-50 shadow-sm w-fit mx-auto text-green-700 px-4 py-1.5">
+        <h2 className="text-[15px] rounded-sm border border-green-600 bg-green-50 w-fit mx-auto text-green-700 px-4 py-1.5">
           For coaches that care about their time and clients
         </h2>
 
@@ -24,7 +24,7 @@ export default function Hero() {
         <div className="mt-12">
           <Link
             href="/register"
-            className="rounded-md md:text-lg text-white bg-black px-4 py-2 f-hm mx-auto block w-fit"
+            className="rounded-full md:text-lg text-white bg-black px-4 py-2 f-hm mx-auto block w-fit"
           >
             Start Free Today
           </Link>

@@ -58,8 +58,8 @@ interface CardProps {
 
 const Card: React.FC<CardProps> = ({ title, description }) => {
   return (
-    <div className="rounded-lg bg-white p-7 xl:aspect-square flex flex-col justify-between xl:w-1/3">
-      <h3 className="text-2xl mb-20 xl:mb-0">{title}</h3>
+    <div className="w-[90%] md:w-[60%] flex-none xl:flex-1 snap-center lg:w-full xl:w-1/3 rounded-lg bg-white p-5 flex flex-col justify-between xl:aspect-square">
+      <h3 className="text-2xl mb-20 md:mb-42 xl:mb-0">{title}</h3>
       <p className="text-black/60">{description}</p>
     </div>
   );
@@ -67,22 +67,24 @@ const Card: React.FC<CardProps> = ({ title, description }) => {
 
 export default function TitleWithThreeCards() {
   return (
-    <section className="my-10 lg:my-24 mx-4 grid gap-4 grid-cols-1 lg:grid-cols-12">
-      <div className="col-span-4 mb-5 lg:mb-0">
+    <section className="lg:mx-4 my-10 lg:my-24 grid gap-4 grid-cols-1 lg:grid-cols-12">
+      <div className="mx-4 lg:m-0 col-span-4 mb-5 lg:mb-0">
         <LandingPageTag label="The Reality" />
 
         <h2 className="text-3xl md:text-4xl mt-5 mb-5 md:mb-10">
           <span className="text-grey block">Lost track.</span> Lose clients.
         </h2>
 
-        <p className="text-black/60">
+        <p className="text-black/80">
           Scaling your client list shouldn’t feel like a burden.{" "}
-          <span className="block f-hm">And it doesn’t have to.</span>
+          <span className="block lg:inline xl:block f-hm">
+            And it doesn’t have to.
+          </span>
         </p>
       </div>
 
       {/* Cards */}
-      <div className="col-span-8 flex flex-col xl:flex-row gap-4">
+      <div className="px-4 col-span-8 flex lg:flex-col lg:p-0 xl:flex-row gap-4 overflow-x-scroll snap-mandatory snap-x">
         {cardsData.map((card, index) => (
           <Card key={index} title={card.title} description={card.description} />
         ))}
